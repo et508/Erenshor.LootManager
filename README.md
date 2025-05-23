@@ -38,7 +38,8 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
         "Ancient Bone",
         "Star Stone"
     ]
-}`
+}
+`
 
 ## Compatibility
 - Supports the ErenshorQOL autoloot feature.
