@@ -3,6 +3,7 @@ using HarmonyLib;
 namespace LootManager
 {
     [HarmonyPatch(typeof(LootWindow), nameof(LootWindow.LootAll))]
+    [HarmonyPriority(Priority.First)]
     public static class LootWindowPatch
     {
         public static bool Prefix(LootWindow __instance)
@@ -45,6 +46,8 @@ namespace LootManager
             UpdateSocialLog.LogAdd("[LootManager] LootAll was called.", "yellow");
             Plugin.Log.LogInfo("[LootManager] LootAll was called.");
 
+            GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem, GameData.PlayerAud.volume / 2f * GameData.SFXVol);
+            __instance.CloseWindow();
             return false;
         }
     }

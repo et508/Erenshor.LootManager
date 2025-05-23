@@ -20,6 +20,20 @@ namespace LootManager
             LootBlacklist.Load();
             Log.LogInfo("LootManager loaded.");
             var harmony = new Harmony("et508.erenshor.lootmanager");
+            
+            // Conditionally unpatch QoL if it's loaded
+            var qolAssembly = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var asm in qolAssembly)
+            {
+                if (asm.GetName().Name == "ErenshorQoL")
+                {
+                    var lootAllMethod = AccessTools.Method(typeof(LootWindow), nameof(LootWindow.LootAll));
+                    harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, "Brumdail.ErenshorQoLMod");
+                    Log.LogWarning("[LootManager] Unpatched ErenshorQoLMod's LootAll prefix.");
+                    break;
+                }
+            }
+            
             harmony.PatchAll();
         }
     }
