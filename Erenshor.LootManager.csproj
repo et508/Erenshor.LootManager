@@ -59,6 +59,8 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
+      <Compile Include="LootBlacklist.cs" />
+      <Compile Include="LootWindowPatch.cs" />
       <Compile Include="Plugin.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
