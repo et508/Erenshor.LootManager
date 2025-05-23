@@ -18,9 +18,6 @@ namespace LootManager
                         UpdateSocialLog.LogAdd("[Loot Manager] Added to blacklist: " + itemName, "yellow");
                         LootBlacklist.SaveBlacklist();
                     }
-
-                    slot.MyItem = GameData.PlayerInv.Empty;
-                    slot.UpdateSlotImage();
                 }
             }
         }
