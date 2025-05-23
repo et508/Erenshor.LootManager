@@ -30,7 +30,8 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - Open LootBlacklist.json
 - Your blacklist must follow the correct syntax to work propperly, item names are case sensitive and must be spell exactly how they are in-game.
 - Example LootBlacklist.json 
-` {
+```
+ {
     "items": [
         "Citrine Stone",
         "Water",
@@ -39,7 +40,7 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
         "Star Stone"
     ]
 }
-`
+```
 
 ## Compatibility
 - Supports the ErenshorQOL autoloot feature.
