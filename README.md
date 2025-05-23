@@ -12,11 +12,33 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - Change values to your liking.
 - I recommend using a config manager like [BepInExConfigManager](https://github.com/sinai-dev/BepInExConfigManager) for easier config changes from in-game.
 
+## How It Works
+- A new empty blacklist is created when you first load the mod. I currently do not provide any basic starting blacklist of items. You will need to add items your blacklist as you play.
+- Easy to use in-game commands have been provided for managing your blacklist.
+- When using the "Loot All" button in the loot window it checks if any of the items are on your blacklist.
+- If so it will destroy those items, so we are not leaving unwanted items and corpses laying around.
+- It will then loot the rest. Displaying a chat message for each item looted and each item destroyed.
+
 ## Loot Manager Commands
 - /addloot - Adds a new item to the blacklist. (Item names are case sensitive and must be spelled exactly how they are in-game.)
 - /removeloot - Removes a item from the blacklist. (Same as addloot item names are case sensitive and must be spelled exactly how they are in-game.)
-- /showloot - Shows a list off all items currently on the blacklist. 
+- /showloot - Shows a list off all items currently on the blacklist.
+
+## The Blacklist
+- Manual editing of the blacklist is supported.
+- Located in your BepInEx\config folder. 
+- Open LootBlacklist.json
+- Your blacklist must follow the correct syntax to work propperly, item names are case sensitive and must be spell exactly how they are in-game.
+- Example LootBlacklist.json 
+` {
+    "items": [
+        "Citrine Stone",
+        "Water",
+        "Wolf Meat",
+        "Ancient Bone",
+        "Star Stone"
+    ]
+}`
 
 ## Compatibility
-Loot Manager does have a small compatibility issue with ErenshorQOL. To get the intended function of Loot Manager, I had to unpatch ErenshorQOL's LootAll to ensure Loot Manager's was applied. Autoloot still works as intended. I have tested this with both mods running and did not run into any issues. That is not to say there may not be. If you do have any problems, please try each mod separately before reporting any bugs to the respective mod authors. Also please let me know if you have any problems using both mods. 
-
+- Supports the ErenshorQOL autoloot feature.

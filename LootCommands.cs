@@ -40,7 +40,7 @@ namespace LootManager
                 ClearInput();
                 return false;
             }
-
+            
             if (command.Equals("/showloot", StringComparison.OrdinalIgnoreCase))
             {
                 UpdateSocialLog.LogAdd("[Loot Manager] Blacklisted items:", "yellow");
