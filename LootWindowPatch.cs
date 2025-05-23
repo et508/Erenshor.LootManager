@@ -15,9 +15,12 @@ namespace LootManager
                     string itemName = itemIcon.MyItem.ItemName;
                     if (Plugin.Blacklist.Contains(itemName))
                     {
-                        UpdateSocialLog.LogAdd("[Loot Manager] Skipped blacklisted item: " + itemName, "grey");
+                        UpdateSocialLog.LogAdd("[Loot Manager] Destroyed blacklisted item: " + itemName, "grey");
+                        itemIcon.MyItem = GameData.PlayerInv.Empty;
+                        itemIcon.UpdateSlotImage();
                         continue;
                     }
+
 
                     bool flag;
                     if (itemIcon.MyItem.RequiredSlot == Item.SlotType.General)
