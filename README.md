@@ -1,5 +1,5 @@
 # Loot Manager
-Create a blacklist of items to stop looting. Use the Loot All button and never worry about the items you don't want again.
+Create a blacklist of items you want to stop looting. Use the Loot All button and never worry about the items you don't want again.
 
 ## Installation
 - Install [BepInEx Mod Pack](https://thunderstore.io/c/erenshor/p/BepInEx/BepInExPack/)
