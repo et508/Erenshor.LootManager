@@ -57,9 +57,16 @@
       <Reference Include="UnityEngine.JSONSerializeModule">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UIModule">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      </Reference>
     </ItemGroup>
     <ItemGroup>
       <Compile Include="LootBlacklist.cs" />
+      <Compile Include="LootCommands.cs" />
       <Compile Include="LootWindowPatch.cs" />
       <Compile Include="Plugin.cs" />
     </ItemGroup>

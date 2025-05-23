@@ -1,8 +1,8 @@
-using BepInEx;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using BepInEx;
 
 namespace LootManager
 {
@@ -41,6 +41,14 @@ namespace LootManager
             {
                 Plugin.Log.LogError("Failed to load blacklist: " + ex);
             }
+        }
+
+        public static void SaveBlacklist()
+        {
+            var data = new LootBlacklistData { items = new List<string>(Plugin.Blacklist) };
+            string json = JsonUtility.ToJson(data, true);
+            string path = Path.Combine(Paths.ConfigPath, BlacklistFileName);
+            File.WriteAllText(path, json);
         }
     }
 }
