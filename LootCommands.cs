@@ -46,7 +46,7 @@ namespace LootManager
                 UpdateSocialLog.LogAdd("[Loot Manager] Blacklisted items:", "yellow");
                 foreach (var item in Plugin.Blacklist)
                 {
-                    UpdateSocialLog.LogAdd(" - " + item, "yellow");
+                    UpdateSocialLog.LogAdd(" - " + item, "orange");
                 }
                 ClearInput();
                 return false;

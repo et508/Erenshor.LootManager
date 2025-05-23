@@ -15,7 +15,7 @@ namespace LootManager
                     string itemName = itemIcon.MyItem.ItemName;
                     if (Plugin.Blacklist.Contains(itemName))
                     {
-                        UpdateSocialLog.LogAdd("[Loot Manager] Destroyed blacklisted item: " + itemName, "grey");
+                        UpdateSocialLog.LogAdd("[Loot Manager] Destroyed item: " + itemName, "grey");
                         itemIcon.MyItem = GameData.PlayerInv.Empty;
                         itemIcon.UpdateSlotImage();
                         continue;
@@ -45,9 +45,6 @@ namespace LootManager
                     }
                 }
             }
-
-            UpdateSocialLog.LogAdd("[LootManager] LootAll was called.", "yellow");
-            Plugin.Log.LogInfo("[LootManager] LootAll was called.");
 
             GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem, GameData.PlayerAud.volume / 2f * GameData.SFXVol);
             __instance.CloseWindow();

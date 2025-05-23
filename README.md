@@ -7,10 +7,10 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - Extract files from Erenshor.LootManager.zip into Erenshor\BepInEx\plugins\ folder.
 
 ## How It Works
-- A new empty blacklist is created when you first load the mod. I currently do not provide any basic starting blacklist of items. You will need to add items your blacklist as you play.
+- A new empty blacklist is created when you first load the mod. I currently do not provide any basic starting blacklist of items. You will need to add items to your blacklist as you play.
 - Easy to use in-game commands have been provided for managing your blacklist.
 - When using the "Loot All" button in the loot window it checks if any of the items are on your blacklist.
-- If so it will destroy those items, so we are not leaving unwanted items and corpses laying around.
+- If so it will destroy those items, so we are not leaving unwanted items and corpses lying around.
 - It will then loot the rest. Displaying a chat message for each item looted and each item destroyed.
 
 ## Loot Manager Commands
@@ -22,7 +22,7 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - Manual editing of the blacklist is supported.
 - Located in your BepInEx\config folder. 
 - Open LootBlacklist.json
-- Your blacklist must follow the correct syntax to work propperly, item names are case sensitive and must be spell exactly how they are in-game.
+- Your blacklist must follow the correct syntax to work properly, item names are case sensitive and must be spell exactly how they are in-game.
 - Example LootBlacklist.json:
 ```
  {
@@ -38,3 +38,5 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 
 ## Compatibility
 - Supports the ErenshorQOL autoloot feature.
+
+

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "0.0.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "1.0.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -17,7 +17,7 @@ namespace LootManager
         {
             Log = Logger;
             LootBlacklist.Load();
-            Log.LogInfo("LootManager loaded.");
+            Log.LogInfo("Loot Manager loaded.");
             var harmony = new Harmony("et508.erenshor.lootmanager");
             
             // Conditionally unpatch QoL if it's loaded
