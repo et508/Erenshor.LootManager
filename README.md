@@ -22,7 +22,7 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - Manual editing of the blacklist is supported.
 - Located in your BepInEx\config folder. 
 - Open LootBlacklist.json
-- Your blacklist must follow the correct syntax to work properly, item names are case sensitive and must be spell exactly how they are in-game.
+- Your blacklist must follow the correct syntax to work properly, item names are case sensitive and must be spelled exactly how they are in-game.
 - Example LootBlacklist.json:
 ```
  {
