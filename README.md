@@ -14,9 +14,9 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - It will then loot the rest. Displaying a chat message for each item looted and each item destroyed.
 
 ## Loot Manager Commands
-- /addloot - Adds a new item to the blacklist. (Item names are case sensitive and must be spelled exactly how they are in-game.)
-- /removeloot - Removes a item from the blacklist. (Same as addloot item names are case sensitive and must be spelled exactly how they are in-game.)
-- /showloot - Shows a list off all items currently on the blacklist.
+- /lootadd - Adds a new item to the blacklist. (Item names are case sensitive and must be spelled exactly how they are in-game.)
+- /lootremove - Removes a item from the blacklist. (Same as addloot item names are case sensitive and must be spelled exactly how they are in-game.)
+- /lootshow - Shows a list off all items currently on the blacklist.
 
 ## The Blacklist
 - Manual editing of the blacklist is supported.

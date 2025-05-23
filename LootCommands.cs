@@ -12,7 +12,7 @@ namespace LootManager
             if (string.IsNullOrWhiteSpace(command))
                 return true;
 
-            if (command.StartsWith("/addloot ", StringComparison.OrdinalIgnoreCase))
+            if (command.StartsWith("/lootadd ", StringComparison.OrdinalIgnoreCase))
             {
                 string itemName = command.Substring(9).Trim();
                 if (!string.IsNullOrEmpty(itemName))
@@ -25,7 +25,7 @@ namespace LootManager
                 return false;
             }
 
-            if (command.StartsWith("/removeloot ", StringComparison.OrdinalIgnoreCase))
+            if (command.StartsWith("/lootremove ", StringComparison.OrdinalIgnoreCase))
             {
                 string itemName = command.Substring(12).Trim();
                 if (Plugin.Blacklist.Remove(itemName))
@@ -41,7 +41,7 @@ namespace LootManager
                 return false;
             }
             
-            if (command.Equals("/showloot", StringComparison.OrdinalIgnoreCase))
+            if (command.Equals("/lootshow", StringComparison.OrdinalIgnoreCase))
             {
                 UpdateSocialLog.LogAdd("[Loot Manager] Blacklisted items:", "yellow");
                 foreach (var item in Plugin.Blacklist)
