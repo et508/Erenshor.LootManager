@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "1.0.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "1.1.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
