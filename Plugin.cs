@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LootManager
 {
@@ -34,6 +35,21 @@ namespace LootManager
             }
             
             harmony.PatchAll();
+            
+            GameObject uiObj = new GameObject("LootManagerUI");
+            uiObj.AddComponent<LootManagerUI>();
+            DontDestroyOnLoad(uiObj);
+        }
+        
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                if (LootManagerUI.Instance != null)
+                {
+                    LootManagerUI.Instance.ToggleUI();
+                }
+            }
         }
     }
 }

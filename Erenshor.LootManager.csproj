@@ -54,8 +54,14 @@
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.InputLegacyModule">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.JSONSerializeModule">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.TextRenderingModule">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.UI">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UI.dll</HintPath>
@@ -70,6 +76,7 @@
       <Compile Include="Patches\LootWindowPatch.cs" />
       <Compile Include="Patches\TrashSlotPatch.cs" />
       <Compile Include="Plugin.cs" />
+      <Compile Include="UserInterface\LootManagerUI.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
