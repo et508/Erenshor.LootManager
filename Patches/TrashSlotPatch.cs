@@ -1,4 +1,3 @@
-// TrashSlotPatch.cs
 using HarmonyLib;
 
 namespace LootManager
