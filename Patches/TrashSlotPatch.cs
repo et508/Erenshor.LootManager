@@ -1,42 +1,53 @@
-using HarmonyLib;
+using UnityEngine;
 
 namespace LootManager
 {
-    [HarmonyPatch(typeof(Inventory), nameof(Inventory.UpdatePlayerInventory))]
-    public class TrashSlotPatch
+    public class TrashSlotPatch : MonoBehaviour
     {
-        private static string lastTrashItem = null;
-
-        public static void Postfix(Inventory __instance)
+        private void Start()
         {
-            foreach (var slot in __instance.StoredSlots)
+            StartCoroutine(MoveTrashSlot());
+        }
+
+        private System.Collections.IEnumerator MoveTrashSlot()
+        {
+            // Wait for all target objects to exist
+            while (GameObject.Find("PlayerInv") == null || GameObject.Find("TrashSlot") == null || GameObject.Find("Text (TMP) (1)") == null)
+                yield return null;
+
+            GameObject playerInv = GameObject.Find("PlayerInv");
+
+            // Move TrashSlot
+            GameObject trashSlot = playerInv.transform.Find("TrashSlot")?.gameObject;
+            if (trashSlot != null && trashSlot.TryGetComponent(out RectTransform rtTrash))
             {
-                if (slot.TrashSlot)
+                rtTrash.anchoredPosition += new Vector2(-74, 0);
+                Debug.Log("[LootManager] TrashSlot moved to the left.");
+            }
+
+            // Move Text (TMP) (1)
+            GameObject text1 = playerInv.transform.Find("Text (TMP) (1)")?.gameObject;
+            if (text1 != null && text1.TryGetComponent(out RectTransform rtText1))
+            {
+                rtText1.anchoredPosition += new Vector2(-71, 0);
+                Debug.Log("[LootManager] Text (TMP) (1) moved to the left.");
+            }
+
+            // Move correct Text (TMP) among possible duplicates
+            int count = 0;
+            foreach (Transform child in playerInv.transform)
+            {
+                if (child.name == "Text (TMP)")
                 {
-                    var currentItem = slot.MyItem;
-
-                    // Item is placed in the TrashSlot
-                    if (currentItem != GameData.PlayerInv.Empty && currentItem.ItemName != lastTrashItem)
+                    count++;
+                    if (count == 2) // ← choose which one to move (e.g., second one)
                     {
-                        if (!Plugin.Blacklist.Contains(currentItem.ItemName))
+                        if (child.TryGetComponent(out RectTransform rtText))
                         {
-                            Plugin.Blacklist.Add(currentItem.ItemName);
-                            UpdateSocialLog.LogAdd("[Loot Manager] Added to blacklist: " + currentItem.ItemName, "yellow");
-                            LootBlacklist.SaveBlacklist();
+                            rtText.anchoredPosition += new Vector2(-74, 0);
+                            Debug.Log("[LootManager] Text (TMP) [#2] moved to the left.");
                         }
-                        lastTrashItem = currentItem.ItemName;
-                    }
-
-                    // TrashSlot has been cleared or item was removed
-                    if (currentItem == GameData.PlayerInv.Empty && !string.IsNullOrEmpty(lastTrashItem))
-                    {
-                        if (Plugin.Blacklist.Contains(lastTrashItem))
-                        {
-                            Plugin.Blacklist.Remove(lastTrashItem);
-                            UpdateSocialLog.LogAdd("[Loot Manager] Removed from blacklist: " + lastTrashItem, "yellow");
-                            LootBlacklist.SaveBlacklist();
-                        }
-                        lastTrashItem = null;
+                        break;
                     }
                 }
             }

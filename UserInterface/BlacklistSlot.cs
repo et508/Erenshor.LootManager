@@ -46,7 +46,7 @@ namespace LootManager
             slotContainer.name = "BlacklistSlot";
 
             RectTransform rt = slotContainer.GetComponent<RectTransform>();
-            rt.anchoredPosition += new Vector2(80, 0);
+            rt.anchoredPosition += new Vector2(73, 0);
 
             var text = slotContainer.GetComponentInChildren<Text>();
             if (text != null)
