@@ -11,7 +11,6 @@ namespace LootManager
 
         private System.Collections.IEnumerator MoveTrashSlot()
         {
-            // Wait for all target objects to exist
             while (GameObject.Find("PlayerInv") == null || GameObject.Find("TrashSlot") == null || GameObject.Find("Text (TMP) (1)") == null)
                 yield return null;
 
@@ -22,7 +21,6 @@ namespace LootManager
             if (trashSlot != null && trashSlot.TryGetComponent(out RectTransform rtTrash))
             {
                 rtTrash.anchoredPosition += new Vector2(-74, 0);
-                Debug.Log("[LootManager] TrashSlot moved to the left.");
             }
 
             // Move Text (TMP) (1)
@@ -30,7 +28,6 @@ namespace LootManager
             if (text1 != null && text1.TryGetComponent(out RectTransform rtText1))
             {
                 rtText1.anchoredPosition += new Vector2(-71, 0);
-                Debug.Log("[LootManager] Text (TMP) (1) moved to the left.");
             }
 
             // Move correct Text (TMP) among possible duplicates
@@ -40,12 +37,11 @@ namespace LootManager
                 if (child.name == "Text (TMP)")
                 {
                     count++;
-                    if (count == 2) // ← choose which one to move (e.g., second one)
+                    if (count == 2) // ← choose which one to move
                     {
                         if (child.TryGetComponent(out RectTransform rtText))
                         {
                             rtText.anchoredPosition += new Vector2(-74, 0);
-                            Debug.Log("[LootManager] Text (TMP) [#2] moved to the left.");
                         }
                         break;
                     }

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "1.1.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "1.1.1")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
