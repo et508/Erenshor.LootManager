@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace LootManager
 {
@@ -19,10 +20,9 @@ namespace LootManager
             LootBlacklist.Load();
             Log.LogInfo("Loot Manager loaded.");
             var harmony = new Harmony("et508.erenshor.lootmanager");
-            
+
             // Conditionally unpatch QoL if it's loaded
-            var qolAssembly = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var asm in qolAssembly)
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (asm.GetName().Name == "ErenshorQoL")
                 {
@@ -32,8 +32,25 @@ namespace LootManager
                     break;
                 }
             }
-            
+
             harmony.PatchAll();
+            StartCoroutine(WaitForInventoryAndInit());
+        }
+
+        private System.Collections.IEnumerator WaitForInventoryAndInit()
+        {
+            while (GameObject.Find("TrashSlot") == null)
+                yield return null;
+
+            // BlacklistSlot init
+            var go = new GameObject("BlacklistSlotObject");
+            go.AddComponent<BlacklistSlot>().InitSlotAsync();
+
+            // TrashSlotPatch init to reposition the existing TrashSlot
+            var mover = new GameObject("TrashSlotMover");
+            mover.AddComponent<TrashSlotPatch>();
+
+            yield break;
         }
     }
 }
