@@ -45,6 +45,9 @@
       <Reference Include="System">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\System.dll</HintPath>
       </Reference>
+      <Reference Include="Unity.TextMeshPro">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.dll</HintPath>
       </Reference>
