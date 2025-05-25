@@ -19,9 +19,7 @@ Create a blacklist of items you want to stop looting. Use the Loot All button an
 - /lootshow - Shows a list off all items currently on the blacklist.
 
 ## Add Items Directly From Inventory
-- To support easier building of the blacklist you can add items to the list just by placing them in the "Destroy Item" inventory slot.
-- Removing the item from the "Destroy Item" inventory slot will also remove the item from your blacklist.
-- Original functionality of the slot remains the same.
+- To support easier building of the blacklist you can add items to the list just by placing them in the "Blacklist" inventory slot.
 
 ## The Blacklist
 - Manual editing of the blacklist is supported.

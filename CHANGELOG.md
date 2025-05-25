@@ -1,3 +1,10 @@
+## [1.1.1] - 5/25/2025
+### Added
+- Added a new inventory slot. The Blacklist slot will add items to the blacklist.
+
+### Removed
+- Removed all blacklist functionality from the original "Destroy Item" inventory slot. Restored it to its default function.
+
 ## [1.1.0] - 5/24/2025
 ### Added
 - You can now add and remove items to/from the blacklist using the "Destroy Item" inventory slot.
