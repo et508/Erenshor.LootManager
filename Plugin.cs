@@ -28,29 +28,13 @@ namespace LootManager
                 {
                     var lootAllMethod = AccessTools.Method(typeof(LootWindow), nameof(LootWindow.LootAll));
                     harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, "Brumdail.ErenshorQoLMod");
-                    Log.LogWarning("[LootManager] Unpatched ErenshorQoLMod's LootAll prefix.");
+                    Log.LogWarning("[LootManager] Unpatched ErenshorQoL LootAll prefix.");
                     break;
                 }
             }
 
             harmony.PatchAll();
-            StartCoroutine(WaitForInventoryAndInit());
-        }
-
-        private System.Collections.IEnumerator WaitForInventoryAndInit()
-        {
-            while (GameObject.Find("TrashSlot") == null)
-                yield return null;
-
-            // BlacklistSlot init
-            var go = new GameObject("BlacklistSlotObject");
-            go.AddComponent<BlacklistSlot>().InitSlotAsync();
-
-            // TrashSlotPatch init to reposition the existing TrashSlot
-            var mover = new GameObject("TrashSlotMover");
-            mover.AddComponent<TrashSlotPatch>();
-
-            yield break;
+            LootManagerController.Initialize();
         }
     }
 }
