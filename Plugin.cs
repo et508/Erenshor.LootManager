@@ -51,6 +51,21 @@ namespace LootManager
             mover.AddComponent<TrashSlotPatch>();
 
             yield break;
+            
+            GameObject uiObj = new GameObject("LootManagerUI");
+            uiObj.AddComponent<LootManagerUI>();
+            DontDestroyOnLoad(uiObj);
+        }
+        
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                if (LootManagerUI.Instance != null)
+                {
+                    LootManagerUI.Instance.ToggleUI();
+                }
+            }
         }
     }
 }
