@@ -68,6 +68,7 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
+      <Compile Include="BankLoot.cs" />
       <Compile Include="LootBlacklist.cs" />
       <Compile Include="LootCommands.cs" />
       <Compile Include="LootManagerController.cs" />
