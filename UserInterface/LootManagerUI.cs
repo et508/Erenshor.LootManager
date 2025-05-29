@@ -10,8 +10,8 @@ namespace LootManager
     {
         public static LootManagerUI Instance { get; private set; }
 
-        private const string BundleFileName  = "lootmanagerassets"; // change to new asset file name 
-        private const string PrefabAssetName = "uiRoot"; // change to new prefab name
+        private const string BundleFileName  = "lootui"; // change to new asset file name 
+        private const string PrefabAssetName = "lootui"; // change to new prefab name
 
         private AssetBundle _uiBundle;
         private GameObject  _uiRoot;
@@ -60,19 +60,6 @@ namespace LootManager
 
             _uiRoot = Instantiate(prefab);
             DontDestroyOnLoad(_uiRoot);
-            
-            // 🔽 Hook up the close button by name
-            var closeButtonGO = _uiRoot.transform.Find("borderGO/panelGO/footerGO/closeBtn");
-
-            if (closeButtonGO != null && closeButtonGO.TryGetComponent<Button>(out var closeButton))
-            {
-                closeButton.onClick.AddListener(() => _uiRoot.SetActive(false));
-                Debug.Log("[LootManagerUI] Close button hooked up successfully.");
-            }
-            else
-            {
-                Debug.LogWarning("[LootManagerUI] Close button not found or missing Button component.");
-            }
             
             _uiRoot.SetActive(false); // Start hidden
             
