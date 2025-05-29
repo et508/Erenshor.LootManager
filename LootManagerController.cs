@@ -15,6 +15,7 @@ namespace LootManager
                 var go = new GameObject("LootManager_Controller");
                 _instance = go.AddComponent<LootManagerController>();
                 Object.DontDestroyOnLoad(go);
+                go.AddComponent<LootManagerUI>();
                 _instance.StartCoroutine(_instance.WaitForInventoryAndInit());
             }
         }
