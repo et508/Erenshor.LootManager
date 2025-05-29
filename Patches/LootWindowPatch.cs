@@ -44,7 +44,8 @@ namespace LootManager
             // 2) Deposit into bank JSON
             if (lootedEntries.Count > 0)
             {
-                BankLoot.DepositLoot(lootedEntries);
+                BankLoot.DepositLoot(lootedEntries, startPage: 50, endPage: 70);
+
             }
 
             // 3) Play sound & close window
