@@ -59,6 +59,8 @@ namespace LootManager
             }
 
             _uiRoot = Instantiate(prefab);
+            LootUIController.Initialize(_uiRoot);
+
             DontDestroyOnLoad(_uiRoot);
             
             _uiRoot.SetActive(false); // Start hidden
@@ -75,11 +77,19 @@ namespace LootManager
             }
         }
         
-        /// Toggles the visibility of the UI root.
         public void ToggleUI()
         {
-            if (_uiRoot != null)
-                _uiRoot.SetActive(!_uiRoot.activeSelf);
+            if (_uiRoot == null)
+                return;
+
+            // figure out the new state and apply it
+            bool shouldBeActive = !_uiRoot.activeSelf;
+            _uiRoot.SetActive(shouldBeActive);
+
+            // when UI is open we treat the player as “typing” (so movement is blocked);
+            // when UI is closed we clear that flag
+            GameData.PlayerTyping = shouldBeActive;
+            
         }
 
         private void OnDestroy()
