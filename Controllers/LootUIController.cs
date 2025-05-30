@@ -31,6 +31,10 @@ namespace LootManager
         // Track selected item
         private static Text _currentlySelectedText = null;
         private static Color _previousColor;
+        
+        // Blacklist add and remove buttons
+        private static Button _addBtn;
+        private static Button _removeBtn;
 
         public static void Initialize(GameObject uiRoot)
         {
@@ -41,6 +45,11 @@ namespace LootManager
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
             _filterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
+            _addBtn           = Find("panelBG/blacklistPanel/addBtn")?.GetComponent<Button>();
+            _removeBtn        = Find("panelBG/blacklistPanel/removeBtn")?.GetComponent<Button>();
+            
+            _addBtn?.onClick.AddListener(AddSelectedToBlacklist);
+            _removeBtn?.onClick.AddListener(RemoveSelectedFromBlacklist);
 
             SetupMenuBarButtons();
 
@@ -115,6 +124,7 @@ namespace LootManager
 
             var filteredBlacklist = _blacklist
                 .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
+                .OrderBy(item => item)
                 .ToList();
 
             foreach (var item in filteredItems)
@@ -159,6 +169,52 @@ namespace LootManager
 
                 UpdateSocialLog.LogAdd("[LootUI] Selected Item: " + itemName);
             });
+        }
+        
+        private static void AddSelectedToBlacklist()
+        {
+            if (_currentlySelectedText == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No item selected to add.", "red");
+                return;
+            }
+
+            string itemName = _currentlySelectedText.text;
+
+            if (_blacklist.Contains(itemName))
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Item already in blacklist: " + itemName, "yellow");
+                return;
+            }
+
+            Plugin.Blacklist.Add(itemName);
+            LootBlacklist.SaveBlacklist();
+            RefreshBlacklistUI();
+
+            UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "green");
+        }
+
+        private static void RemoveSelectedFromBlacklist()
+        {
+            if (_currentlySelectedText == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No item selected to remove.", "red");
+                return;
+            }
+
+            string itemName = _currentlySelectedText.text;
+
+            if (!_blacklist.Contains(itemName))
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Item not in blacklist: " + itemName, "yellow");
+                return;
+            }
+
+            Plugin.Blacklist.Remove(itemName);
+            LootBlacklist.SaveBlacklist();
+            RefreshBlacklistUI();
+
+            UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "green");
         }
 
         private static Transform Find(string path)
