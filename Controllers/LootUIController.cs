@@ -31,6 +31,7 @@ namespace LootManager
         // Track selected item
         private static Text _currentlySelectedText = null;
         private static Color _previousColor;
+        private static bool _wasBlacklistSelected;
         
         // Blacklist add and remove buttons
         private static Button _addBtn;
@@ -85,9 +86,6 @@ namespace LootManager
         {
             _itemContent      = Find("panelBG/blacklistPanel/itemView/Viewport/itemContent");
             _blacklistContent = Find("panelBG/blacklistPanel/blacklistView/Viewport/blacklistContent");
-
-            Debug.Log("[LootUI] itemContent: " + _itemContent);
-            Debug.Log("[LootUI] blacklistContent: " + _blacklistContent);
 
             if (_itemContent == null || _blacklistContent == null)
             {
@@ -157,18 +155,32 @@ namespace LootManager
             text.fontSize = 14;
 
             var button = go.AddComponent<Button>();
-            button.onClick.AddListener(() => {
-                if (_currentlySelectedText != null)
+            button.onClick.AddListener(() =>
+            {
+                if (_currentlySelectedText == text)
                 {
-                    _currentlySelectedText.color = _previousColor;
+                    // Deselect if clicked again
+                    text.color = _wasBlacklistSelected ? Color.red : Color.white;
+                    _currentlySelectedText = null;
+                    _wasBlacklistSelected = false;
+
+                    // UpdateSocialLog.LogAdd("[LootUI] Deselected Item: " + itemName);
                 }
+                else
+                {
+                    // Reset previous selection
+                    if (_currentlySelectedText != null)
+                        _currentlySelectedText.color = _wasBlacklistSelected ? Color.red : Color.white;
 
-                _previousColor = text.color;
-                text.color = Color.green;
-                _currentlySelectedText = text;
+                    // Highlight new selection
+                    text.color = Color.green;
+                    _currentlySelectedText = text;
+                    _wasBlacklistSelected = isBlacklist;
 
-                UpdateSocialLog.LogAdd("[LootUI] Selected Item: " + itemName);
+                    // UpdateSocialLog.LogAdd("[LootUI] Selected Item: " + itemName);
+                }
             });
+
         }
         
         private static void AddSelectedToBlacklist()

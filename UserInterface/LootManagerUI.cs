@@ -31,6 +31,7 @@ namespace LootManager
 
         private void LoadUIFromBundle()
         {
+            Plugin.Log.LogInfo("[Loot Manager] Creating Loot UI...");
             // Determine the path of this assembly (plugin DLL)
             string assemblyPath = Assembly.GetExecutingAssembly().Location;
             string assemblyDir  = Path.GetDirectoryName(assemblyPath);
@@ -54,7 +55,7 @@ namespace LootManager
             GameObject prefab = _uiBundle.LoadAsset<GameObject>(PrefabAssetName);
             if (prefab == null)
             {
-                Debug.LogError($"[LootManagerUI] Prefab '{PrefabAssetName}' not found in bundle.");
+                Debug.LogError($"[Loot Manager] Prefab '{PrefabAssetName}' not found in bundle.");
                 return;
             }
 
@@ -65,7 +66,7 @@ namespace LootManager
             
             _uiRoot.SetActive(false); // Start hidden
             
-            Debug.Log("[LootManagerUI] UI prefab instantiated successfully.");
+            Plugin.Log.LogInfo("[Loot Manager] Loot UI initialized successfully.");
         }
         
         private void Update()
