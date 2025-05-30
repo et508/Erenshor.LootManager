@@ -3,6 +3,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace LootManager
 {
@@ -26,6 +27,10 @@ namespace LootManager
         // Data
         private static List<string> _allItems = new List<string>();
         private static HashSet<string> _blacklist => Plugin.Blacklist;
+
+        // Track selected item
+        private static Text _currentlySelectedText = null;
+        private static Color _previousColor;
 
         public static void Initialize(GameObject uiRoot)
         {
@@ -122,9 +127,7 @@ namespace LootManager
             {
                 CreateItemEntry(_blacklistContent, item, isBlacklist: true);
             }
-
         }
-
 
         private static void ClearList(Transform content)
         {
@@ -142,6 +145,20 @@ namespace LootManager
             text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             text.color = isBlacklist ? Color.red : Color.white;
             text.fontSize = 14;
+
+            var button = go.AddComponent<Button>();
+            button.onClick.AddListener(() => {
+                if (_currentlySelectedText != null)
+                {
+                    _currentlySelectedText.color = _previousColor;
+                }
+
+                _previousColor = text.color;
+                text.color = Color.green;
+                _currentlySelectedText = text;
+
+                UpdateSocialLog.LogAdd("[LootUI] Selected Item: " + itemName);
+            });
         }
 
         private static Transform Find(string path)
