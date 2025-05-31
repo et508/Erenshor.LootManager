@@ -6,8 +6,7 @@ namespace LootManager
     public class LootManagerController : MonoBehaviour
     {
         private static LootManagerController _instance;
-
-        // Ensures a single controller exists in the scene.
+        
         public static void Initialize()
         {
             if (_instance == null)

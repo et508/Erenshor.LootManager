@@ -1,5 +1,6 @@
 using BepInEx;
 using BepInEx.Logging;
+using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
@@ -14,11 +15,23 @@ namespace LootManager
         internal static ManualLogSource Log;
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        // Config entries
+        public static ConfigEntry<bool> AutoLootEnabled;
+        public static ConfigEntry<float> AutoLootDistance;
+
         private void Awake()
         {
             Log = Logger;
+
+            // Load configs
+            AutoLootEnabled = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
+            AutoLootDistance = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
+
+            // Load saved blacklist
             LootBlacklist.Load();
+
             Log.LogInfo("Loot Manager loaded.");
+
             var harmony = new Harmony("et508.erenshor.lootmanager");
 
             // Conditionally unpatch QoL if it's loaded

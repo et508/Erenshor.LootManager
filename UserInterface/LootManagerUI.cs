@@ -5,14 +5,12 @@ using UnityEngine.UI;
 
 namespace LootManager
 {
-    // Loads the LootManagerUI prefab from an AssetBundle located in the same folder as the plugin DLL.
     public class LootManagerUI : MonoBehaviour
     {
         public static LootManagerUI Instance { get; private set; }
 
-        private const string BundleFileName  = "lootui"; // change to new asset file name 
-        private const string PrefabAssetName = "lootui"; // change to new prefab name
-
+        private const string BundleFileName  = "lootui";
+        private const string PrefabAssetName = "lootui";
         private AssetBundle _uiBundle;
         private GameObject  _uiRoot;
 
@@ -32,11 +30,10 @@ namespace LootManager
         private void LoadUIFromBundle()
         {
             Plugin.Log.LogInfo("[Loot Manager] Creating Loot UI...");
-            // Determine the path of this assembly (plugin DLL)
+            
             string assemblyPath = Assembly.GetExecutingAssembly().Location;
             string assemblyDir  = Path.GetDirectoryName(assemblyPath);
-
-            // Expect the bundle in an 'Assets' subfolder next to the DLL
+            
             string bundlePath = Path.Combine(assemblyDir, "Assets", BundleFileName);
 
             if (!File.Exists(bundlePath))

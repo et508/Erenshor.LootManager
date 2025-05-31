@@ -15,6 +15,15 @@ namespace LootManager
         private static GameObject _blacklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
+        
+        // Autoloot Dropdown
+        private static TMP_Dropdown _autoLootDropdown;
+        private static readonly List<string> _autoLootOptions = new List<string> { "On", "Off", "ErenshorQOL" };
+        private static string _selectedAutoLootMode;
+        
+        // Autoloot Distance Slider
+        private static Slider _autoDistanceSlider;
+        private static TextMeshProUGUI _autoDistanceText;
 
         // Blacklist viewports
         private static Transform _itemContent;
@@ -22,6 +31,10 @@ namespace LootManager
 
         // Search filter input
         private static TMP_InputField _filterInput;
+        
+        // Blacklist add and remove buttons
+        private static Button _addBtn;
+        private static Button _removeBtn;
 
         // Data
         private static List<string> _allItems = new List<string>();
@@ -29,10 +42,6 @@ namespace LootManager
 
         // Selection tracking
         private static List<(Text text, bool isBlacklist)> _selectedEntries = new List<(Text text, bool isBlacklist)>();
-
-        // Blacklist add and remove buttons
-        private static Button _addBtn;
-        private static Button _removeBtn;
         
         // Double click detection
         private static Dictionary<string, float> _lastClickTime = new Dictionary<string, float>();
@@ -47,26 +56,12 @@ namespace LootManager
             _blacklistPanel   = Find("panelBG/blacklistPanel")?.gameObject;
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
-            _filterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
-            _addBtn           = Find("panelBG/blacklistPanel/addBtn")?.GetComponent<Button>();
-            _removeBtn        = Find("panelBG/blacklistPanel/removeBtn")?.GetComponent<Button>();
-
-            _addBtn?.onClick.AddListener(AddSelectedToBlacklist);
-            _removeBtn?.onClick.AddListener(RemoveSelectedFromBlacklist);
-
-            SetupMenuBarButtons();
+            
             ShowPanel(_settingsPanel);
+            SetupMenuBarButtons();
+            SetupSettingsPanel();
         }
-
-        private static void SetupMenuBarButtons()
-        {
-            var btnSettings  = Find("panelBG/menuBar/settingBtn")?.GetComponent<Button>();
-            var btnBlacklist = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Button>();
-
-            btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
-            btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
-        }
-
+        
         private static void ShowPanel(GameObject activePanel)
         {
             _menuBar?.SetActive(true);
@@ -79,10 +74,93 @@ namespace LootManager
                 SetupBlacklistPanel();
         }
 
+        private static void SetupMenuBarButtons()
+        {
+            var btnSettings  = Find("panelBG/menuBar/settingBtn")?.GetComponent<Button>();
+            var btnBlacklist = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Button>();
+
+            btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
+            btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
+        }
+
+        private static void SetupSettingsPanel()
+        {
+            _autoLootDropdown = Find("panelBG/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
+            _autoDistanceSlider = Find("panelBG/settingsPanel/autoDistance")?.GetComponent<Slider>();
+            _autoDistanceText   = Find("panelBG/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
+            
+            SetupAutoLootDropdown();
+            SetupAutoLootDistanceSlider();
+        }
+        
+        private static void SetupAutoLootDropdown()
+        {
+            if (_autoLootDropdown == null)
+            {
+                Debug.LogWarning("[LootUI] autoLootDrop dropdown not found.");
+                return;
+            }
+
+            _autoLootDropdown.ClearOptions();
+            _autoLootDropdown.AddOptions(_autoLootOptions);
+
+            int defaultIndex = Plugin.AutoLootEnabled.Value ? 0 : 1;
+            _autoLootDropdown.SetValueWithoutNotify(defaultIndex);
+
+            _autoLootDropdown.onValueChanged.AddListener(OnAutoLootDropdownChanged);
+            _selectedAutoLootMode = _autoLootOptions[defaultIndex];
+        }
+
+        private static void OnAutoLootDropdownChanged(int index)
+        {
+            if (index < 0 || index >= _autoLootOptions.Count)
+                return;
+
+            _selectedAutoLootMode = _autoLootOptions[index];
+            Plugin.AutoLootEnabled.Value = (_selectedAutoLootMode == "On");
+            UpdateSocialLog.LogAdd($"[LootUI] AutoLoot mode changed to: {_selectedAutoLootMode}", "cyan");
+        }
+        
+        private static void SetupAutoLootDistanceSlider()
+        {
+            if (_autoDistanceSlider == null || _autoDistanceText == null)
+            {
+                Debug.LogWarning("[LootUI] autoDistance slider or autoText not found.");
+                return;
+            }
+
+            _autoDistanceSlider.minValue = 0f;
+            _autoDistanceSlider.maxValue = 200f;
+            _autoDistanceSlider.wholeNumbers = true;
+
+            float currentValue = Plugin.AutoLootDistance.Value;
+            _autoDistanceSlider.SetValueWithoutNotify(currentValue);
+            _autoDistanceText.text = $"{(int)currentValue:F0}";
+
+            _autoDistanceSlider.onValueChanged.AddListener(OnAutoDistanceChanged);
+        }
+        
+        private static void OnAutoDistanceChanged(float newValue)
+        {
+            Plugin.AutoLootDistance.Value = newValue;
+            if (_autoDistanceText != null)
+                _autoDistanceText.text = $"{(int)newValue:F0}";
+    
+            UpdateSocialLog.LogAdd($"[LootUI] AutoLoot distance set to {(int)newValue:F0}", "cyan");
+        }
+
+
+
         private static void SetupBlacklistPanel()
         {
             _itemContent      = Find("panelBG/blacklistPanel/itemView/Viewport/itemContent");
             _blacklistContent = Find("panelBG/blacklistPanel/blacklistView/Viewport/blacklistContent");
+            _filterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
+            _addBtn           = Find("panelBG/blacklistPanel/addBtn")?.GetComponent<Button>();
+            _removeBtn        = Find("panelBG/blacklistPanel/removeBtn")?.GetComponent<Button>();
+            
+            _addBtn?.onClick.AddListener(AddSelectedToBlacklist);
+            _removeBtn?.onClick.AddListener(RemoveSelectedFromBlacklist);
 
             if (_itemContent == null || _blacklistContent == null)
             {
@@ -207,7 +285,7 @@ namespace LootManager
                     _selectedEntries.Add((text, isBlacklist));
                 }
 
-                UpdateSocialLog.LogAdd($"[LootUI] Selected Items: {string.Join(", ", _selectedEntries.Select(s => s.text.text))}");
+                // UpdateSocialLog.LogAdd($"[LootUI] Selected Items: {string.Join(", ", _selectedEntries.Select(s => s.text.text))}");
             });
 
         }
