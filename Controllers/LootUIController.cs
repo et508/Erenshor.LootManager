@@ -24,6 +24,12 @@ namespace LootManager
         // Autoloot Distance Slider
         private static Slider _autoDistanceSlider;
         private static TextMeshProUGUI _autoDistanceText;
+        
+        // Loot Method Dropdown
+        private static TMP_Dropdown _lootMethodDropdown;
+        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
+        private static string _selectedLootMethod;
+
 
         // Blacklist viewports
         private static Transform _itemContent;
@@ -88,9 +94,11 @@ namespace LootManager
             _autoLootDropdown = Find("panelBG/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
             _autoDistanceSlider = Find("panelBG/settingsPanel/autoDistance")?.GetComponent<Slider>();
             _autoDistanceText   = Find("panelBG/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
+            _lootMethodDropdown = Find("panelBG/settingsPanel/lootMethod")?.GetComponent<TMP_Dropdown>();
             
             SetupAutoLootDropdown();
             SetupAutoLootDistanceSlider();
+            SetupLootMethodDropdown();
         }
         
         private static void SetupAutoLootDropdown()
@@ -118,7 +126,6 @@ namespace LootManager
 
             _selectedAutoLootMode = _autoLootOptions[index];
             Plugin.AutoLootEnabled.Value = (_selectedAutoLootMode == "On");
-            UpdateSocialLog.LogAdd($"[LootUI] AutoLoot mode changed to: {_selectedAutoLootMode}", "cyan");
         }
         
         private static void SetupAutoLootDistanceSlider()
@@ -145,12 +152,37 @@ namespace LootManager
             Plugin.AutoLootDistance.Value = newValue;
             if (_autoDistanceText != null)
                 _autoDistanceText.text = $"{(int)newValue:F0}";
-    
-            UpdateSocialLog.LogAdd($"[LootUI] AutoLoot distance set to {(int)newValue:F0}", "cyan");
         }
+        
+        private static void SetupLootMethodDropdown()
+        {
+            if (_lootMethodDropdown == null)
+            {
+                Debug.LogWarning("[LootUI] lootMethod dropdown not found.");
+                return;
+            }
 
+            _lootMethodDropdown.ClearOptions();
+            _lootMethodDropdown.AddOptions(_lootMethodOptions);
 
+            int defaultIndex = _lootMethodOptions.IndexOf(Plugin.LootMethod.Value);
+            _lootMethodDropdown.SetValueWithoutNotify(defaultIndex);
+            _selectedLootMethod = _lootMethodOptions[defaultIndex];
 
+            _lootMethodDropdown.onValueChanged.AddListener(OnLootMethodDropdownChanged);
+        }
+        
+        private static void OnLootMethodDropdownChanged(int index)
+        {
+            if (index < 0 || index >= _lootMethodOptions.Count)
+                return;
+
+            _selectedLootMethod = _lootMethodOptions[index];
+            Plugin.LootMethod.Value = _selectedLootMethod;
+
+            UpdateSocialLog.LogAdd($"[LootUI] Loot method changed to: {_selectedLootMethod}", "cyan");
+        }
+        
         private static void SetupBlacklistPanel()
         {
             _itemContent      = Find("panelBG/blacklistPanel/itemView/Viewport/itemContent");

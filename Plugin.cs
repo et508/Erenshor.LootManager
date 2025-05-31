@@ -18,6 +18,8 @@ namespace LootManager
         // Config entries
         public static ConfigEntry<bool> AutoLootEnabled;
         public static ConfigEntry<float> AutoLootDistance;
+        public static ConfigEntry<string> LootMethod;
+
 
         private void Awake()
         {
@@ -26,6 +28,8 @@ namespace LootManager
             // Load configs
             AutoLootEnabled = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
+            LootMethod = Config.Bind("Loot Method Settings", "LootMethod", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
+
 
             // Load saved blacklist
             LootBlacklist.Load();
