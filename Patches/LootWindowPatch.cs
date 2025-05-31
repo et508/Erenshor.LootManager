@@ -8,12 +8,26 @@ namespace LootManager
     {
         public static bool Prefix(LootWindow __instance)
         {
+            string method = Plugin.LootMethod.Value;
+
             foreach (ItemIcon itemIcon in __instance.LootSlots)
             {
                 if (itemIcon.MyItem != GameData.PlayerInv.Empty)
                 {
                     string itemName = itemIcon.MyItem.ItemName;
-                    if (Plugin.Blacklist.Contains(itemName))
+
+                    bool shouldDestroy = false;
+
+                    if (method == "Blacklist" && Plugin.Blacklist.Contains(itemName))
+                    {
+                        shouldDestroy = true;
+                    }
+                    // else if (method == "Whitelist" && !Plugin.Whitelist.Contains(itemName))
+                    // {
+                    //    shouldDestroy = true;
+                    // }
+
+                    if (shouldDestroy)
                     {
                         UpdateSocialLog.LogAdd("[Loot Manager] Destroyed item: " + itemName, "grey");
                         itemIcon.MyItem = GameData.PlayerInv.Empty;
@@ -21,18 +35,17 @@ namespace LootManager
                         continue;
                     }
 
-
-                    bool flag;
+                    bool added;
                     if (itemIcon.MyItem.RequiredSlot == Item.SlotType.General)
                     {
-                        flag = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem);
+                        added = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem);
                     }
                     else
                     {
-                        flag = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem, itemIcon.Quantity);
+                        added = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem, itemIcon.Quantity);
                     }
 
-                    if (flag)
+                    if (added)
                     {
                         UpdateSocialLog.LogAdd("[Loot Manager] Looted Item: " + itemName, "yellow");
                         itemIcon.InformGroupOfLoot(itemIcon.MyItem);
@@ -46,7 +59,11 @@ namespace LootManager
                 }
             }
 
-            GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem, GameData.PlayerAud.volume / 2f * GameData.SFXVol);
+            GameData.PlayerAud.PlayOneShot(
+                GameData.GM.GetComponent<Misc>().DropItem,
+                GameData.PlayerAud.volume / 2f * GameData.SFXVol
+            );
+
             __instance.CloseWindow();
             return false;
         }
