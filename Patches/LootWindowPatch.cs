@@ -1,4 +1,6 @@
 using HarmonyLib;
+using UnityEngine;
+using System.Collections.Generic;
 
 namespace LootManager
 {
@@ -8,48 +10,87 @@ namespace LootManager
     {
         public static bool Prefix(LootWindow __instance)
         {
-            string method = Plugin.LootMethod.Value;
+            string lootMethod     = Plugin.LootMethod.Value;
+            bool bankLootEnabled  = Plugin.BankLootEnabled.Value;
+            string bankLootMethod = Plugin.BankLootMethod.Value;
 
-            foreach (ItemIcon itemIcon in __instance.LootSlots)
+            var lootedForBank = new List<BankLoot.LootEntry>();
+
+            foreach (ItemIcon slot in __instance.LootSlots)
             {
-                if (itemIcon.MyItem != GameData.PlayerInv.Empty)
+                var item = slot.MyItem;
+                int qty  = slot.Quantity;
+
+                if (item == GameData.PlayerInv.Empty)
+                    continue;
+
+                string name = item.ItemName;
+
+                // Apply loot method filtering (e.g. blacklist)
+                if (lootMethod == "Blacklist" && Plugin.Blacklist.Contains(name))
                 {
-                    string itemName = itemIcon.MyItem.ItemName;
+                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    slot.MyItem   = GameData.PlayerInv.Empty;
+                    slot.Quantity = 1;
+                    slot.UpdateSlotImage();
+                    continue;
+                }
 
-                    // Handle blacklist filtering only
-                    if (method == "Blacklist" && Plugin.Blacklist.Contains(itemName))
+                // Decide whether to send item to bank
+                bool sendToBank = false;
+                if (bankLootEnabled)
+                {
+                    if (bankLootMethod == "All")
                     {
-                        UpdateSocialLog.LogAdd("[Loot Manager] Destroyed item: " + itemName, "grey");
-                        itemIcon.MyItem = GameData.PlayerInv.Empty;
-                        itemIcon.UpdateSlotImage();
-                        continue;
+                        sendToBank = true;
                     }
+                    else if (bankLootMethod == "Filtered" && Plugin.Banklist.Contains(name))
+                    {
+                        sendToBank = true;
+                    }
+                }
 
-                    // Try to add the item to inventory
-                    bool added = itemIcon.MyItem.RequiredSlot == Item.SlotType.General
-                        ? GameData.PlayerInv.AddItemToInv(itemIcon.MyItem)
-                        : GameData.PlayerInv.AddItemToInv(itemIcon.MyItem, itemIcon.Quantity);
+                if (sendToBank)
+                {
+                    lootedForBank.Add(new BankLoot.LootEntry(item.Id, qty, name));
+                    UpdateSocialLog.LogAdd($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
+                }
+                else
+                {
+                    bool added = item.RequiredSlot == Item.SlotType.General
+                        ? GameData.PlayerInv.AddItemToInv(item)
+                        : GameData.PlayerInv.AddItemToInv(item, qty);
 
                     if (added)
                     {
-                        UpdateSocialLog.LogAdd("[Loot Manager] Looted Item: " + itemName, "yellow");
-                        itemIcon.InformGroupOfLoot(itemIcon.MyItem);
-                        itemIcon.MyItem = GameData.PlayerInv.Empty;
-                        itemIcon.UpdateSlotImage();
+                        UpdateSocialLog.LogAdd($"[Loot Manager] Looted \"{name}\" to inventory", "yellow");
+                        slot.InformGroupOfLoot(item);
                     }
                     else
                     {
-                        UpdateSocialLog.LogAdd("[Loot Manager] No room for " + itemName, "yellow");
+                        UpdateSocialLog.LogAdd($"[Loot Manager] No room for \"{name}\"", "yellow");
+                        continue;
                     }
                 }
+
+                // Always clear the loot slot
+                slot.MyItem   = GameData.PlayerInv.Empty;
+                slot.Quantity = 1;
+                slot.UpdateSlotImage();
+            }
+
+            // Deposit bank-queued items
+            if (lootedForBank.Count > 0)
+            {
+                BankLoot.DepositLoot(lootedForBank);
             }
 
             GameData.PlayerAud.PlayOneShot(
                 GameData.GM.GetComponent<Misc>().DropItem,
                 GameData.PlayerAud.volume / 2f * GameData.SFXVol
             );
-
             __instance.CloseWindow();
+
             return false;
         }
     }

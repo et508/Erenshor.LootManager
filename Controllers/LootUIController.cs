@@ -85,6 +85,16 @@ namespace LootManager
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
             
+            var dragHandle = Find("panelBG/lootUIDragHandle");
+            var panelBG = Find("panelBG");
+            if (dragHandle != null)
+            {
+                var dragUI = dragHandle.gameObject.AddComponent<DragUI>();
+                dragUI.Parent = panelBG;
+                dragUI.MyAnchor = dragHandle;
+                dragUI.isInv = false;
+            }
+            
             ShowPanel(_settingsPanel);
             SetupMenuBarButtons();
             SetupSettingsPanel();
