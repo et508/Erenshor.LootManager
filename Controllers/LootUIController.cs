@@ -29,6 +29,28 @@ namespace LootManager
         private static TMP_Dropdown _lootMethodDropdown;
         private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
         private static string _selectedLootMethod;
+        
+        // Bankloot Toggle
+        private static Toggle _bankLootToggle;
+        
+        // Bankloot Method Dropdown
+        private static TMP_Dropdown _bankMethodDropdown;
+        private static readonly List<string> _bankMethodOptions = new List<string> { "All", "Filtered" };
+        private static string _selectedBankMethod;
+        
+        // Bankloot Page Dropdown
+        private static TMP_Dropdown _bankPageDropdown;
+        private static readonly List<string> _bankPageOptions = new List<string> { "First Empty", "Page Range" };
+        private static string _selectedBankPageMode;
+        
+        // Bankloot Page Range Sliders
+        private static Slider _bankPageFirstSlider;
+        private static TextMeshProUGUI _pageFirstText;
+        private static Slider _bankPageLastSlider;
+        private static TextMeshProUGUI _pageLastText;
+
+
+
 
 
         // Blacklist viewports
@@ -95,10 +117,22 @@ namespace LootManager
             _autoDistanceSlider = Find("panelBG/settingsPanel/autoDistance")?.GetComponent<Slider>();
             _autoDistanceText   = Find("panelBG/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
             _lootMethodDropdown = Find("panelBG/settingsPanel/lootMethod")?.GetComponent<TMP_Dropdown>();
+            _bankLootToggle = Find("panelBG/settingsPanel/bankLootToggle")?.GetComponent<Toggle>();
+            _bankMethodDropdown = Find("panelBG/settingsPanel/bankMethodDrop")?.GetComponent<TMP_Dropdown>();
+            _bankPageDropdown = Find("panelBG/settingsPanel/bankPageDrop")?.GetComponent<TMP_Dropdown>();
+            _bankPageFirstSlider = Find("panelBG/settingsPanel/bankPageFirst")?.GetComponent<Slider>();
+            _pageFirstText       = Find("panelBG/settingsPanel/pageFirstText")?.GetComponent<TextMeshProUGUI>();
+            _bankPageLastSlider  = Find("panelBG/settingsPanel/bankPageLast")?.GetComponent<Slider>();
+            _pageLastText        = Find("panelBG/settingsPanel/pageLastText")?.GetComponent<TextMeshProUGUI>();
+
             
             SetupAutoLootDropdown();
             SetupAutoLootDistanceSlider();
             SetupLootMethodDropdown();
+            SetupBankLootToggle();
+            SetupBankMethodDropdown();
+            SetupBankPageDropdown();
+            SetupBankPageRangeSliders();
         }
         
         private static void SetupAutoLootDropdown()
@@ -114,6 +148,8 @@ namespace LootManager
 
             int defaultIndex = Plugin.AutoLootEnabled.Value ? 0 : 1;
             _autoLootDropdown.SetValueWithoutNotify(defaultIndex);
+            
+            UpdateAutoDistanceInteractable();
 
             _autoLootDropdown.onValueChanged.AddListener(OnAutoLootDropdownChanged);
             _selectedAutoLootMode = _autoLootOptions[defaultIndex];
@@ -126,6 +162,8 @@ namespace LootManager
 
             _selectedAutoLootMode = _autoLootOptions[index];
             Plugin.AutoLootEnabled.Value = (_selectedAutoLootMode == "On");
+            
+            UpdateAutoDistanceInteractable();
         }
         
         private static void SetupAutoLootDistanceSlider()
@@ -154,6 +192,15 @@ namespace LootManager
                 _autoDistanceText.text = $"{(int)newValue:F0}";
         }
         
+        private static void UpdateAutoDistanceInteractable()
+        {
+            bool enabled = _selectedAutoLootMode == "On";
+    
+            if (_autoDistanceSlider != null)
+                _autoDistanceSlider.interactable = enabled;
+        }
+
+        
         private static void SetupLootMethodDropdown()
         {
             if (_lootMethodDropdown == null)
@@ -180,8 +227,172 @@ namespace LootManager
             _selectedLootMethod = _lootMethodOptions[index];
             Plugin.LootMethod.Value = _selectedLootMethod;
 
-            UpdateSocialLog.LogAdd($"[LootUI] Loot method changed to: {_selectedLootMethod}", "cyan");
+            UpdateSocialLog.LogAdd($"[LootUI] Loot method changed to: {_selectedLootMethod}", "blue");
         }
+        
+        private static void SetupBankLootToggle()
+        {
+            if (_bankLootToggle == null)
+            {
+                Debug.LogWarning("[LootUI] bankLootToggle not found.");
+                return;
+            }
+
+            _bankLootToggle.SetIsOnWithoutNotify(Plugin.BankLootEnabled.Value);
+            _bankLootToggle.onValueChanged.AddListener(OnBankLootToggleChanged);
+        }
+        
+        private static void OnBankLootToggleChanged(bool isOn)
+        {
+            Plugin.BankLootEnabled.Value = isOn;
+            UpdateSocialLog.LogAdd($"[LootUI] BankLoot toggle set to: {isOn}", "blue");
+            
+            if (_bankMethodDropdown != null)
+                _bankMethodDropdown.interactable = isOn;
+            
+            
+            if (_bankPageDropdown != null)
+                _bankPageDropdown.interactable = isOn;
+            
+            UpdateBankPageSliderInteractable();
+        }
+        
+        private static void SetupBankMethodDropdown()
+        {
+            if (_bankMethodDropdown == null)
+            {
+                Debug.LogWarning("[LootUI] bankMethodDrop dropdown not found.");
+                return;
+            }
+
+            _bankMethodDropdown.ClearOptions();
+            _bankMethodDropdown.AddOptions(_bankMethodOptions);
+
+            int defaultIndex = _bankMethodOptions.IndexOf(Plugin.BankLootMethod.Value);
+            if (defaultIndex < 0) defaultIndex = 0;
+
+            _bankMethodDropdown.SetValueWithoutNotify(defaultIndex);
+            _selectedBankMethod = _bankMethodOptions[defaultIndex];
+
+            _bankMethodDropdown.onValueChanged.AddListener(OnBankMethodDropdownChanged);
+
+            // Optionally grey it out if bankLootToggle is off
+            _bankMethodDropdown.interactable = Plugin.BankLootEnabled.Value;
+        }
+        
+        private static void OnBankMethodDropdownChanged(int index)
+        {
+            if (index < 0 || index >= _bankMethodOptions.Count)
+                return;
+
+            _selectedBankMethod = _bankMethodOptions[index];
+            Plugin.BankLootMethod.Value = _selectedBankMethod;
+
+            UpdateSocialLog.LogAdd($"[LootUI] BankLoot method changed to: {_selectedBankMethod}", "blue");
+        }
+        
+        private static void SetupBankPageDropdown()
+        {
+            if (_bankPageDropdown == null)
+            {
+                Debug.LogWarning("[LootUI] bankPageDrop dropdown not found.");
+                return;
+            }
+
+            _bankPageDropdown.ClearOptions();
+            _bankPageDropdown.AddOptions(_bankPageOptions);
+
+            int defaultIndex = _bankPageOptions.IndexOf(Plugin.BankLootPageMode.Value);
+            if (defaultIndex < 0) defaultIndex = 0;
+
+            _bankPageDropdown.SetValueWithoutNotify(defaultIndex);
+            _selectedBankPageMode = _bankPageOptions[defaultIndex];
+
+            _bankPageDropdown.onValueChanged.AddListener(OnBankPageDropdownChanged);
+
+            _bankPageDropdown.interactable = Plugin.BankLootEnabled.Value;
+            
+            UpdateBankPageSliderInteractable();
+        }
+        
+        private static void OnBankPageDropdownChanged(int index)
+        {
+            if (index < 0 || index >= _bankPageOptions.Count)
+                return;
+
+            _selectedBankPageMode = _bankPageOptions[index];
+            Plugin.BankLootPageMode.Value = _selectedBankPageMode;
+            
+            UpdateBankPageSliderInteractable();
+
+            UpdateSocialLog.LogAdd($"[LootUI] BankLoot page mode changed to: {_selectedBankPageMode}", "cyan");
+        }
+        
+        private static void SetupBankPageRangeSliders()
+        {
+            if (_bankPageFirstSlider == null || _pageFirstText == null ||
+                _bankPageLastSlider == null || _pageLastText == null)
+            {
+                Debug.LogWarning("[LootUI] Bank page range sliders or text missing.");
+                return;
+            }
+
+            // Set reasonable limits
+            _bankPageFirstSlider.minValue = 1;
+            _bankPageFirstSlider.maxValue = 98;
+            _bankPageFirstSlider.wholeNumbers = true;
+
+            _bankPageLastSlider.minValue = 1;
+            _bankPageLastSlider.maxValue = 98;
+            _bankPageLastSlider.wholeNumbers = true;
+
+            _bankPageFirstSlider.SetValueWithoutNotify(Plugin.BankPageFirst.Value);
+            _bankPageLastSlider.SetValueWithoutNotify(Plugin.BankPageLast.Value);
+
+            _pageFirstText.text = Plugin.BankPageFirst.Value.ToString();
+            _pageLastText.text  = Plugin.BankPageLast.Value.ToString();
+
+            _bankPageFirstSlider.onValueChanged.AddListener(val =>
+            {
+                int newVal = (int)val;
+                Plugin.BankPageFirst.Value = newVal;
+                _pageFirstText.text = newVal.ToString();
+                UpdateSocialLog.LogAdd($"[LootUI] BankLoot start page set to {newVal}", "cyan");
+            });
+
+            _bankPageLastSlider.onValueChanged.AddListener(val =>
+            {
+                int newVal = (int)val;
+                Plugin.BankPageLast.Value = newVal;
+                _pageLastText.text = newVal.ToString();
+                UpdateSocialLog.LogAdd($"[LootUI] BankLoot end page set to {newVal}", "cyan");
+            });
+
+            UpdateBankPageSliderInteractable();
+        }
+        
+        private static void UpdateBankPageSliderInteractable()
+        {
+            bool slidersEnabled = Plugin.BankLootEnabled.Value &&
+                                  Plugin.BankLootPageMode.Value == "Page Range";
+
+            if (_bankPageFirstSlider != null)
+                _bankPageFirstSlider.interactable = slidersEnabled;
+
+            if (_bankPageLastSlider != null)
+                _bankPageLastSlider.interactable = slidersEnabled;
+        }
+
+
+
+        
+        
+        
+        
+        
+        
+
+
         
         private static void SetupBlacklistPanel()
         {

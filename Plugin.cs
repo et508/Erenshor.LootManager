@@ -19,6 +19,15 @@ namespace LootManager
         public static ConfigEntry<bool> AutoLootEnabled;
         public static ConfigEntry<float> AutoLootDistance;
         public static ConfigEntry<string> LootMethod;
+        public static ConfigEntry<bool> BankLootEnabled;
+        public static ConfigEntry<string> BankLootMethod;
+        public static ConfigEntry<string> BankLootPageMode;
+        public static ConfigEntry<int> BankPageFirst;
+        public static ConfigEntry<int> BankPageLast;
+
+
+
+
 
 
         private void Awake()
@@ -28,7 +37,16 @@ namespace LootManager
             // Load configs
             AutoLootEnabled = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
-            LootMethod = Config.Bind("Loot Method Settings", "LootMethod", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
+            LootMethod = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
+            BankLootEnabled = Config.Bind("Bankloot Settings", "Bankloot Enabled", false, "If enabled, looted items will be deposited to bank instead of inventory.");
+            BankLootMethod = Config.Bind("Bankloot Settings", "Bankloot Method", "All", "Method for bank looting: All or Filtered");
+            BankLootPageMode = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
+            BankPageFirst = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+            BankPageLast = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+
+
+
+
 
 
             // Load saved blacklist
