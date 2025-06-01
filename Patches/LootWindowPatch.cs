@@ -16,18 +16,8 @@ namespace LootManager
                 {
                     string itemName = itemIcon.MyItem.ItemName;
 
-                    bool shouldDestroy = false;
-
+                    // Handle blacklist filtering only
                     if (method == "Blacklist" && Plugin.Blacklist.Contains(itemName))
-                    {
-                        shouldDestroy = true;
-                    }
-                    // else if (method == "Whitelist" && !Plugin.Whitelist.Contains(itemName))
-                    // {
-                    //    shouldDestroy = true;
-                    // }
-
-                    if (shouldDestroy)
                     {
                         UpdateSocialLog.LogAdd("[Loot Manager] Destroyed item: " + itemName, "grey");
                         itemIcon.MyItem = GameData.PlayerInv.Empty;
@@ -35,15 +25,10 @@ namespace LootManager
                         continue;
                     }
 
-                    bool added;
-                    if (itemIcon.MyItem.RequiredSlot == Item.SlotType.General)
-                    {
-                        added = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem);
-                    }
-                    else
-                    {
-                        added = GameData.PlayerInv.AddItemToInv(itemIcon.MyItem, itemIcon.Quantity);
-                    }
+                    // Try to add the item to inventory
+                    bool added = itemIcon.MyItem.RequiredSlot == Item.SlotType.General
+                        ? GameData.PlayerInv.AddItemToInv(itemIcon.MyItem)
+                        : GameData.PlayerInv.AddItemToInv(itemIcon.MyItem, itemIcon.Quantity);
 
                     if (added)
                     {

@@ -14,6 +14,8 @@ namespace LootManager
     {
         internal static ManualLogSource Log;
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Banklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
 
         // Config entries
         public static ConfigEntry<bool> AutoLootEnabled;
@@ -49,8 +51,10 @@ namespace LootManager
 
 
 
-            // Load saved blacklist
+            // Load loot lists
             LootBlacklist.Load();
+            LootBanklist.Load();
+
 
             Log.LogInfo("Loot Manager loaded.");
 

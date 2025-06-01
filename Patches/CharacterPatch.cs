@@ -6,7 +6,7 @@ namespace LootManager
     [HarmonyPatch(typeof(Character), "DoDeath")]
     [HarmonyPriority(50000)]
     [HarmonyAfter("Brumdail.ErenshorREL")]
-    public class AutoLootPatch
+    public class Autoloot
     {
         private static void Postfix(Character __instance)
         {
