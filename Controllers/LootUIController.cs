@@ -3,6 +3,8 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
 
 namespace LootManager
 {
@@ -11,10 +13,14 @@ namespace LootManager
         private static GameObject _uiRoot;
 
         // Panels
+        private static GameObject _panelBG;
         private static GameObject _settingsPanel;
         private static GameObject _blacklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
+        
+        // Drag Handle
+        private static GameObject _dragHangle;
         
         // Autoloot Dropdown
         private static TMP_Dropdown _autoLootDropdown;
@@ -27,7 +33,7 @@ namespace LootManager
         
         // Loot Method Dropdown
         private static TMP_Dropdown _lootMethodDropdown;
-        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
+        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Standard" }; // replace "Whitelist" once implemented
         private static string _selectedLootMethod;
         
         // Bankloot Toggle
@@ -63,7 +69,12 @@ namespace LootManager
         // Blacklist add and remove buttons
         private static Button _addBtn;
         private static Button _removeBtn;
-
+        
+        // Window Dragging
+        private static bool dragging = false;
+        private static Vector2 dragOffset;
+        private static RectTransform panelRect;
+        
         // Data
         private static List<string> _allItems = new List<string>();
         private static HashSet<string> _blacklist => Plugin.Blacklist;
@@ -80,20 +91,15 @@ namespace LootManager
         {
             _uiRoot = uiRoot;
 
+            _panelBG          = Find("panelBG")?.gameObject;
             _settingsPanel    = Find("panelBG/settingsPanel")?.gameObject;
             _blacklistPanel   = Find("panelBG/blacklistPanel")?.gameObject;
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
+            _dragHangle       = Find("panelBG/lootUIDragHandle")?.gameObject;
             
-            var dragHandle = Find("panelBG/lootUIDragHandle");
-            var panelBG = Find("panelBG");
-            if (dragHandle != null)
-            {
-                var dragUI = dragHandle.gameObject.AddComponent<DragUI>();
-                dragUI.Parent = panelBG;
-                dragUI.MyAnchor = dragHandle;
-                dragUI.isInv = false;
-            }
+            AddDragEvents(_dragHangle, _panelBG.GetComponent<RectTransform>());
+
             
             ShowPanel(_settingsPanel);
             SetupMenuBarButtons();
@@ -120,7 +126,8 @@ namespace LootManager
             btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
         }
-
+        
+        // Settings Panel
         private static void SetupSettingsPanel()
         {
             _autoLootDropdown = Find("panelBG/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
@@ -236,8 +243,6 @@ namespace LootManager
 
             _selectedLootMethod = _lootMethodOptions[index];
             Plugin.LootMethod.Value = _selectedLootMethod;
-
-            UpdateSocialLog.LogAdd($"[LootUI] Loot method changed to: {_selectedLootMethod}", "blue");
         }
         
         private static void SetupBankLootToggle()
@@ -255,7 +260,6 @@ namespace LootManager
         private static void OnBankLootToggleChanged(bool isOn)
         {
             Plugin.BankLootEnabled.Value = isOn;
-            UpdateSocialLog.LogAdd($"[LootUI] BankLoot toggle set to: {isOn}", "blue");
             
             if (_bankMethodDropdown != null)
                 _bankMethodDropdown.interactable = isOn;
@@ -285,8 +289,7 @@ namespace LootManager
             _selectedBankMethod = _bankMethodOptions[defaultIndex];
 
             _bankMethodDropdown.onValueChanged.AddListener(OnBankMethodDropdownChanged);
-
-            // Optionally grey it out if bankLootToggle is off
+            
             _bankMethodDropdown.interactable = Plugin.BankLootEnabled.Value;
         }
         
@@ -297,8 +300,6 @@ namespace LootManager
 
             _selectedBankMethod = _bankMethodOptions[index];
             Plugin.BankLootMethod.Value = _selectedBankMethod;
-
-            UpdateSocialLog.LogAdd($"[LootUI] BankLoot method changed to: {_selectedBankMethod}", "blue");
         }
         
         private static void SetupBankPageDropdown()
@@ -334,8 +335,6 @@ namespace LootManager
             Plugin.BankLootPageMode.Value = _selectedBankPageMode;
             
             UpdateBankPageSliderInteractable();
-
-            UpdateSocialLog.LogAdd($"[LootUI] BankLoot page mode changed to: {_selectedBankPageMode}", "cyan");
         }
         
         private static void SetupBankPageRangeSliders()
@@ -346,8 +345,7 @@ namespace LootManager
                 Debug.LogWarning("[LootUI] Bank page range sliders or text missing.");
                 return;
             }
-
-            // Set reasonable limits
+            
             _bankPageFirstSlider.minValue = 1;
             _bankPageFirstSlider.maxValue = 98;
             _bankPageFirstSlider.wholeNumbers = true;
@@ -367,7 +365,6 @@ namespace LootManager
                 int newVal = (int)val;
                 Plugin.BankPageFirst.Value = newVal;
                 _pageFirstText.text = newVal.ToString();
-                UpdateSocialLog.LogAdd($"[LootUI] BankLoot start page set to {newVal}", "cyan");
             });
 
             _bankPageLastSlider.onValueChanged.AddListener(val =>
@@ -375,7 +372,6 @@ namespace LootManager
                 int newVal = (int)val;
                 Plugin.BankPageLast.Value = newVal;
                 _pageLastText.text = newVal.ToString();
-                UpdateSocialLog.LogAdd($"[LootUI] BankLoot end page set to {newVal}", "cyan");
             });
 
             UpdateBankPageSliderInteractable();
@@ -403,7 +399,7 @@ namespace LootManager
         
 
 
-        
+        // Blacklist Panel
         private static void SetupBlacklistPanel()
         {
             _itemContent      = Find("panelBG/blacklistPanel/itemView/Viewport/itemContent");
@@ -496,13 +492,13 @@ namespace LootManager
                     {
                         Plugin.Blacklist.Remove(itemName);
                         LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd($"[LootUI] Removed from blacklist (double-click): {itemName}", "green");
+                        UpdateSocialLog.LogAdd($"[LootUI] Removed from blacklist: {itemName}", "yellow");
                     }
                     else
                     {
                         Plugin.Blacklist.Add(itemName);
                         LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd($"[LootUI] Added to blacklist (double-click): {itemName}", "green");
+                        UpdateSocialLog.LogAdd($"[LootUI] Added to blacklist: {itemName}", "yellow");
                     }
 
                     RefreshBlacklistUI();
@@ -537,13 +533,10 @@ namespace LootManager
                     text.color = Color.green;
                     _selectedEntries.Add((text, isBlacklist));
                 }
-
-                // UpdateSocialLog.LogAdd($"[LootUI] Selected Items: {string.Join(", ", _selectedEntries.Select(s => s.text.text))}");
             });
 
         }
-
-
+        
         private static void AddSelectedToBlacklist()
         {
             var added = false;
@@ -560,11 +553,11 @@ namespace LootManager
             {
                 LootBlacklist.SaveBlacklist();
                 RefreshBlacklistUI();
-                UpdateSocialLog.LogAdd("[LootUI] Added selected items to blacklist.", "green");
+                UpdateSocialLog.LogAdd("[LootUI] Added selected items to blacklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "yellow");
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
             }
         }
 
@@ -584,14 +577,60 @@ namespace LootManager
             {
                 LootBlacklist.SaveBlacklist();
                 RefreshBlacklistUI();
-                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from blacklist.", "green");
+                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from blacklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "yellow");
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
             }
         }
+        
+        // Window Dragging
+        private static void AddDragEvents(GameObject dragHandle, RectTransform panelToMove)
+        {
+            panelRect = panelToMove;
+            var trigger = dragHandle.GetComponent<EventTrigger>();
+            if (trigger == null)
+                trigger = dragHandle.AddComponent<EventTrigger>();
+            
+            var pointerDown = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+            pointerDown.callback.AddListener((data) =>
+            {
+                var eventData = (PointerEventData)data;
+                if (eventData.button == PointerEventData.InputButton.Left)
+                {
+                    dragging = true;
+                    GameData.DraggingUIElement = true;
 
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        panelRect, eventData.position, null, out dragOffset
+                    );
+                }
+            });
+            trigger.triggers.Add(pointerDown);
+            
+            var drag = new EventTrigger.Entry { eventID = EventTriggerType.Drag };
+            drag.callback.AddListener((data) =>
+            {
+                if (!dragging) return;
+
+                Vector2 pointerPos;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    panelRect.parent as RectTransform, ((PointerEventData)data).position, null, out pointerPos
+                );
+                panelRect.anchoredPosition = pointerPos - dragOffset;
+            });
+            trigger.triggers.Add(drag);
+            
+            var pointerUp = new EventTrigger.Entry { eventID = EventTriggerType.PointerUp };
+            pointerUp.callback.AddListener((data) =>
+            {
+                dragging = false;
+                GameData.DraggingUIElement = false;
+            });
+            trigger.triggers.Add(pointerUp);
+        }
+        
         private static Transform Find(string path)
         {
             return _uiRoot?.transform.Find(path);
