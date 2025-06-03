@@ -16,6 +16,7 @@ namespace LootManager
         private static GameObject _panelBG;
         private static GameObject _settingsPanel;
         private static GameObject _blacklistPanel;
+        private static GameObject _banklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
         
@@ -60,15 +61,32 @@ namespace LootManager
 
 
         // Blacklist viewports
-        private static Transform _itemContent;
+        private static Transform _blackitemContent;
         private static Transform _blacklistContent;
 
-        // Search filter input
-        private static TMP_InputField _filterInput;
+        // Blacklist Search filter input
+        private static TMP_InputField _blackfilterInput;
         
         // Blacklist add and remove buttons
-        private static Button _addBtn;
-        private static Button _removeBtn;
+        private static Button _blackaddBtn;
+        private static Button _blackremoveBtn;
+        
+        // Banklist viewports
+        private static Transform _bankitemContent;
+        private static Transform _banklistContent;
+        
+        // Banklist Search filter input
+        private static TMP_InputField _bankfilterInput;
+        
+        // Banklist add and remove buttons
+        private static Button _bankaddBtn;
+        private static Button _bankremoveBtn;
+        
+        
+        
+        
+        
+        
         
         // Window Dragging
         private static bool dragging = false;
@@ -78,9 +96,11 @@ namespace LootManager
         // Data
         private static List<string> _allItems = new List<string>();
         private static HashSet<string> _blacklist => Plugin.Blacklist;
+        private static HashSet<string> _banklist => Plugin.Banklist;
 
         // Selection tracking
-        private static List<(Text text, bool isBlacklist)> _selectedEntries = new List<(Text text, bool isBlacklist)>();
+        private static List<(Text text, bool isBlacklist)> _selectedBlackEntries = new List<(Text text, bool isBlacklist)>();
+        private static List<(Text text, bool isBanklist)> _selectedBankEntries = new List<(Text text, bool isBanklist)>();
         
         // Double click detection
         private static Dictionary<string, float> _lastClickTime = new Dictionary<string, float>();
@@ -94,6 +114,7 @@ namespace LootManager
             _panelBG          = Find("panelBG")?.gameObject;
             _settingsPanel    = Find("panelBG/settingsPanel")?.gameObject;
             _blacklistPanel   = Find("panelBG/blacklistPanel")?.gameObject;
+            _banklistPanel    = Find("panelBG/banklistPanel")?.gameObject;
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
             _dragHangle       = Find("panelBG/lootUIDragHandle")?.gameObject;
@@ -113,18 +134,36 @@ namespace LootManager
 
             _settingsPanel?.SetActive(activePanel == _settingsPanel);
             _blacklistPanel?.SetActive(activePanel == _blacklistPanel);
+            _banklistPanel?.SetActive(activePanel == _banklistPanel);
+            
+            var settingBtnOutline = Find("panelBG/menuBar/settingBtn")?.GetComponent<Outline>();
+            if (settingBtnOutline != null)
+                settingBtnOutline.enabled = (activePanel == _settingsPanel);
+            
+            var blacklistBtnOutline = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Outline>();
+            if (blacklistBtnOutline != null)
+                blacklistBtnOutline.enabled = (activePanel == _blacklistPanel);
+            
+            var banklistBtnOutline = Find("panelBG/menuBar/banklistBtn")?.GetComponent<Outline>();
+            if (banklistBtnOutline != null)
+                banklistBtnOutline.enabled = (activePanel == _banklistPanel);
 
             if (activePanel == _blacklistPanel)
                 SetupBlacklistPanel();
+            
+            if (activePanel == _banklistPanel)
+                SetupBanklistPanel();
         }
 
         private static void SetupMenuBarButtons()
         {
             var btnSettings  = Find("panelBG/menuBar/settingBtn")?.GetComponent<Button>();
             var btnBlacklist = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Button>();
+            var btnBanklist = Find("panelBG/menuBar/banklistBtn")?.GetComponent<Button>();
 
             btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
+            btnBanklist?.onClick.AddListener(() => ShowPanel(_banklistPanel));
         }
         
         // Settings Panel
@@ -388,30 +427,25 @@ namespace LootManager
             if (_bankPageLastSlider != null)
                 _bankPageLastSlider.interactable = slidersEnabled;
         }
-
-
-
-        
-        
-        
-        
-        
         
 
 
         // Blacklist Panel
         private static void SetupBlacklistPanel()
         {
-            _itemContent      = Find("panelBG/blacklistPanel/itemView/Viewport/itemContent");
-            _blacklistContent = Find("panelBG/blacklistPanel/blacklistView/Viewport/blacklistContent");
-            _filterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
-            _addBtn           = Find("panelBG/blacklistPanel/addBtn")?.GetComponent<Button>();
-            _removeBtn        = Find("panelBG/blacklistPanel/removeBtn")?.GetComponent<Button>();
+            _blackitemContent      = Find("panelBG/blacklistPanel/blackitemView/Viewport/blackitemContent");
+            _blacklistContent      = Find("panelBG/blacklistPanel/blacklistView/Viewport/blacklistContent");
+            _blackfilterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
+            _blackaddBtn           = Find("panelBG/blacklistPanel/blackaddBtn")?.GetComponent<Button>();
+            _blackremoveBtn        = Find("panelBG/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
             
-            _addBtn?.onClick.AddListener(AddSelectedToBlacklist);
-            _removeBtn?.onClick.AddListener(RemoveSelectedFromBlacklist);
+            _blackaddBtn?.onClick.RemoveAllListeners();
+            _blackaddBtn?.onClick.AddListener(AddSelectedToBlacklist);
+            
+            _blackremoveBtn?.onClick.RemoveAllListeners();
+            _blackremoveBtn?.onClick.AddListener(RemoveSelectedFromBlacklist);
 
-            if (_itemContent == null || _blacklistContent == null)
+            if (_blackitemContent == null || _blacklistContent == null)
             {
                 Debug.LogError("[LootUI] One or more content panels not found. Check prefab paths.");
                 return;
@@ -424,10 +458,10 @@ namespace LootManager
                 .OrderBy(x => x)
                 .ToList();
 
-            if (_filterInput != null)
+            if (_blackfilterInput != null)
             {
-                _filterInput.onValueChanged.RemoveAllListeners();
-                _filterInput.onValueChanged.AddListener(delegate { RefreshBlacklistUI(); });
+                _blackfilterInput.onValueChanged.RemoveAllListeners();
+                _blackfilterInput.onValueChanged.AddListener(delegate { RefreshBlacklistUI(); });
             }
 
             RefreshBlacklistUI();
@@ -435,11 +469,11 @@ namespace LootManager
 
         private static void RefreshBlacklistUI()
         {
-            ClearList(_itemContent);
+            ClearList(_blackitemContent);
             ClearList(_blacklistContent);
-            _selectedEntries.Clear();
+            _selectedBlackEntries.Clear();
 
-            string filter = _filterInput?.text?.ToLowerInvariant() ?? string.Empty;
+            string filter = _blackfilterInput?.text?.ToLowerInvariant() ?? string.Empty;
 
             var filteredItems = string.IsNullOrEmpty(filter)
                 ? _allItems
@@ -453,12 +487,12 @@ namespace LootManager
             foreach (var item in filteredItems)
             {
                 if (!filteredBlacklist.Contains(item))
-                    CreateItemEntry(_itemContent, item, isBlacklist: false);
+                    CreateItemEntryBlacklist(_blackitemContent, item, isBlacklist: false);
             }
 
             foreach (var item in filteredBlacklist)
             {
-                CreateItemEntry(_blacklistContent, item, isBlacklist: true);
+                CreateItemEntryBlacklist(_blacklistContent, item, isBlacklist: true);
             }
         }
 
@@ -468,7 +502,7 @@ namespace LootManager
                 GameObject.Destroy(child.gameObject);
         }
         
-        private static void CreateItemEntry(Transform parent, string itemName, bool isBlacklist)
+        private static void CreateItemEntryBlacklist(Transform parent, string itemName, bool isBlacklist)
         {
             GameObject go = new GameObject(itemName);
             go.transform.SetParent(parent, false);
@@ -506,32 +540,32 @@ namespace LootManager
                 }
 
                 bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                bool alreadySelected = _selectedEntries.Any(entry => entry.text == text);
+                bool alreadySelected = _selectedBlackEntries.Any(entry => entry.text == text);
 
                 if (ctrlHeld)
                 {
                     if (alreadySelected)
                     {
                         text.color = isBlacklist ? Color.red : Color.white;
-                        _selectedEntries.RemoveAll(entry => entry.text == text);
+                        _selectedBlackEntries.RemoveAll(entry => entry.text == text);
                     }
                     else
                     {
                         text.color = Color.green;
-                        _selectedEntries.Add((text, isBlacklist));
+                        _selectedBlackEntries.Add((text, isBlacklist));
                     }
                 }
                 else
                 {
-                    foreach (var (selectedText, wasBlacklist) in _selectedEntries)
+                    foreach (var (selectedText, wasBlacklist) in _selectedBlackEntries)
                     {
                         selectedText.color = wasBlacklist ? Color.red : Color.white;
                     }
 
-                    _selectedEntries.Clear();
+                    _selectedBlackEntries.Clear();
 
                     text.color = Color.green;
-                    _selectedEntries.Add((text, isBlacklist));
+                    _selectedBlackEntries.Add((text, isBlacklist));
                 }
             });
 
@@ -540,11 +574,11 @@ namespace LootManager
         private static void AddSelectedToBlacklist()
         {
             var added = false;
-            foreach (var (text, isBlacklist) in _selectedEntries.ToList())
+            foreach (var (text, _) in _selectedBlackEntries.ToList())
             {
-                if (!isBlacklist && !_blacklist.Contains(text.text))
+                if (!Plugin.Blacklist.Contains(text.text))
                 {
-                    _blacklist.Add(text.text);
+                    Plugin.Blacklist.Add(text.text);
                     added = true;
                 }
             }
@@ -564,11 +598,11 @@ namespace LootManager
         private static void RemoveSelectedFromBlacklist()
         {
             var removed = false;
-            foreach (var (text, isBlacklist) in _selectedEntries.ToList())
+            foreach (var (text, _) in _selectedBlackEntries.ToList())
             {
-                if (isBlacklist && _blacklist.Contains(text.text))
+                if (Plugin.Blacklist.Contains(text.text))
                 {
-                    _blacklist.Remove(text.text);
+                    Plugin.Blacklist.Remove(text.text);
                     removed = true;
                 }
             }
@@ -584,6 +618,216 @@ namespace LootManager
                 UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
             }
         }
+        
+        
+        
+        
+        
+        // Banklist Panel
+        private static void SetupBanklistPanel()
+        {
+            _bankitemContent      = Find("panelBG/banklistPanel/bankitemView/Viewport/bankitemContent");
+            _banklistContent      = Find("panelBG/banklistPanel/banklistView/Viewport/banklistContent");
+            _bankfilterInput      = Find("panelBG/banklistPanel/banklistFilter")?.GetComponent<TMP_InputField>();
+            _bankaddBtn           = Find("panelBG/banklistPanel/bankaddBtn")?.GetComponent<Button>();
+            _bankremoveBtn        = Find("panelBG/banklistPanel/bankremoveBtn")?.GetComponent<Button>();
+            
+            _bankaddBtn?.onClick.RemoveAllListeners();
+            _bankaddBtn?.onClick.AddListener(AddSelectedToBanklist);
+
+            _bankremoveBtn?.onClick.RemoveAllListeners();
+            _bankremoveBtn?.onClick.AddListener(RemoveSelectedFromBanklist);
+
+            if (_bankitemContent == null || _banklistContent == null)
+            {
+                Debug.LogError("[LootUI] One or more content panels not found. Check prefab paths.");
+                return;
+            }
+
+            _allItems = GameData.ItemDB.ItemDB
+                .Where(item => !string.IsNullOrWhiteSpace(item.ItemName))
+                .Select(item => item.ItemName)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            if (_bankfilterInput != null)
+            {
+                _bankfilterInput.onValueChanged.RemoveAllListeners();
+                _bankfilterInput.onValueChanged.AddListener(delegate { RefreshBanklistUI(); });
+            }
+
+            RefreshBanklistUI();
+        }
+        
+        private static void RefreshBanklistUI()
+        {
+            ClearList(_bankitemContent);
+            ClearList(_banklistContent);
+            _selectedBankEntries.Clear();
+
+            string filter = _bankfilterInput?.text?.ToLowerInvariant() ?? string.Empty;
+
+            var filteredItems = string.IsNullOrEmpty(filter)
+                ? _allItems
+                : _allItems.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+
+            var filteredBanklist = _banklist
+                .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
+                .OrderBy(item => item)
+                .ToList();
+
+            foreach (var item in filteredItems)
+            {
+                if (!filteredBanklist.Contains(item))
+                    CreateItemEntryBanklist(_bankitemContent, item, isBanklist: false);
+            }
+
+            foreach (var item in filteredBanklist)
+            {
+                CreateItemEntryBanklist(_banklistContent, item, isBanklist: true);
+            }
+        }
+        
+        private static void CreateItemEntryBanklist(Transform parent, string itemName, bool isBanklist)
+        {
+            GameObject go = new GameObject(itemName);
+            go.transform.SetParent(parent, false);
+
+            var text = go.AddComponent<Text>();
+            text.text = itemName;
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.color = isBanklist ? Color.blue : Color.white;
+            text.fontSize = 14;
+
+            var button = go.AddComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                float time = Time.time;
+                bool isDoubleClick = _lastClickTime.TryGetValue(itemName, out float lastClick) && (time - lastClick < DoubleClickThreshold);
+                _lastClickTime[itemName] = time;
+
+                if (isDoubleClick)
+                {
+                    if (isBanklist)
+                    {
+                        Plugin.Banklist.Remove(itemName);
+                        LootBanklist.SaveBanklist();
+                        UpdateSocialLog.LogAdd($"[LootUI] Removed from banklist: {itemName}", "yellow");
+                    }
+                    else
+                    {
+                        Plugin.Banklist.Add(itemName);
+                        LootBanklist.SaveBanklist();
+                        UpdateSocialLog.LogAdd($"[LootUI] Added to banklist: {itemName}", "yellow");
+                    }
+
+                    RefreshBanklistUI();
+                    return;
+                }
+
+                bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                bool alreadySelected = _selectedBankEntries.Any(entry => entry.text == text);
+
+                if (ctrlHeld)
+                {
+                    if (alreadySelected)
+                    {
+                        text.color = isBanklist ? Color.blue : Color.white;
+                        _selectedBankEntries.RemoveAll(entry => entry.text == text);
+                    }
+                    else
+                    {
+                        text.color = Color.green;
+                        _selectedBankEntries.Add((text, isBanklist));
+                    }
+                }
+                else
+                {
+                    foreach (var (selectedText, wasBanklist) in _selectedBankEntries)
+                    {
+                        selectedText.color = wasBanklist ? Color.blue : Color.white;
+                    }
+
+                    _selectedBankEntries.Clear();
+
+                    text.color = Color.green;
+                    _selectedBankEntries.Add((text, isBanklist));
+                }
+            });
+
+        }
+        
+        private static void AddSelectedToBanklist()
+        {
+            var added = false;
+            foreach (var (text, _) in _selectedBankEntries.ToList())
+            {
+                if (!Plugin.Banklist.Contains(text.text))
+                {
+                    Plugin.Banklist.Add(text.text);
+                    added = true;
+                }
+            }
+
+            if (added)
+            {
+                LootBanklist.SaveBanklist();
+                RefreshBanklistUI();
+                UpdateSocialLog.LogAdd("[LootUI] Added selected items to banklist.", "yellow");
+            }
+            else
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+            }
+        }
+        
+        private static void RemoveSelectedFromBanklist()
+        {
+            var removed = false;
+            foreach (var (text, _) in _selectedBankEntries.ToList())
+            {
+                if (Plugin.Banklist.Contains(text.text))
+                {
+                    Plugin.Banklist.Remove(text.text);
+                    removed = true;
+                }
+            }
+
+            if (removed)
+            {
+                LootBanklist.SaveBanklist();
+                RefreshBanklistUI();
+                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from banklist.", "yellow");
+            }
+            else
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+            }
+        }
+                
+                
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         // Window Dragging
         private static void AddDragEvents(GameObject dragHandle, RectTransform panelToMove)

@@ -26,7 +26,7 @@ namespace LootManager
 
                 string name = item.ItemName;
 
-                // Apply loot method filtering (e.g. blacklist)
+                // Apply loot method filtering
                 if (lootMethod == "Blacklist" && Plugin.Blacklist.Contains(name))
                 {
                     UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
