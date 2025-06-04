@@ -34,7 +34,7 @@ namespace LootManager
             string assemblyPath = Assembly.GetExecutingAssembly().Location;
             string assemblyDir  = Path.GetDirectoryName(assemblyPath);
             
-            string bundlePath = Path.Combine(assemblyDir, "Assets", BundleFileName);
+            string bundlePath = Path.Combine(assemblyDir, BundleFileName);
 
             if (!File.Exists(bundlePath))
             {

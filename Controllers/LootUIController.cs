@@ -25,7 +25,7 @@ namespace LootManager
         
         // Autoloot Dropdown
         private static TMP_Dropdown _autoLootDropdown;
-        private static readonly List<string> _autoLootOptions = new List<string> { "On", "Off", "ErenshorQOL" };
+        private static readonly List<string> _autoLootOptions = new List<string> { "On", "Off" };
         private static string _selectedAutoLootMode;
         
         // Autoloot Distance Slider
