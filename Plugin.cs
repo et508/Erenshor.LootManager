@@ -3,6 +3,7 @@ using BepInEx.Logging;
 using BepInEx.Configuration;
 using HarmonyLib;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -65,9 +66,24 @@ namespace LootManager
             {
                 if (asm.GetName().Name == "ErenshorQoL")
                 {
+                    var harmonyID = "Brumdail.ErenshorQoLMod";
+                    
                     var lootAllMethod = AccessTools.Method(typeof(LootWindow), nameof(LootWindow.LootAll));
-                    harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, "Brumdail.ErenshorQoLMod");
+                    harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, harmonyID);
                     Log.LogWarning("[LootManager] Unpatched ErenshorQoL LootAll prefix.");
+                    
+                    var doDeathMethod = AccessTools.Method(typeof(Character), "DoDeath", new Type[0]);
+
+                    if (doDeathMethod != null)
+                    {
+                        harmony.Unpatch(doDeathMethod, HarmonyPatchType.Postfix, harmonyID);
+                        Log.LogWarning("[LootManager] Unpatched ErenshorQoL DoDeath postfix.");
+                    }
+                    else
+                    {
+                        Log.LogError("[LootManager] Failed to find Character.DoDeath for unpatching.");
+                    }
+                    
                     break;
                 }
             }

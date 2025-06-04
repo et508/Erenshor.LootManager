@@ -105,11 +105,17 @@ namespace LootManager
                 if (placed)
                 {
                     anyDeposited = true;
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Deposited \"{entry.Name}\" into bank.", "grey");
+                    UpdateSocialLog.LogAdd($"[Loot Manager] Deposited \"{entry.Name}\" into bank.", "lightblue");
                 }
                 else
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Could not deposit \"{entry.Name}\" – no empty slots available.", "red");
+                    // No space found — fallback to inventory
+                    UpdateSocialLog.LogAdd($"[Loot Manager] No bank space. Adding \"{entry.Name}\" to inventory instead.", "orange");
+
+                    var item = GameData.ItemDB.GetItemByID(entry.Id);
+                    StandardLoot.LootToInv(item, entry.Quantity, entry.Name);
+
+
                 }
             }
 

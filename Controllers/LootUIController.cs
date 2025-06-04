@@ -160,10 +160,17 @@ namespace LootManager
             var btnSettings  = Find("panelBG/menuBar/settingBtn")?.GetComponent<Button>();
             var btnBlacklist = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Button>();
             var btnBanklist = Find("panelBG/menuBar/banklistBtn")?.GetComponent<Button>();
+            var closeBtn = Find("panelBG/menuBar/closeBtn")?.GetComponent<Button>();
 
             btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
             btnBanklist?.onClick.AddListener(() => ShowPanel(_banklistPanel));
+            
+            closeBtn?.onClick.AddListener(() =>
+            {
+                if (LootManagerUI.Instance != null)
+                    LootManagerUI.Instance.ToggleUI();
+            });
         }
         
         // Settings Panel
@@ -205,10 +212,10 @@ namespace LootManager
             int defaultIndex = Plugin.AutoLootEnabled.Value ? 0 : 1;
             _autoLootDropdown.SetValueWithoutNotify(defaultIndex);
             
-            UpdateAutoDistanceInteractable();
-
-            _autoLootDropdown.onValueChanged.AddListener(OnAutoLootDropdownChanged);
             _selectedAutoLootMode = _autoLootOptions[defaultIndex];
+            UpdateAutoDistanceInteractable();
+            
+            _autoLootDropdown.onValueChanged.AddListener(OnAutoLootDropdownChanged);
         }
 
         private static void OnAutoLootDropdownChanged(int index)

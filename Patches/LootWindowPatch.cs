@@ -53,7 +53,7 @@ namespace LootManager
                 if (sendToBank)
                 {
                     lootedForBank.Add(new BankLoot.LootEntry(item.Id, qty, name));
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
+                    // UpdateSocialLog.LogAdd($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
                 }
                 else
                 {

@@ -12,47 +12,14 @@ namespace LootManager
             if (string.IsNullOrWhiteSpace(command))
                 return true;
 
-            if (command.StartsWith("/lootadd ", StringComparison.OrdinalIgnoreCase))
+            if (command.Equals("/lootui", StringComparison.OrdinalIgnoreCase))
             {
-                string itemName = command.Substring(9).Trim();
-                if (!string.IsNullOrEmpty(itemName))
-                {
-                    Plugin.Blacklist.Add(itemName);
-                    LootBlacklist.SaveBlacklist();
-                    UpdateSocialLog.LogAdd("[Loot Manager] Added to blacklist: " + itemName, "yellow");
-                }
+                LootManagerUI.Instance?.ToggleUI();
                 ClearInput();
                 return false;
             }
 
-            if (command.StartsWith("/lootremove ", StringComparison.OrdinalIgnoreCase))
-            {
-                string itemName = command.Substring(12).Trim();
-                if (Plugin.Blacklist.Remove(itemName))
-                {
-                    LootBlacklist.SaveBlacklist();
-                    UpdateSocialLog.LogAdd("[Loot Manager] Removed from blacklist: " + itemName, "yellow");
-                }
-                else
-                {
-                    UpdateSocialLog.LogAdd("[Loot Manager] Item not found in blacklist: " + itemName, "yellow");
-                }
-                ClearInput();
-                return false;
-            }
-            
-            if (command.Equals("/lootshow", StringComparison.OrdinalIgnoreCase))
-            {
-                UpdateSocialLog.LogAdd("[Loot Manager] Blacklisted items:", "yellow");
-                foreach (var item in Plugin.Blacklist)
-                {
-                    UpdateSocialLog.LogAdd(" - " + item, "orange");
-                }
-                ClearInput();
-                return false;
-            }
-
-            return true;
+            return true; // continue with default behavior
         }
 
         private static void ClearInput()

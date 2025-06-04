@@ -92,8 +92,19 @@ namespace LootManager
 
         private void OnDestroy()
         {
-            // Unload only the bundle, keep instantiated assets
-            _uiBundle?.Unload(false);
+            if (_uiBundle != null)
+            {
+                _uiBundle.Unload(false);
+                _uiBundle = null;
+            }
+
+            if (_uiRoot != null)
+            {
+                Destroy(_uiRoot);
+                _uiRoot = null;
+            }
+
+            Instance = null;
         }
     }
 }
