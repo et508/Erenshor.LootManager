@@ -1,3 +1,16 @@
+## [2.0.0] - 6/4/2025
+### Added 
+- LootUI - A fully functional UI window to choose all your loot settings and modify your Blacklist and Banklist.
+- Bankloot - Loot directly to your bank or use a filtered banklist to only send the items you want to your bank.
+- Autoloot - Now supporting its own autoloot function.
+
+### LootUI
+- Toggle UI with /lootui or by pressing F6.
+- All loot config settings and modifications to the blacklist and banklist can be done through the user interface.
+
+### Removed
+- No longer supported commands. /lootadd, /lootremove, /lootshow
+
 ## [1.1.1] - 5/25/2025
 ### Added
 - Added a new inventory slot. The Blacklist slot will add items to the blacklist.

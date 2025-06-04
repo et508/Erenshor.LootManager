@@ -6,8 +6,7 @@ namespace LootManager
     public class LootManagerController : MonoBehaviour
     {
         private static LootManagerController _instance;
-
-        // Ensures a single controller exists in the scene.
+        
         public static void Initialize()
         {
             if (_instance == null)
@@ -15,6 +14,7 @@ namespace LootManager
                 var go = new GameObject("LootManager_Controller");
                 _instance = go.AddComponent<LootManagerController>();
                 Object.DontDestroyOnLoad(go);
+                go.AddComponent<LootManagerUI>();
                 _instance.StartCoroutine(_instance.WaitForInventoryAndInit());
             }
         }
