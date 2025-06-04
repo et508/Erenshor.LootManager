@@ -1,3 +1,7 @@
+## [2.0.1] -6/4/2025
+### HOTFIX
+- Patch to fix the Thunderstore install method not installing the proper subfolder. 
+
 ## [2.0.0] - 6/4/2025
 ### Added 
 - LootUI - A fully functional UI window to choose all your loot settings and modify your Blacklist and Banklist.
