@@ -1,4 +1,4 @@
-## [2.0.1] -6/4/2025
+## [2.0.1] - 6/4/2025
 ### HOTFIX
 - Patch to fix the Thunderstore install method not installing the proper subfolder. 
 
