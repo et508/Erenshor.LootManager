@@ -13,15 +13,20 @@ namespace LootManager
         private static GameObject _uiRoot;
 
         // Panels
-        private static GameObject _panelBG;
+        private static GameObject _container;
+        private static GameObject _panelBGsettings;
         private static GameObject _settingsPanel;
+        private static GameObject _panelBGblacklist;
         private static GameObject _blacklistPanel;
+        private static GameObject _panelBGbanklist;
         private static GameObject _banklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
         
         // Drag Handle
-        private static GameObject _dragHangle;
+        private static GameObject _dragHangleSettings;
+        private static GameObject _dragHangleBlacklist;
+        private static GameObject _dragHangleBanklist;
         
         // Autoloot Dropdown
         private static TMP_Dropdown _autoLootDropdown;
@@ -110,16 +115,16 @@ namespace LootManager
         public static void Initialize(GameObject uiRoot)
         {
             _uiRoot = uiRoot;
-
-            _panelBG          = Find("panelBG")?.gameObject;
-            _settingsPanel    = Find("panelBG/settingsPanel")?.gameObject;
-            _blacklistPanel   = Find("panelBG/blacklistPanel")?.gameObject;
-            _banklistPanel    = Find("panelBG/banklistPanel")?.gameObject;
+            
+            _container        = Find("container")?.gameObject;
+            _panelBGsettings = Find("container/panelBGsettings")?.gameObject;
+            _settingsPanel    = Find("container/panelBGsettings/settingsPanel")?.gameObject;
+            _panelBGblacklist = Find("container/panelBGblacklist")?.gameObject;
+            _blacklistPanel   = Find("container/panelBGblacklist")?.gameObject;
+            _panelBGbanklist  = Find("container/panelBGbanklist")?.gameObject;
+            _banklistPanel    = Find("container/panelBGbanklist/banklistPanel")?.gameObject;
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
             _titleImage       = Find("panelBG/titleImage")?.gameObject;
-            _dragHangle       = Find("panelBG/lootUIDragHandle")?.gameObject;
-            
-            AddDragEvents(_dragHangle, _panelBG.GetComponent<RectTransform>());
 
             
             ShowPanel(_settingsPanel);
@@ -131,20 +136,23 @@ namespace LootManager
         {
             _menuBar?.SetActive(true);
             _titleImage?.SetActive(true);
-
+            
+            _panelBGsettings?.SetActive(activePanel == _settingsPanel);
             _settingsPanel?.SetActive(activePanel == _settingsPanel);
+            _panelBGblacklist?.SetActive(activePanel == _blacklistPanel);
             _blacklistPanel?.SetActive(activePanel == _blacklistPanel);
+            _panelBGbanklist?.SetActive(activePanel == _banklistPanel);
             _banklistPanel?.SetActive(activePanel == _banklistPanel);
             
-            var settingBtnOutline = Find("panelBG/menuBar/settingBtn")?.GetComponent<Outline>();
+            var settingBtnOutline = Find("container/menuBar/settingBtn")?.GetComponent<Outline>();
             if (settingBtnOutline != null)
                 settingBtnOutline.enabled = (activePanel == _settingsPanel);
             
-            var blacklistBtnOutline = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Outline>();
+            var blacklistBtnOutline = Find("container/menuBar/blacklistBtn")?.GetComponent<Outline>();
             if (blacklistBtnOutline != null)
                 blacklistBtnOutline.enabled = (activePanel == _blacklistPanel);
             
-            var banklistBtnOutline = Find("panelBG/menuBar/banklistBtn")?.GetComponent<Outline>();
+            var banklistBtnOutline = Find("container/menuBar/banklistBtn")?.GetComponent<Outline>();
             if (banklistBtnOutline != null)
                 banklistBtnOutline.enabled = (activePanel == _banklistPanel);
 
@@ -157,36 +165,40 @@ namespace LootManager
 
         private static void SetupMenuBarButtons()
         {
-            var btnSettings  = Find("panelBG/menuBar/settingBtn")?.GetComponent<Button>();
-            var btnBlacklist = Find("panelBG/menuBar/blacklistBtn")?.GetComponent<Button>();
-            var btnBanklist = Find("panelBG/menuBar/banklistBtn")?.GetComponent<Button>();
-            var closeBtn = Find("panelBG/menuBar/closeBtn")?.GetComponent<Button>();
+            var btnSettings  = Find("container/menuBar/settingBtn")?.GetComponent<Button>();
+            var btnBlacklist = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
+            var btnBanklist = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
 
             btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
             btnBanklist?.onClick.AddListener(() => ShowPanel(_banklistPanel));
+        }
+        
+        // Settings Panel
+        private static void SetupSettingsPanel()
+        {
+            _autoLootDropdown    = Find("container/panelBGsettings/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
+            _autoDistanceSlider  = Find("container/panelBGsettings/settingsPanel/autoDistance")?.GetComponent<Slider>();
+            _autoDistanceText    = Find("container/panelBGsettings/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
+            _lootMethodDropdown  = Find("container/panelBGsettings/settingsPanel/lootMethod")?.GetComponent<TMP_Dropdown>();
+            _bankLootToggle      = Find("container/panelBGsettings/settingsPanel/bankLootToggle")?.GetComponent<Toggle>();
+            _bankMethodDropdown  = Find("container/panelBGsettings/settingsPanel/bankMethodDrop")?.GetComponent<TMP_Dropdown>();
+            _bankPageDropdown    = Find("container/panelBGsettings/settingsPanel/bankPageDrop")?.GetComponent<TMP_Dropdown>();
+            _bankPageFirstSlider = Find("container/panelBGsettings/settingsPanel/bankPageFirst")?.GetComponent<Slider>();
+            _pageFirstText       = Find("container/panelBGsettings/settingsPanel/pageFirstText")?.GetComponent<TextMeshProUGUI>();
+            _bankPageLastSlider  = Find("container/panelBGsettings/settingsPanel/bankPageLast")?.GetComponent<Slider>();
+            _pageLastText        = Find("container/panelBGsettings/settingsPanel/pageLastText")?.GetComponent<TextMeshProUGUI>();
+            _dragHangleSettings  = Find("container/panelBGsettings/lootUIDragHandle")?.gameObject;
+            
+            AddDragEvents(_dragHangleSettings, _container.GetComponent<RectTransform>());
+            
+            var closeBtn = Find("container/panelBGsettings/settingsPanel/closeBtn")?.GetComponent<Button>();
             
             closeBtn?.onClick.AddListener(() =>
             {
                 if (LootManagerUI.Instance != null)
                     LootManagerUI.Instance.ToggleUI();
             });
-        }
-        
-        // Settings Panel
-        private static void SetupSettingsPanel()
-        {
-            _autoLootDropdown = Find("panelBG/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
-            _autoDistanceSlider = Find("panelBG/settingsPanel/autoDistance")?.GetComponent<Slider>();
-            _autoDistanceText   = Find("panelBG/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
-            _lootMethodDropdown = Find("panelBG/settingsPanel/lootMethod")?.GetComponent<TMP_Dropdown>();
-            _bankLootToggle = Find("panelBG/settingsPanel/bankLootToggle")?.GetComponent<Toggle>();
-            _bankMethodDropdown = Find("panelBG/settingsPanel/bankMethodDrop")?.GetComponent<TMP_Dropdown>();
-            _bankPageDropdown = Find("panelBG/settingsPanel/bankPageDrop")?.GetComponent<TMP_Dropdown>();
-            _bankPageFirstSlider = Find("panelBG/settingsPanel/bankPageFirst")?.GetComponent<Slider>();
-            _pageFirstText       = Find("panelBG/settingsPanel/pageFirstText")?.GetComponent<TextMeshProUGUI>();
-            _bankPageLastSlider  = Find("panelBG/settingsPanel/bankPageLast")?.GetComponent<Slider>();
-            _pageLastText        = Find("panelBG/settingsPanel/pageLastText")?.GetComponent<TextMeshProUGUI>();
 
             
             SetupAutoLootDropdown();
@@ -440,11 +452,22 @@ namespace LootManager
         // Blacklist Panel
         private static void SetupBlacklistPanel()
         {
-            _blackitemContent      = Find("panelBG/blacklistPanel/blackitemView/Viewport/blackitemContent");
-            _blacklistContent      = Find("panelBG/blacklistPanel/blacklistView/Viewport/blacklistContent");
-            _blackfilterInput      = Find("panelBG/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
-            _blackaddBtn           = Find("panelBG/blacklistPanel/blackaddBtn")?.GetComponent<Button>();
-            _blackremoveBtn        = Find("panelBG/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
+            _blackitemContent      = Find("container/panelBGblacklist/blacklistPanel/blackitemView/Viewport/blackitemContent");
+            _blacklistContent      = Find("container/panelBGblacklist/blacklistPanel/blacklistView/Viewport/blacklistContent");
+            _blackfilterInput      = Find("container/panelBGblacklist/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
+            _blackaddBtn           = Find("container/panelBGblacklist/blacklistPanel/blackaddBtn")?.GetComponent<Button>();
+            _blackremoveBtn        = Find("container/panelBGblacklist/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
+            _dragHangleBlacklist   = Find("container/panelBGblacklist/lootUIDragHandle")?.gameObject;
+            
+            AddDragEvents(_dragHangleBlacklist, _container.GetComponent<RectTransform>());
+            
+            var closeBtn = Find("container/panelBGblacklist/blacklistPanel/closeBtn")?.GetComponent<Button>();
+            
+            closeBtn?.onClick.AddListener(() =>
+            {
+                if (LootManagerUI.Instance != null)
+                    LootManagerUI.Instance.ToggleUI();
+            });
             
             _blackaddBtn?.onClick.RemoveAllListeners();
             _blackaddBtn?.onClick.AddListener(AddSelectedToBlacklist);
@@ -633,11 +656,22 @@ namespace LootManager
         // Banklist Panel
         private static void SetupBanklistPanel()
         {
-            _bankitemContent      = Find("panelBG/banklistPanel/bankitemView/Viewport/bankitemContent");
-            _banklistContent      = Find("panelBG/banklistPanel/banklistView/Viewport/banklistContent");
-            _bankfilterInput      = Find("panelBG/banklistPanel/banklistFilter")?.GetComponent<TMP_InputField>();
-            _bankaddBtn           = Find("panelBG/banklistPanel/bankaddBtn")?.GetComponent<Button>();
-            _bankremoveBtn        = Find("panelBG/banklistPanel/bankremoveBtn")?.GetComponent<Button>();
+            _bankitemContent      = Find("container/panelBGbanklist/banklistPanel/bankitemView/Viewport/bankitemContent");
+            _banklistContent      = Find("container/panelBGbanklist/banklistPanel/banklistView/Viewport/banklistContent");
+            _bankfilterInput      = Find("container/panelBGbanklist/banklistPanel/banklistFilter")?.GetComponent<TMP_InputField>();
+            _bankaddBtn           = Find("container/panelBGbanklist/banklistPanel/bankaddBtn")?.GetComponent<Button>();
+            _bankremoveBtn        = Find("container/panelBGbanklist/banklistPanel/bankremoveBtn")?.GetComponent<Button>();
+            _dragHangleBanklist   = Find("container/panelBGbanklist/lootUIDragHandle")?.gameObject;
+            
+            AddDragEvents(_dragHangleBanklist, _container.GetComponent<RectTransform>());
+            
+            var closeBtn = Find("container/panelBGbanklist/banklistPanel/closeBtn")?.GetComponent<Button>();
+            
+            closeBtn?.onClick.AddListener(() =>
+            {
+                if (LootManagerUI.Instance != null)
+                    LootManagerUI.Instance.ToggleUI();
+            });
             
             _bankaddBtn?.onClick.RemoveAllListeners();
             _bankaddBtn?.onClick.AddListener(AddSelectedToBanklist);
