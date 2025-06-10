@@ -1,9 +1,6 @@
 ## [2.0.2] -
-### Fixed
-- Using the `/lootui` command to open the UI would not block movement while typing in the search bars. This has now been corrected.
-
 ### LootUI
-- Made some improvement to the UI windows.
+- Made some improvements to the UI windows.
 - Replaced the Autoloot dropdown with a toggle.
 
 ## [2.0.1] - 6/4/2025
