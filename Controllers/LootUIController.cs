@@ -28,10 +28,8 @@ namespace LootManager
         private static GameObject _dragHangleBlacklist;
         private static GameObject _dragHangleBanklist;
         
-        // Autoloot Dropdown
-        private static TMP_Dropdown _autoLootDropdown;
-        private static readonly List<string> _autoLootOptions = new List<string> { "On", "Off" };
-        private static string _selectedAutoLootMode;
+        // Autoloot Toggle
+        private static Toggle _autoLootToggle;
         
         // Autoloot Distance Slider
         private static Slider _autoDistanceSlider;
@@ -167,7 +165,7 @@ namespace LootManager
         {
             var btnSettings  = Find("container/menuBar/settingBtn")?.GetComponent<Button>();
             var btnBlacklist = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
-            var btnBanklist = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
+            var btnBanklist  = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
 
             btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
@@ -177,7 +175,7 @@ namespace LootManager
         // Settings Panel
         private static void SetupSettingsPanel()
         {
-            _autoLootDropdown    = Find("container/panelBGsettings/settingsPanel/autoLootDrop")?.GetComponent<TMP_Dropdown>();
+            _autoLootToggle      = Find("container/panelBGsettings/settingsPanel/autoLootToggle")?.GetComponent<Toggle>();
             _autoDistanceSlider  = Find("container/panelBGsettings/settingsPanel/autoDistance")?.GetComponent<Slider>();
             _autoDistanceText    = Find("container/panelBGsettings/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
             _lootMethodDropdown  = Find("container/panelBGsettings/settingsPanel/lootMethod")?.GetComponent<TMP_Dropdown>();
@@ -201,7 +199,7 @@ namespace LootManager
             });
 
             
-            SetupAutoLootDropdown();
+            SetupAutoLootToggle();
             SetupAutoLootDistanceSlider();
             SetupLootMethodDropdown();
             SetupBankLootToggle();
@@ -210,33 +208,25 @@ namespace LootManager
             SetupBankPageRangeSliders();
         }
         
-        private static void SetupAutoLootDropdown()
+        private static void SetupAutoLootToggle()
         {
-            if (_autoLootDropdown == null)
+            if (_autoLootToggle == null)
             {
-                Debug.LogWarning("[LootUI] autoLootDrop dropdown not found.");
+                Debug.LogWarning("[LootUI] autoLootToggle not found.");
                 return;
             }
-
-            _autoLootDropdown.ClearOptions();
-            _autoLootDropdown.AddOptions(_autoLootOptions);
-
-            int defaultIndex = Plugin.AutoLootEnabled.Value ? 0 : 1;
-            _autoLootDropdown.SetValueWithoutNotify(defaultIndex);
             
-            _selectedAutoLootMode = _autoLootOptions[defaultIndex];
-            UpdateAutoDistanceInteractable();
             
-            _autoLootDropdown.onValueChanged.AddListener(OnAutoLootDropdownChanged);
+            _autoLootToggle.SetIsOnWithoutNotify(Plugin.AutoLootEnabled.Value);
+            _autoLootToggle.onValueChanged.AddListener(OnAutoLootToggleChanged);
         }
 
-        private static void OnAutoLootDropdownChanged(int index)
+        private static void OnAutoLootToggleChanged(bool isOn)
         {
-            if (index < 0 || index >= _autoLootOptions.Count)
-                return;
-
-            _selectedAutoLootMode = _autoLootOptions[index];
-            Plugin.AutoLootEnabled.Value = (_selectedAutoLootMode == "On");
+            Plugin.AutoLootEnabled.Value = isOn;
+            
+            if (_bankMethodDropdown != null)
+                _autoDistanceSlider.interactable = isOn;
             
             UpdateAutoDistanceInteractable();
         }
@@ -269,7 +259,7 @@ namespace LootManager
         
         private static void UpdateAutoDistanceInteractable()
         {
-            bool enabled = _selectedAutoLootMode == "On";
+            bool enabled = Plugin.AutoLootEnabled.Value;
     
             if (_autoDistanceSlider != null)
                 _autoDistanceSlider.interactable = enabled;
