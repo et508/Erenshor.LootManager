@@ -1,3 +1,11 @@
+## [2.0.2] -
+### Fixed
+- Rebuilt plugin using BepInEx 5.4.21.0. Miss matching version warning should not longer appear.
+
+### LootUI
+- Made some improvements to the UI windows.
+- Replaced the Autoloot dropdown with a toggle.
+
 ## [2.0.1] - 6/4/2025
 ### HOTFIX
 - Patch to fix the Thunderstore install method not installing the proper subfolder. 
