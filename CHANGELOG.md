@@ -1,4 +1,4 @@
-## [2.0.2] -
+## [2.0.2] - 6/23/2025
 ### Fixed
 - Rebuilt plugin using BepInEx 5.4.21.0. Miss matching version warning should not longer appear.
 
