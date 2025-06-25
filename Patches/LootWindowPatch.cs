@@ -36,6 +36,15 @@ namespace LootManager
                     continue;
                 }
 
+                if (lootMethod == "Whitelist" && !Plugin.Whitelist.Contains(name))
+                {
+                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    slot.MyItem   = GameData.PlayerInv.Empty;
+                    slot.Quantity = 1;
+                    slot.UpdateSlotImage();
+                    continue;
+                }
+
                 // Decide whether to send item to bank
                 bool sendToBank = false;
                 if (bankLootEnabled)
