@@ -15,6 +15,7 @@ namespace LootManager
     {
         internal static ManualLogSource Log;
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 
@@ -54,6 +55,7 @@ namespace LootManager
 
             // Load loot lists
             LootBlacklist.Load();
+            LootWhitelist.Load();
             LootBanklist.Load();
 
 
@@ -67,17 +69,23 @@ namespace LootManager
                 if (asm.GetName().Name == "ErenshorQoL")
                 {
                     var harmonyID = "Brumdail.ErenshorQoLMod";
-                    
                     var lootAllMethod = AccessTools.Method(typeof(LootWindow), nameof(LootWindow.LootAll));
-                    harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, harmonyID);
-                    Log.LogWarning("[LootManager] Unpatched ErenshorQoL LootAll prefix.");
-                    
                     var doDeathMethod = AccessTools.Method(typeof(Character), "DoDeath", new Type[0]);
+
+                    if (lootAllMethod != null)
+                    {
+                        harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, harmonyID);
+                        Log.LogWarning("[Loot Manager] Unpatched ErenshorQoL LootAll prefix.");
+                    }
+                    else
+                    {
+                        Log.LogError("[Loot Manager] Failed to find LootWindow.LootAll for unpatching.");
+                    }
 
                     if (doDeathMethod != null)
                     {
                         harmony.Unpatch(doDeathMethod, HarmonyPatchType.Postfix, harmonyID);
-                        Log.LogWarning("[LootManager] Unpatched ErenshorQoL DoDeath postfix.");
+                        Log.LogWarning("[Loot Manager] Unpatched ErenshorQoL DoDeath postfix.");
                     }
                     else
                     {

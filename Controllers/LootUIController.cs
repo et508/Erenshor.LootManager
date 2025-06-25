@@ -79,6 +79,11 @@ namespace LootManager
         private static Button _blackaddBtn;
         private static Button _blackremoveBtn;
         
+        
+        
+        
+        
+        
         // Banklist viewports
         private static Transform _bankitemContent;
         private static Transform _banklistContent;
