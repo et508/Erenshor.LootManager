@@ -45,7 +45,7 @@ namespace LootManager
 
         public static void SaveWhitelist()
         {
-            var data = new LootBlacklistData { items = new List<string>(Plugin.Whitelist) };
+            var data = new LootWhitelistData { items = new List<string>(Plugin.Whitelist) };
             string json = JsonUtility.ToJson(data, true);
             string path = Path.Combine(Paths.ConfigPath, WhitelistFileName);
             File.WriteAllText(path, json);

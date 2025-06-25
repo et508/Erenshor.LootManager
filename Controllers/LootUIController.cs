@@ -31,7 +31,7 @@ namespace LootManager
         private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
         
-        // Drag Handle
+        // Drag Handles
         private static GameObject _dragHangleSettings;
         private static GameObject _dragHangleBlacklist;
         private static GameObject _dragHangleWhitelist;
@@ -85,6 +85,18 @@ namespace LootManager
         
         
         
+        // Whitelist viewports
+        private static Transform _whiteitemContent;
+        private static Transform _whitelistContent;
+        
+        // Whitelist Search filter input
+        private static TMP_InputField _whitefilterInput;
+        
+        // Whitelist add and remove buttons
+        private static Button _whiteaddBtn;
+        private static Button _whiteremoveBtn;
+        
+        
         
         
         
@@ -113,10 +125,12 @@ namespace LootManager
         // Data
         private static List<string> _allItems = new List<string>();
         private static HashSet<string> _blacklist => Plugin.Blacklist;
+        private static HashSet<string> _whitelist => Plugin.Whitelist;
         private static HashSet<string> _banklist => Plugin.Banklist;
 
         // Selection tracking
         private static List<(Text text, bool isBlacklist)> _selectedBlackEntries = new List<(Text text, bool isBlacklist)>();
+        private static List<(Text text, bool isWhitelist)> _selectedWhiteEntries = new List<(Text text, bool isWhitelist)>();
         private static List<(Text text, bool isBanklist)> _selectedBankEntries = new List<(Text text, bool isBanklist)>();
         
         // Double click detection
@@ -178,6 +192,9 @@ namespace LootManager
 
             if (activePanel == _blacklistPanel)
                 SetupBlacklistPanel();
+            
+            if (activePanel == _whitelistPanel)
+                SetupWhitelistPanel();
             
             if (activePanel == _banklistPanel)
                 SetupBanklistPanel();
@@ -561,12 +578,6 @@ namespace LootManager
                 CreateItemEntryBlacklist(_blacklistContent, item, isBlacklist: true);
             }
         }
-
-        private static void ClearList(Transform content)
-        {
-            foreach (Transform child in content)
-                GameObject.Destroy(child.gameObject);
-        }
         
         private static void CreateItemEntryBlacklist(Transform parent, string itemName, bool isBlacklist)
         {
@@ -686,7 +697,211 @@ namespace LootManager
         }
         
         
+        
+        
+        
+        
         // Whitelist Panel
+        private static void SetupWhitelistPanel()
+        {
+            _whiteitemContent      = Find("container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
+            _whitelistContent      = Find("container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
+            _whitefilterInput      = Find("container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
+            _whiteaddBtn           = Find("container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
+            _whiteremoveBtn        = Find("container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
+            _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
+            
+            AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
+            
+            var closeBtn = Find("container/panelBGwhitelist/whitelistPanel/closeBtn")?.GetComponent<Button>();
+            
+            closeBtn?.onClick.AddListener(() =>
+            {
+                if (LootManagerUI.Instance != null)
+                    LootManagerUI.Instance.ToggleUI();
+            });
+            
+            _whiteaddBtn?.onClick.RemoveAllListeners();
+            _whiteaddBtn?.onClick.AddListener(AddSelectedToWhitelist);
+            
+            _whiteremoveBtn?.onClick.RemoveAllListeners();
+            _whiteremoveBtn?.onClick.AddListener(RemoveSelectedFromWhitelist);
+
+            if (_whiteitemContent == null || _whitelistContent == null)
+            {
+                Debug.LogError("[LootUI] One or more content panels not found. Check prefab paths.");
+                return;
+            }
+
+            _allItems = GameData.ItemDB.ItemDB
+                .Where(item => !string.IsNullOrWhiteSpace(item.ItemName))
+                .Select(item => item.ItemName)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            if (_whitefilterInput != null)
+            {
+                _whitefilterInput.onValueChanged.RemoveAllListeners();
+                _whitefilterInput.onValueChanged.AddListener(delegate { RefreshWhitelistUI(); });
+            }
+
+            RefreshWhitelistUI();
+        }
+        
+        private static void RefreshWhitelistUI()
+        {
+            ClearList(_whiteitemContent);
+            ClearList(_whitelistContent);
+            _selectedWhiteEntries.Clear();
+
+            string filter = _whitefilterInput?.text?.ToLowerInvariant() ?? string.Empty;
+
+            var filteredItems = string.IsNullOrEmpty(filter)
+                ? _allItems
+                : _allItems.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+
+            var filteredWhitelist = _whitelist
+                .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
+                .OrderBy(item => item)
+                .ToList();
+
+            foreach (var item in filteredItems)
+            {
+                if (!filteredWhitelist.Contains(item))
+                    CreateItemEntryWhitelist(_whiteitemContent, item, isWhitelist: false);
+            }
+
+            foreach (var item in filteredWhitelist)
+            {
+                CreateItemEntryWhitelist(_whitelistContent, item, isWhitelist: true);
+            }
+        }
+        
+        private static void CreateItemEntryWhitelist(Transform parent, string itemName, bool isWhitelist)
+        {
+            GameObject go = new GameObject(itemName);
+            go.transform.SetParent(parent, false);
+
+            var text = go.AddComponent<Text>();
+            text.text = itemName;
+            text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            text.color = isWhitelist ? Color.red : Color.white;
+            text.fontSize = 14;
+
+            var button = go.AddComponent<Button>();
+            button.onClick.AddListener(() =>
+            {
+                float time = Time.time;
+                bool isDoubleClick = _lastClickTime.TryGetValue(itemName, out float lastClick) && (time - lastClick < DoubleClickThreshold);
+                _lastClickTime[itemName] = time;
+
+                if (isDoubleClick)
+                {
+                    if (isWhitelist)
+                    {
+                        Plugin.Whitelist.Remove(itemName);
+                        LootWhitelist.SaveWhitelist();
+                        UpdateSocialLog.LogAdd($"[LootUI] Removed from whitelist: {itemName}", "yellow");
+                    }
+                    else
+                    {
+                        Plugin.Whitelist.Add(itemName);
+                        LootWhitelist.SaveWhitelist();
+                        UpdateSocialLog.LogAdd($"[LootUI] Added to whitelist: {itemName}", "yellow");
+                    }
+
+                    RefreshWhitelistUI();
+                    return;
+                }
+
+                bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                bool alreadySelected = _selectedWhiteEntries.Any(entry => entry.text == text);
+
+                if (ctrlHeld)
+                {
+                    if (alreadySelected)
+                    {
+                        text.color = isWhitelist ? Color.red : Color.white;
+                        _selectedWhiteEntries.RemoveAll(entry => entry.text == text);
+                    }
+                    else
+                    {
+                        text.color = Color.green;
+                        _selectedWhiteEntries.Add((text, isWhitelist));
+                    }
+                }
+                else
+                {
+                    foreach (var (selectedText, wasWhitelist) in _selectedWhiteEntries)
+                    {
+                        selectedText.color = wasWhitelist ? Color.red : Color.white;
+                    }
+
+                    _selectedWhiteEntries.Clear();
+
+                    text.color = Color.green;
+                    _selectedWhiteEntries.Add((text, isWhitelist));
+                }
+            });
+
+        }
+        
+        private static void AddSelectedToWhitelist()
+        {
+            var added = false;
+            foreach (var (text, _) in _selectedWhiteEntries.ToList())
+            {
+                if (!Plugin.Whitelist.Contains(text.text))
+                {
+                    Plugin.Whitelist.Add(text.text);
+                    added = true;
+                }
+            }
+
+            if (added)
+            {
+                LootWhitelist.SaveWhitelist();
+                RefreshWhitelistUI();
+                UpdateSocialLog.LogAdd("[LootUI] Added selected items to whitelist.", "yellow");
+            }
+            else
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+            }
+        }
+        
+        private static void RemoveSelectedFromWhitelist()
+        {
+            var removed = false;
+            foreach (var (text, _) in _selectedWhiteEntries.ToList())
+            {
+                if (Plugin.Whitelist.Contains(text.text))
+                {
+                    Plugin.Whitelist.Remove(text.text);
+                    removed = true;
+                }
+            }
+
+            if (removed)
+            {
+                LootWhitelist.SaveWhitelist();
+                RefreshWhitelistUI();
+                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from whitelist.", "yellow");
+            }
+            else
+            {
+                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+            }
+        }
+        
+        
+        
+        
+        
+        
+        
+        
         
         
         
@@ -901,16 +1116,12 @@ namespace LootManager
         
         
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        // Clear list 
+        private static void ClearList(Transform content)
+        {
+            foreach (Transform child in content)
+                GameObject.Destroy(child.gameObject);
+        }
         
         // Window Dragging
         private static void AddDragEvents(GameObject dragHandle, RectTransform panelToMove)
