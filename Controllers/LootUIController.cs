@@ -23,6 +23,11 @@ namespace LootManager
         private static GameObject _menuBar;
         private static GameObject _titleImage;
         
+        // Menu Buttons
+        private static Button _menuSettingsBtn;
+        private static Button _menuBlacklistBtn;
+        private static Button _menuBanklistBtn;
+        
         // Drag Handle
         private static GameObject _dragHangleSettings;
         private static GameObject _dragHangleBlacklist;
@@ -163,13 +168,24 @@ namespace LootManager
 
         private static void SetupMenuBarButtons()
         {
-            var btnSettings  = Find("container/menuBar/settingBtn")?.GetComponent<Button>();
-            var btnBlacklist = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
-            var btnBanklist  = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
+            _menuSettingsBtn  = Find("container/menuBar/settingBtn")?.GetComponent<Button>();
+            _menuBlacklistBtn = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
+            _menuBanklistBtn  = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
 
-            btnSettings?.onClick.AddListener(() => ShowPanel(_settingsPanel));
-            btnBlacklist?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
-            btnBanklist?.onClick.AddListener(() => ShowPanel(_banklistPanel));
+            _menuSettingsBtn?.onClick.AddListener(() => ShowPanel(_settingsPanel));
+            _menuBlacklistBtn?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
+            _menuBanklistBtn?.onClick.AddListener(() => ShowPanel(_banklistPanel));
+        }
+
+        private static void MenuBarButtonState()
+        {
+            bool allowBlacklist = _selectedLootMethod == "Blacklist";
+            if (_menuBlacklistBtn != null)
+                _menuBlacklistBtn?.gameObject.SetActive(allowBlacklist);
+
+            bool allowBanklist = Plugin.BankLootEnabled.Value;
+            if (_menuBanklistBtn != null)
+                _menuBanklistBtn?.gameObject.SetActive(allowBanklist);
         }
         
         // Settings Panel
@@ -282,6 +298,8 @@ namespace LootManager
             _selectedLootMethod = _lootMethodOptions[defaultIndex];
 
             _lootMethodDropdown.onValueChanged.AddListener(OnLootMethodDropdownChanged);
+            
+            MenuBarButtonState();
         }
         
         private static void OnLootMethodDropdownChanged(int index)
@@ -291,6 +309,8 @@ namespace LootManager
 
             _selectedLootMethod = _lootMethodOptions[index];
             Plugin.LootMethod.Value = _selectedLootMethod;
+            
+            MenuBarButtonState();
         }
         
         private static void SetupBankLootToggle()
@@ -303,6 +323,8 @@ namespace LootManager
 
             _bankLootToggle.SetIsOnWithoutNotify(Plugin.BankLootEnabled.Value);
             _bankLootToggle.onValueChanged.AddListener(OnBankLootToggleChanged);
+            
+            MenuBarButtonState();
         }
         
         private static void OnBankLootToggleChanged(bool isOn)
@@ -317,6 +339,7 @@ namespace LootManager
                 _bankPageDropdown.interactable = isOn;
             
             UpdateBankPageSliderInteractable();
+            MenuBarButtonState();
         }
         
         private static void SetupBankMethodDropdown()
