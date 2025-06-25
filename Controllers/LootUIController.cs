@@ -18,6 +18,8 @@ namespace LootManager
         private static GameObject _settingsPanel;
         private static GameObject _panelBGblacklist;
         private static GameObject _blacklistPanel;
+        private static GameObject _panelBGwhitelist;
+        private static GameObject _whitelistPanel;
         private static GameObject _panelBGbanklist;
         private static GameObject _banklistPanel;
         private static GameObject _menuBar;
@@ -26,11 +28,13 @@ namespace LootManager
         // Menu Buttons
         private static Button _menuSettingsBtn;
         private static Button _menuBlacklistBtn;
+        private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
         
         // Drag Handle
         private static GameObject _dragHangleSettings;
         private static GameObject _dragHangleBlacklist;
+        private static GameObject _dragHangleWhitelist;
         private static GameObject _dragHangleBanklist;
         
         // Autoloot Toggle
@@ -42,7 +46,7 @@ namespace LootManager
         
         // Loot Method Dropdown
         private static TMP_Dropdown _lootMethodDropdown;
-        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Standard" }; // replace "Whitelist" once implemented
+        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" }; // replace "Whitelist" once implemented
         private static string _selectedLootMethod;
         
         // Bankloot Toggle
@@ -128,7 +132,9 @@ namespace LootManager
             _panelBGsettings = Find("container/panelBGsettings")?.gameObject;
             _settingsPanel    = Find("container/panelBGsettings/settingsPanel")?.gameObject;
             _panelBGblacklist = Find("container/panelBGblacklist")?.gameObject;
-            _blacklistPanel   = Find("container/panelBGblacklist")?.gameObject;
+            _blacklistPanel   = Find("container/panelBGblacklist/blacklistPanel")?.gameObject;
+            _panelBGwhitelist = Find("container/panelBGwhitelist")?.gameObject;
+            _whitelistPanel   = Find("container/panelBGwhitelist/whitelistPanel")?.gameObject;
             _panelBGbanklist  = Find("container/panelBGbanklist")?.gameObject;
             _banklistPanel    = Find("container/panelBGbanklist/banklistPanel")?.gameObject;
             _menuBar          = Find("panelBG/menuBar")?.gameObject;
@@ -149,6 +155,8 @@ namespace LootManager
             _settingsPanel?.SetActive(activePanel == _settingsPanel);
             _panelBGblacklist?.SetActive(activePanel == _blacklistPanel);
             _blacklistPanel?.SetActive(activePanel == _blacklistPanel);
+            _panelBGwhitelist?.SetActive(activePanel == _whitelistPanel);
+            _whitelistPanel?.SetActive(activePanel == _whitelistPanel);
             _panelBGbanklist?.SetActive(activePanel == _banklistPanel);
             _banklistPanel?.SetActive(activePanel == _banklistPanel);
             
@@ -159,6 +167,10 @@ namespace LootManager
             var blacklistBtnOutline = Find("container/menuBar/blacklistBtn")?.GetComponent<Outline>();
             if (blacklistBtnOutline != null)
                 blacklistBtnOutline.enabled = (activePanel == _blacklistPanel);
+            
+            var whitelistBtnOutline = Find("container/menuBar/whitelistBtn")?.GetComponent<Outline>();
+            if (whitelistBtnOutline != null)
+                whitelistBtnOutline.enabled = (activePanel == _whitelistPanel);
             
             var banklistBtnOutline = Find("container/menuBar/banklistBtn")?.GetComponent<Outline>();
             if (banklistBtnOutline != null)
@@ -175,10 +187,12 @@ namespace LootManager
         {
             _menuSettingsBtn  = Find("container/menuBar/settingBtn")?.GetComponent<Button>();
             _menuBlacklistBtn = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
+            _menuWhitelistBtn = Find("container/menuBar/whitelistBtn")?.GetComponent<Button>();
             _menuBanklistBtn  = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
 
             _menuSettingsBtn?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             _menuBlacklistBtn?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
+            _menuWhitelistBtn?.onClick.AddListener(() => ShowPanel(_whitelistPanel));
             _menuBanklistBtn?.onClick.AddListener(() => ShowPanel(_banklistPanel));
         }
 
@@ -187,6 +201,10 @@ namespace LootManager
             bool allowBlacklist = _selectedLootMethod == "Blacklist";
             if (_menuBlacklistBtn != null)
                 _menuBlacklistBtn?.gameObject.SetActive(allowBlacklist);
+            
+            bool allowWhitelist = _selectedLootMethod == "Whitelist";
+            if (_menuWhitelistBtn != null)
+                _menuWhitelistBtn?.gameObject.SetActive(allowWhitelist);
 
             bool allowBanklist = Plugin.BankLootEnabled.Value;
             if (_menuBanklistBtn != null)
@@ -666,6 +684,12 @@ namespace LootManager
                 UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
             }
         }
+        
+        
+        // Whitelist Panel
+        
+        
+        
         
         
         
