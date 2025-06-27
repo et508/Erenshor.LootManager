@@ -17,6 +17,9 @@ namespace LootManager
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, HashSet<string>> FilterList = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+
+
 
 
         // Config entries
@@ -57,6 +60,8 @@ namespace LootManager
             LootBlacklist.Load();
             LootWhitelist.Load();
             LootBanklist.Load();
+            LootFilterlist.Load();
+
 
 
             Log.LogInfo("Loot Manager loaded.");

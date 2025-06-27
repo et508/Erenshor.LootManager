@@ -82,6 +82,7 @@
       <Compile Include="LootCommands.cs" />
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />
+      <Compile Include="LootLists\LootFilterlist.cs" />
       <Compile Include="LootLists\LootWhitelist.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
       <Compile Include="LootMethods\StandardLoot.cs" />
