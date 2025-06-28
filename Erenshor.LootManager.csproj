@@ -80,6 +80,7 @@
       <Compile Include="Controllers\LootManagerController.cs" />
       <Compile Include="Controllers\LootUIController.cs" />
       <Compile Include="LootCommands.cs" />
+      <Compile Include="LootEnums.cs" />
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />
       <Compile Include="LootLists\LootFilterlist.cs" />

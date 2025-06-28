@@ -46,7 +46,7 @@ namespace LootManager
         
         // Loot Method Dropdown
         private static TMP_Dropdown _lootMethodDropdown;
-        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" }; // replace "Whitelist" once implemented
+        private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
         private static string _selectedLootMethod;
         
         // Bankloot Toggle
@@ -96,8 +96,15 @@ namespace LootManager
         private static Button _whiteaddBtn;
         private static Button _whiteremoveBtn;
         
+        
+        
         // Loot equipment toggle
         private static Toggle _lootequipToggle;
+        
+        // Loot equipment tier dropdown
+        private static TMP_Dropdown _equipmenttierDropdown;
+        private static readonly List<string> _equipmenttierOptions = new List<string> { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and up" };
+        private static string _selectedequipmenttier;
         
         
         
@@ -713,6 +720,7 @@ namespace LootManager
             _whiteaddBtn           = Find("container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
             _whiteremoveBtn        = Find("container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
             _lootequipToggle       = Find("container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
+            _equipmenttierDropdown = Find("container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
@@ -752,6 +760,7 @@ namespace LootManager
 
             RefreshWhitelistUI();
             SetupLootEquipToggle();
+            SetupEquipmentTierDropdown();
         }
 
         private static void SetupLootEquipToggle()
@@ -777,6 +786,38 @@ namespace LootManager
             
           // UpdateAutoDistanceInteractable();
         }
+        
+        private static void SetupEquipmentTierDropdown()
+        {
+            if (_equipmenttierDropdown == null)
+            {
+                Debug.LogWarning("[LootUI] equipmenttier dropdown not found.");
+                return;
+            }
+
+            _equipmenttierDropdown.ClearOptions();
+            _equipmenttierDropdown.AddOptions(_equipmenttierOptions);
+
+            int defaultIndex = (int)Plugin.LootEquipmentTier.Value;
+            
+            if (defaultIndex < 0 || defaultIndex >= _equipmenttierOptions.Count)
+                defaultIndex = 0;
+            
+            _equipmenttierDropdown.SetValueWithoutNotify(defaultIndex);
+            _selectedequipmenttier = _equipmenttierOptions[defaultIndex];
+
+            _equipmenttierDropdown.onValueChanged.AddListener(OnEquipmentTierDropdownChanged);
+        }
+        
+        private static void OnEquipmentTierDropdownChanged(int index)
+        {
+            if (index < 0 || index >= _equipmenttierOptions.Count)
+                return;
+
+            _selectedequipmenttier = _equipmenttierOptions[index];
+            Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)index;
+        }
+
         
         private static void RefreshWhitelistUI()
         {

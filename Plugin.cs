@@ -32,6 +32,7 @@ namespace LootManager
         public static ConfigEntry<int> BankPageFirst;
         public static ConfigEntry<int> BankPageLast;
         public static ConfigEntry<bool> LootEquipment;
+        public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
 
 
 
@@ -52,6 +53,9 @@ namespace LootManager
             BankPageFirst = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
             BankPageLast = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
             LootEquipment = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
+            LootEquipmentTier = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            
+            
 
 
 

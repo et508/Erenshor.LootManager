@@ -1,3 +1,20 @@
+## [2.1.0] - TBD
+### Added
+- The Whitelist loot method has been implemented. 
+
+### Loot UI
+- Menu buttons will now be active or disabled dependent on settings.
+- Whitelist UI has been added.
+- Whitelist Menu
+    - Equipment Toggle
+    - Equipment Tier Dropdown
+
+### Loot Method - Whitelist
+- Story Items - Story items will not be destroyed.
+- Equipment Toggle - Loot all equipable items.
+- Equipment Tier - Filter equipment looting by tier.
+
+
 ## [2.0.2] - 6/23/2025
 ### Fixed
 - Rebuilt plugin using BepInEx 5.4.21.0. Miss matching version warning should not longer appear.

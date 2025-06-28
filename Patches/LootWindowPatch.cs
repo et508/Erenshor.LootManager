@@ -36,7 +36,7 @@ namespace LootManager
                     continue;
                 }
 
-                if (lootMethod == "Whitelist" && !WhitelistLoot.ShouldLoot(item))
+                if (lootMethod == "Whitelist" && !WhitelistLoot.ShouldLoot(item, qty))
                 {
                     UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;
