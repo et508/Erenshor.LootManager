@@ -4,8 +4,8 @@
 
 ### Loot UI
 - Menu buttons will now be active or disabled dependent on settings.
-- Whitelist UI has been added.
-- Whitelist Menu
+- Whitelist UI Menu
+    - Whitelist Transfer List
     - Equipment Toggle
     - Equipment Tier Dropdown
 
