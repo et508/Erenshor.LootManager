@@ -96,6 +96,9 @@ namespace LootManager
         private static Button _whiteaddBtn;
         private static Button _whiteremoveBtn;
         
+        // Loot equipment toggle
+        private static Toggle _lootequipToggle;
+        
         
         
         
@@ -709,6 +712,7 @@ namespace LootManager
             _whitefilterInput      = Find("container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
             _whiteaddBtn           = Find("container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
             _whiteremoveBtn        = Find("container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
+            _lootequipToggle       = Find("container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
@@ -747,6 +751,31 @@ namespace LootManager
             }
 
             RefreshWhitelistUI();
+            SetupLootEquipToggle();
+        }
+
+        private static void SetupLootEquipToggle()
+        {
+            if (_lootequipToggle == null)
+            {
+                Debug.LogWarning("[LootUI] lootequipToggle not found.");
+                return;
+            }
+            
+            
+            _lootequipToggle.SetIsOnWithoutNotify(Plugin.LootEquipment.Value);
+            _lootequipToggle.onValueChanged.AddListener(OnLootEquipToggleChanged);
+            
+        }
+        
+        private static void OnLootEquipToggleChanged(bool isOn)
+        {
+            Plugin.LootEquipment.Value = isOn;
+            
+          //  if (_bankMethodDropdown != null)
+          //      _autoDistanceSlider.interactable = isOn;
+            
+          // UpdateAutoDistanceInteractable();
         }
         
         private static void RefreshWhitelistUI()
