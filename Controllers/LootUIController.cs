@@ -900,7 +900,7 @@ namespace LootManager
                 {
                     if (alreadySelected)
                     {
-                        text.color = isWhitelist ? Color.red : Color.white;
+                        text.color = isWhitelist ? Color.white : Color.red;
                         _selectedWhiteEntries.RemoveAll(entry => entry.text == text);
                     }
                     else
@@ -913,7 +913,7 @@ namespace LootManager
                 {
                     foreach (var (selectedText, wasWhitelist) in _selectedWhiteEntries)
                     {
-                        selectedText.color = wasWhitelist ? Color.red : Color.white;
+                        selectedText.color = wasWhitelist ? Color.white : Color.red;
                     }
 
                     _selectedWhiteEntries.Clear();
