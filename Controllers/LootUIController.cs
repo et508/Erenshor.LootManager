@@ -106,6 +106,11 @@ namespace LootManager
         private static readonly List<string> _equipmenttierOptions = new List<string> { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and up" };
         private static string _selectedequipmenttier;
         
+        // Filterlist viewport
+        private static Transform _filterlistContent;
+        private static Toggle _filterCategoryToggle;
+
+        
         
         
         
@@ -721,6 +726,8 @@ namespace LootManager
             _whiteremoveBtn        = Find("container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
             _lootequipToggle       = Find("container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
             _equipmenttierDropdown = Find("container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
+            _filterlistContent     = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
+            _filterCategoryToggle  = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
@@ -761,6 +768,7 @@ namespace LootManager
             RefreshWhitelistUI();
             SetupLootEquipToggle();
             SetupEquipmentTierDropdown();
+            SetupFilterListContent();
         }
 
         private static void SetupLootEquipToggle()
@@ -856,7 +864,7 @@ namespace LootManager
             var text = go.AddComponent<Text>();
             text.text = itemName;
             text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            text.color = isWhitelist ? Color.red : Color.white;
+            text.color = isWhitelist ? Color.white : Color.red;
             text.fontSize = 14;
 
             var button = go.AddComponent<Button>();
@@ -964,6 +972,54 @@ namespace LootManager
                 UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
             }
         }
+        
+        private static void SetupFilterListContent()
+        {
+            if (_filterlistContent == null || _filterCategoryToggle == null)
+            {
+                Debug.LogWarning("[LootUI] Missing filterlistContent or template.");
+                return;
+            }
+
+            // Clear existing toggles
+            foreach (Transform child in _filterlistContent)
+            {
+                if (child != _filterCategoryToggle.transform)
+                    GameObject.Destroy(child.gameObject);
+            }
+
+            foreach (var category in Plugin.FilterList.Keys.Reverse())
+            {
+                Toggle toggleInstance = GameObject.Instantiate(_filterCategoryToggle, _filterlistContent);
+                GameObject toggleGO = toggleInstance.gameObject;
+                toggleGO.name = $"Toggle_{category}";
+                toggleGO.SetActive(true);
+                
+                var toggle = toggleInstance;
+                var label = toggleGO.GetComponentInChildren<Text>();
+                if (label != null)
+                    label.text = category;
+
+                // Set toggle state based on saved preferences
+                bool isEnabled = Plugin.EnabledFilterCategories.Contains(category);
+                toggle.isOn = isEnabled;
+
+                toggle.onValueChanged.RemoveAllListeners();
+                toggle.onValueChanged.AddListener((value) =>
+                {
+                    if (value)
+                        Plugin.EnabledFilterCategories.Add(category);
+                    else
+                        Plugin.EnabledFilterCategories.Remove(category);
+                });
+            }
+            
+            // **CRUCIAL**: Rebuild layouts so content rect resizes to fit
+            Canvas.ForceUpdateCanvases();
+            RectTransform contentRT = _filterlistContent.GetComponent<RectTransform>();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRT);
+        }
+
         
         
         

@@ -18,6 +18,8 @@ namespace LootManager
         internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static Dictionary<string, HashSet<string>> FilterList = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> EnabledFilterCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
 
 
 
@@ -67,6 +69,10 @@ namespace LootManager
             LootWhitelist.Load();
             LootBanklist.Load();
             LootFilterlist.Load();
+            
+            // Enable all categories by default
+            EnabledFilterCategories = new HashSet<string>(FilterList.Keys, StringComparer.OrdinalIgnoreCase);
+
 
 
 

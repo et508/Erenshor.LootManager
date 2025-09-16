@@ -36,11 +36,15 @@ namespace LootManager
                 return true;
 
             // FilterList check (all active categories)
-            foreach (var category in Plugin.FilterList.Values)
+            foreach (var kvp in Plugin.FilterList)
             {
-                if (category.Contains(itemName))
+                if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))
+                    continue; // Skip if not enabled
+
+                if (kvp.Value.Contains(item.ItemName))
                     return true;
             }
+
 
             return false;
         }
