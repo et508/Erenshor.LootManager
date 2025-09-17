@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.0.2")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.1.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -18,7 +18,7 @@ namespace LootManager
         internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static Dictionary<string, HashSet<string>> FilterList = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        public static HashSet<string> EnabledFilterCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> EnabledFilterGroups = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
 
 
@@ -71,7 +71,7 @@ namespace LootManager
             LootFilterlist.Load();
             
             // Enable all categories by default
-            EnabledFilterCategories = new HashSet<string>(FilterList.Keys, StringComparer.OrdinalIgnoreCase);
+            EnabledFilterGroups = new HashSet<string>(FilterList.Keys, StringComparer.OrdinalIgnoreCase);
 
 
 

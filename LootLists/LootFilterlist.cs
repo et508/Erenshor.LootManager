@@ -25,7 +25,7 @@ namespace LootManager
             }
 
             var result = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            string currentCategory = null;
+            string currentGroup = null;
 
             try
             {
@@ -41,23 +41,23 @@ namespace LootManager
                     // Section headers
                     if (line.StartsWith("[") && line.EndsWith("]"))
                     {
-                        currentCategory = line.Substring(1, line.Length - 2).Trim().ToUpperInvariant();
+                        currentGroup = line.Substring(1, line.Length - 2).Trim().ToUpperInvariant();
 
-                        if (!result.ContainsKey(currentCategory))
-                            result[currentCategory] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        if (!result.ContainsKey(currentGroup))
+                            result[currentGroup] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                         continue;
                     }
 
                     // Item line
-                    if (currentCategory != null)
+                    if (currentGroup != null)
                     {
-                        result[currentCategory].Add(line);
+                        result[currentGroup].Add(line);
                     }
                 }
 
                 Plugin.FilterList = result;
-                Plugin.Log.LogInfo($"Loaded {result.Count} filter categories.");
+                Plugin.Log.LogInfo($"Loaded {result.Count} filter groups.");
             }
             catch (Exception ex)
             {

@@ -108,7 +108,7 @@ namespace LootManager
         
         // Filterlist viewport
         private static Transform _filterlistContent;
-        private static Toggle _filterCategoryToggle;
+        private static Toggle _filterGroupToggle;
 
         
         
@@ -727,7 +727,7 @@ namespace LootManager
             _lootequipToggle       = Find("container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
             _equipmenttierDropdown = Find("container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
             _filterlistContent     = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
-            _filterCategoryToggle  = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
+            _filterGroupToggle  = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
@@ -975,7 +975,7 @@ namespace LootManager
         
         private static void SetupFilterListContent()
         {
-            if (_filterlistContent == null || _filterCategoryToggle == null)
+            if (_filterlistContent == null || _filterGroupToggle == null)
             {
                 Debug.LogWarning("[LootUI] Missing filterlistContent or template.");
                 return;
@@ -984,13 +984,13 @@ namespace LootManager
             // Clear existing toggles
             foreach (Transform child in _filterlistContent)
             {
-                if (child != _filterCategoryToggle.transform)
+                if (child != _filterGroupToggle.transform)
                     GameObject.Destroy(child.gameObject);
             }
 
             foreach (var category in Plugin.FilterList.Keys.Reverse())
             {
-                Toggle toggleInstance = GameObject.Instantiate(_filterCategoryToggle, _filterlistContent);
+                Toggle toggleInstance = GameObject.Instantiate(_filterGroupToggle, _filterlistContent);
                 GameObject toggleGO = toggleInstance.gameObject;
                 toggleGO.name = $"Toggle_{category}";
                 toggleGO.SetActive(true);
@@ -1001,16 +1001,16 @@ namespace LootManager
                     label.text = category;
 
                 // Set toggle state based on saved preferences
-                bool isEnabled = Plugin.EnabledFilterCategories.Contains(category);
+                bool isEnabled = Plugin.EnabledFilterGroups.Contains(category);
                 toggle.isOn = isEnabled;
 
                 toggle.onValueChanged.RemoveAllListeners();
                 toggle.onValueChanged.AddListener((value) =>
                 {
                     if (value)
-                        Plugin.EnabledFilterCategories.Add(category);
+                        Plugin.EnabledFilterGroups.Add(category);
                     else
-                        Plugin.EnabledFilterCategories.Remove(category);
+                        Plugin.EnabledFilterGroups.Remove(category);
                 });
             }
             

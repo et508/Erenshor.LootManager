@@ -8,6 +8,7 @@
     - Whitelist Transfer List
     - Equipment Toggle
     - Equipment Tier Dropdown
+    - Filterlist Group Toggles
 
 ### Loot Method - Whitelist
 - Story Items - Story items will not be destroyed.
