@@ -1,6 +1,10 @@
 ## [2.1.0] - TBD
 ### Added
 - The Whitelist loot method has been implemented. 
+- New Loot Manager(Name TBD) button added to the inventory window.
+
+### Removed
+- Removed the Blacklist Slot from the inventory window.
 
 ### Loot UI
 - Menu buttons will now be active or disabled dependent on settings.
