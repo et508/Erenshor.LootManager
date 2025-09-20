@@ -14,6 +14,8 @@
 - Story Items - Story items will not be destroyed.
 - Equipment Toggle - Loot all equipable items.
 - Equipment Tier - Filter equipment looting by tier.
+- Filterlist Groups - Groups of items to loot. 
+    - Groups can be toggled on and off.
 
 
 ## [2.0.2] - 6/23/2025
