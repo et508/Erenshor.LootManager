@@ -93,7 +93,8 @@
       <Compile Include="Patches\TrashSlotPatch.cs" />
       <Compile Include="Plugin.cs" />
       <Compile Include="UserInterface\BlacklistSlot.cs" />
-      <Compile Include="UserInterface\LootManagerUI.cs" />
+      <Compile Include="UserInterface\LootUI.cs" />
+      <Compile Include="UserInterface\PlayerInv.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

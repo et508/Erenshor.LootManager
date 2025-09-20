@@ -265,8 +265,8 @@ namespace LootManager
             
             closeBtn?.onClick.AddListener(() =>
             {
-                if (LootManagerUI.Instance != null)
-                    LootManagerUI.Instance.ToggleUI();
+                if (LootUI.Instance != null)
+                    LootUI.Instance.ToggleUI();
             });
 
             
@@ -533,8 +533,8 @@ namespace LootManager
             
             closeBtn?.onClick.AddListener(() =>
             {
-                if (LootManagerUI.Instance != null)
-                    LootManagerUI.Instance.ToggleUI();
+                if (LootUI.Instance != null)
+                    LootUI.Instance.ToggleUI();
             });
             
             _blackaddBtn?.onClick.RemoveAllListeners();
@@ -736,8 +736,8 @@ namespace LootManager
             
             closeBtn?.onClick.AddListener(() =>
             {
-                if (LootManagerUI.Instance != null)
-                    LootManagerUI.Instance.ToggleUI();
+                if (LootUI.Instance != null)
+                    LootUI.Instance.ToggleUI();
             });
             
             _whiteaddBtn?.onClick.RemoveAllListeners();
@@ -1052,8 +1052,8 @@ namespace LootManager
             
             closeBtn?.onClick.AddListener(() =>
             {
-                if (LootManagerUI.Instance != null)
-                    LootManagerUI.Instance.ToggleUI();
+                if (LootUI.Instance != null)
+                    LootUI.Instance.ToggleUI();
             });
             
             _bankaddBtn?.onClick.RemoveAllListeners();

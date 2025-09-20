@@ -5,9 +5,9 @@ using UnityEngine.UI;
 
 namespace LootManager
 {
-    public class LootManagerUI : MonoBehaviour
+    public class LootUI : MonoBehaviour
     {
-        public static LootManagerUI Instance { get; private set; }
+        public static LootUI Instance { get; private set; }
 
         private const string BundleFileName  = "lootui";
         private const string PrefabAssetName = "lootui";
