@@ -90,11 +90,9 @@
       <Compile Include="LootMethods\WhitelistLoot.cs" />
       <Compile Include="Patches\CharacterPatch.cs" />
       <Compile Include="Patches\LootWindowPatch.cs" />
-      <Compile Include="Patches\TrashSlotPatch.cs" />
       <Compile Include="Plugin.cs" />
-      <Compile Include="UserInterface\BlacklistSlot.cs" />
       <Compile Include="UserInterface\LootUI.cs" />
-      <Compile Include="UserInterface\PlayerInv.cs" />
+      <Compile Include="UserInterface\PlayerInvUI.cs" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

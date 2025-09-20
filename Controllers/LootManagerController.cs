@@ -21,16 +21,12 @@ namespace LootManager
 
         private IEnumerator WaitForInventoryAndInit()
         {
-            while (GameObject.Find("TrashSlot") == null)
+            while (GameObject.Find("PlayerInv") == null)
                 yield return null;
 
-            // BlacklistSlot init
-            var go = new GameObject("BlacklistSlotObject");
-            go.AddComponent<BlacklistSlot>().InitSlotAsync();
-
-            // TrashSlotPatch init to reposition the existing TrashSlot
-            var mover = new GameObject("TrashSlotMover");
-            mover.AddComponent<TrashSlotPatch>();
+            // PLayerInvUI init to reposition existing UI elements
+            var mover = new GameObject("PlayerInvUIAdjustment");
+            mover.AddComponent<PlayerInvUI>();
         }
     }
 }
