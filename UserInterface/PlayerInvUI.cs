@@ -12,6 +12,9 @@ namespace LootManager
         private const string PlayerInvName    = "PlayerInv";
         private const string SourcePanelName  = "AAScreen";
         private const string ManagerPanelName = "ManagerPanel";
+        private static readonly Color TabActiveColor   = new Color(1f, 1f, 1f, 1f);
+        private static readonly Color TabInactiveColor = new Color(1f, 0.9216f, 0.0157f, 1f);
+
         
         private void Start()
         {
@@ -20,32 +23,24 @@ namespace LootManager
 
         private IEnumerator PlayerInvUICoroutine()
         {
-            // Wait until PlayerInv exists
             while (GameObject.Find("PlayerInv") == null)
                 yield return null;
 
             GameObject playerInv = GameObject.Find("PlayerInv");
-
-            // Wait one more frame so Unity’s layout system finishes
+            
             yield return null;
             Canvas.ForceUpdateCanvases();
-
-            // === Move Button (1) ===
+            
             MoveButton(playerInv, "Button (1)", -65f, 0f);
-
-            // === Move Button ===
+            
             MoveButton(playerInv, "Button", -55f, 0f);
-
-            // === Clone Button into Button (2) ===
+            
             var button2 = CloneButton(playerInv, "Button", "Button (2)");
-
-            // Position it where you want
+            
             MoveButton(playerInv, "Button (2)", 115f, 0f);
-
-            // Update its label and color
+            
             UpdateButtonText(playerInv, "Button (2)", "Manager", new Color(1f, 0.9216f, 0.0157f, 1f));
             
-            // Ensure Button (2) has a Button component and ONLY our click
             if (button2 != null)
             {
                 var btn = button2.GetComponent<Button>();
@@ -54,13 +49,43 @@ namespace LootManager
                 btn.onClick.AddListener(OnManagerButtonClicked);
             }
             
-            // Clone AAScreen -> ManagerPanel, keeping only Image & Text (TMP) as direct children
+            var btn0 = playerInv.transform.Find("Button")?.GetComponent<Button>();
+            if (btn0 != null)
+                btn0.onClick.AddListener(OnOtherTabClicked);
+            
+            var btn1 = playerInv.transform.Find("Button (1)")?.GetComponent<Button>();
+            if (btn1 != null)
+                btn1.onClick.AddListener(OnOtherTabClicked);
+            
             var managerPanel = ClonePanelStripChildren(
                 parent: playerInv,
                 sourceName: SourcePanelName,
                 cloneName: ManagerPanelName,
                 keepChildNames: new[] { "Image", "Text (TMP)" }
             );
+            
+            if (managerPanel != null)
+            {
+                var textTr = managerPanel.transform.Find("Text (TMP)");
+                if (textTr != null && textTr.TryGetComponent<TextMeshProUGUI>(out var tmp))
+                {
+                    tmp.text = "Loot Manager";
+                    
+                    tmp.enableWordWrapping = false;
+                    tmp.overflowMode = TextOverflowModes.Overflow;
+                    
+                    tmp.enableAutoSizing = false;
+                    
+                    tmp.ForceMeshUpdate();
+                    float preferred = tmp.preferredWidth;
+
+                    if (textTr is RectTransform rt)
+                    {
+                        float padding = 12f;
+                        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, preferred + padding);
+                    }
+                }
+            }
         }
 
         private void MoveButton(GameObject parent, string childName, float offsetX, float offsetY)
@@ -126,8 +151,26 @@ namespace LootManager
             if (panel == null) return;
 
             panel.SetActive(true);
-            panel.transform.SetAsLastSibling();
-            // (We’re not hiding other tabs yet; we’ll revisit if needed)
+            panel.transform.SetSiblingIndex(27);
+            
+            // Force Button (2) text white
+            UpdateButtonText(playerInv, "Button (2)", "Manager", TabActiveColor);
+
+            // Reset other tabs to inactive
+            UpdateButtonText(playerInv, "Button", "Ascension", TabInactiveColor);
+            UpdateButtonText(playerInv, "Button (1)", "Equipment", TabInactiveColor);
+        }
+        
+        private void OnOtherTabClicked()
+        {
+            var playerInv = GameObject.Find(PlayerInvName);
+            if (playerInv == null) return;
+
+            var panel = playerInv.transform.Find(ManagerPanelName)?.gameObject;
+            if (panel != null)
+                panel.SetActive(false);
+            
+            UpdateButtonText(playerInv, "Button (2)", "Manager", TabInactiveColor);
         }
         
         private GameObject ClonePanelStripChildren(GameObject parent, string sourceName, string cloneName, string[] keepChildNames)
@@ -143,6 +186,8 @@ namespace LootManager
             clone.name = cloneName;
 
             RemoveAllChildrenExcept(clone.transform);
+            
+            CleanRootComponents(clone);
 
             return clone;
         }
@@ -170,6 +215,42 @@ namespace LootManager
             // Destroy after iteration
             for (int i = 0; i < toDelete.Count; i++)
                 Destroy(toDelete[i]);
+        }
+        
+        private void CleanRootComponents(GameObject go)
+        {
+            var evt = go.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+            if (evt) Destroy(evt);
+            
+            System.Type[] keepTypes =
+            {
+                typeof(UnityEngine.UI.Image),
+                typeof(UnityEngine.UI.RawImage),
+                typeof(UnityEngine.UI.Mask),
+                typeof(UnityEngine.UI.RectMask2D),
+                typeof(UnityEngine.UI.LayoutElement),
+                typeof(UnityEngine.UI.ContentSizeFitter),
+                typeof(UnityEngine.UI.HorizontalLayoutGroup),
+                typeof(UnityEngine.UI.VerticalLayoutGroup),
+                typeof(UnityEngine.UI.GridLayoutGroup),
+                typeof(UnityEngine.CanvasGroup)
+            };
+            
+            foreach (var mb in go.GetComponents<MonoBehaviour>())
+            {
+                if (mb == null) continue;
+
+                var t = mb.GetType();
+                bool keep = false;
+                for (int i = 0; i < keepTypes.Length; i++)
+                {
+                    if (t == keepTypes[i]) { keep = true; break; }
+                }
+                if (!keep)
+                {
+                    Destroy(mb);
+                }
+            }
         }
     }
 }
