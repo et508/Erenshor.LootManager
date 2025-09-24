@@ -66,7 +66,10 @@ namespace LootManager
             
             if (managerPanel != null)
             {
+                var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
                 var textTr = managerPanel.transform.Find("Text (TMP)");
+                var slotPrefab = LootUI.Instance?.ManagerSlotPrefab;
+                
                 if (textTr != null && textTr.TryGetComponent<TextMeshProUGUI>(out var tmp))
                 {
                     tmp.text = "Loot Manager";
@@ -83,6 +86,21 @@ namespace LootManager
                     {
                         float padding = 12f;
                         rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, preferred + padding);
+                    }
+                }
+                
+                if (managerPanelTr != null && slotPrefab != null && managerPanelTr.Find("managerSlotPanel") == null)
+                {
+                    var slot = Instantiate(slotPrefab, managerPanelTr, false);
+                    slot.name = "managerSlotPanel";
+
+                    if (slot.TryGetComponent<RectTransform>(out var rt))
+                    {
+                        rt.anchorMin = new Vector2(0f, 1f);
+                        rt.anchorMax = new Vector2(0f, 1f);
+                        rt.pivot     = new Vector2(0f, 1f);
+                        rt.anchoredPosition = new Vector2(-160f, 300f); // tweak as needed
+                        slot.transform.localScale = Vector3.one;
                     }
                 }
             }

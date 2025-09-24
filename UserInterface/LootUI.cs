@@ -11,8 +11,11 @@ namespace LootManager
 
         private const string BundleFileName  = "lootui";
         private const string PrefabAssetName = "lootui";
+        private const string ManagerSlotPrefabName = "managerSlotPanel";
         private AssetBundle _uiBundle;
         private GameObject  _uiRoot;
+        private GameObject  _managerSlotPrefab;
+        public GameObject  ManagerSlotPrefab => _managerSlotPrefab;
 
         private void Awake()
         {
@@ -54,6 +57,16 @@ namespace LootManager
             {
                 Debug.LogError($"[Loot Manager] Prefab '{PrefabAssetName}' not found in bundle.");
                 return;
+            }
+            
+            _managerSlotPrefab = _uiBundle.LoadAsset<GameObject>(ManagerSlotPrefabName);
+            if (_managerSlotPrefab == null)
+            {
+                Debug.LogError($"[Loot Manager] Prefab '{ManagerSlotPrefabName}' not found in bundle.");
+            }
+            else
+            {
+                Plugin.Log.LogInfo("[Loot Manager] Loaded prefab 'managerSlotPanel'.");
             }
 
             _uiRoot = Instantiate(prefab);
