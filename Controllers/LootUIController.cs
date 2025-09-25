@@ -30,6 +30,7 @@ namespace LootManager
         private static Button _menuBlacklistBtn;
         private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
+        private static Button _closeBtn;
         
         // Drag Handles
         private static GameObject _dragHangleSettings;
@@ -158,7 +159,7 @@ namespace LootManager
             _uiRoot = uiRoot;
             
             _container        = Find("container")?.gameObject;
-            _panelBGsettings = Find("container/panelBGsettings")?.gameObject;
+            _panelBGsettings  = Find("container/panelBGsettings")?.gameObject;
             _settingsPanel    = Find("container/panelBGsettings/settingsPanel")?.gameObject;
             _panelBGblacklist = Find("container/panelBGblacklist")?.gameObject;
             _blacklistPanel   = Find("container/panelBGblacklist/blacklistPanel")?.gameObject;
@@ -221,11 +222,18 @@ namespace LootManager
             _menuBlacklistBtn = Find("container/menuBar/blacklistBtn")?.GetComponent<Button>();
             _menuWhitelistBtn = Find("container/menuBar/whitelistBtn")?.GetComponent<Button>();
             _menuBanklistBtn  = Find("container/menuBar/banklistBtn")?.GetComponent<Button>();
+            _closeBtn         = Find("container/menuBar/closeBtn")?.GetComponent<Button>();
 
             _menuSettingsBtn?.onClick.AddListener(() => ShowPanel(_settingsPanel));
             _menuBlacklistBtn?.onClick.AddListener(() => ShowPanel(_blacklistPanel));
             _menuWhitelistBtn?.onClick.AddListener(() => ShowPanel(_whitelistPanel));
             _menuBanklistBtn?.onClick.AddListener(() => ShowPanel(_banklistPanel));
+            
+            _closeBtn?.onClick.AddListener(() =>
+            {
+                if (LootUI.Instance != null)
+                    LootUI.Instance.ToggleUI();
+            });
         }
 
         private static void MenuBarButtonState()
@@ -260,15 +268,6 @@ namespace LootManager
             _dragHangleSettings  = Find("container/panelBGsettings/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleSettings, _container.GetComponent<RectTransform>());
-            
-            var closeBtn = Find("container/panelBGsettings/settingsPanel/closeBtn")?.GetComponent<Button>();
-            
-            closeBtn?.onClick.AddListener(() =>
-            {
-                if (LootUI.Instance != null)
-                    LootUI.Instance.ToggleUI();
-            });
-
             
             SetupAutoLootToggle();
             SetupAutoLootDistanceSlider();
@@ -529,14 +528,6 @@ namespace LootManager
             
             AddDragEvents(_dragHangleBlacklist, _container.GetComponent<RectTransform>());
             
-            var closeBtn = Find("container/panelBGblacklist/blacklistPanel/closeBtn")?.GetComponent<Button>();
-            
-            closeBtn?.onClick.AddListener(() =>
-            {
-                if (LootUI.Instance != null)
-                    LootUI.Instance.ToggleUI();
-            });
-            
             _blackaddBtn?.onClick.RemoveAllListeners();
             _blackaddBtn?.onClick.AddListener(AddSelectedToBlacklist);
             
@@ -731,14 +722,6 @@ namespace LootManager
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());
-            
-            var closeBtn = Find("container/panelBGwhitelist/whitelistPanel/closeBtn")?.GetComponent<Button>();
-            
-            closeBtn?.onClick.AddListener(() =>
-            {
-                if (LootUI.Instance != null)
-                    LootUI.Instance.ToggleUI();
-            });
             
             _whiteaddBtn?.onClick.RemoveAllListeners();
             _whiteaddBtn?.onClick.AddListener(AddSelectedToWhitelist);
@@ -1047,14 +1030,6 @@ namespace LootManager
             _dragHangleBanklist   = Find("container/panelBGbanklist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleBanklist, _container.GetComponent<RectTransform>());
-            
-            var closeBtn = Find("container/panelBGbanklist/banklistPanel/closeBtn")?.GetComponent<Button>();
-            
-            closeBtn?.onClick.AddListener(() =>
-            {
-                if (LootUI.Instance != null)
-                    LootUI.Instance.ToggleUI();
-            });
             
             _bankaddBtn?.onClick.RemoveAllListeners();
             _bankaddBtn?.onClick.AddListener(AddSelectedToBanklist);

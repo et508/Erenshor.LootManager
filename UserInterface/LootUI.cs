@@ -64,11 +64,7 @@ namespace LootManager
             {
                 Debug.LogError($"[Loot Manager] Prefab '{ManagerSlotPrefabName}' not found in bundle.");
             }
-            else
-            {
-                Plugin.Log.LogInfo("[Loot Manager] Loaded prefab 'managerSlotPanel'.");
-            }
-
+            
             _uiRoot = Instantiate(prefab);
             LootUIController.Initialize(_uiRoot);
 

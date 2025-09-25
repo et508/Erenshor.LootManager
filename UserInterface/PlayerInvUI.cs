@@ -93,6 +93,8 @@ namespace LootManager
                 {
                     var slot = Instantiate(slotPrefab, managerPanelTr, false);
                     slot.name = "managerSlotPanel";
+                    
+                    ManagerSlotController.Initialize(slot);
 
                     if (slot.TryGetComponent<RectTransform>(out var rt))
                     {
