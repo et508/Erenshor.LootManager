@@ -1,18 +1,26 @@
 ## [2.1.0] - TBD
 ### Added
 - The Whitelist loot method has been implemented. 
-- New Loot Manager(Name TBD) button added to the inventory window.
+- New Manager button added to the inventory window.
+- Blacklist slot and bank slot.
 
 ### Removed
 - Removed the Blacklist Slot from the inventory window.
 
 ### Loot UI
 - Menu buttons will now be active or disabled dependent on settings.
+- Moved the close button to the menu bar.
 - Whitelist UI Menu
     - Whitelist Transfer List
     - Equipment Toggle
     - Equipment Tier Dropdown
     - Filterlist Group Toggles
+
+### Manager Slot UI
+- Manager Slot UI window added to the inventory. 
+    - Blacklist Slot
+    - Bank Slot
+    - Button to toggle LootUI
 
 ### Loot Method - Whitelist
 - Story Items - Story items will not be destroyed.
