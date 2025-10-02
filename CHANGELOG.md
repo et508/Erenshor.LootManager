@@ -3,6 +3,7 @@
 - The Whitelist loot method has been implemented. 
 - New Manager button added to the inventory window.
 - Blacklist slot and bank slot.
+- You can now open the bank and aucton windows from the Loot Manager inventory tab.
 
 ### Removed
 - Removed the Blacklist Slot from the inventory window.
@@ -21,6 +22,7 @@
     - Blacklist Slot
     - Bank Slot
     - Button to toggle LootUI
+    - Bank and Auction Buttons
 
 ### Loot Method - Whitelist
 - Story Items - Story items will not be destroyed.
