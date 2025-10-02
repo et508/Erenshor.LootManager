@@ -718,7 +718,7 @@ namespace LootManager
             _lootequipToggle       = Find("container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
             _equipmenttierDropdown = Find("container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
             _filterlistContent     = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
-            _filterGroupToggle  = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
+            _filterGroupToggle     = Find("container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
             _dragHangleWhitelist   = Find("container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             AddDragEvents(_dragHangleWhitelist, _container.GetComponent<RectTransform>());

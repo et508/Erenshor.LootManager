@@ -23,6 +23,8 @@ namespace LootManager
         
         //Buttons
         private static Button _lootuiBtn;
+        private static Button _bankBtn;
+        private static Button _auctionBtn;
         
         public static void Initialize(GameObject managerSlotPrefab)
         {
@@ -33,6 +35,8 @@ namespace LootManager
             _managerPan        = Find("panelBG/managerPan")?.gameObject;
             
             SetupLootUIButton();
+            SetupBankButton();
+            SetupAuctionButton();
         }
         
         private static void SetupLootUIButton()
@@ -51,6 +55,48 @@ namespace LootManager
             else
             {
                 Debug.LogWarning("[ManagerSlotController] lootuiBtn not found in managerSlotPanel.");
+            }
+        }
+
+        private static void SetupBankButton()
+        {
+            _bankBtn = Find("panelBG/managerPan/bankBtn")?.GetComponent<Button>();
+
+            if (_bankBtn != null)
+            {
+                _bankBtn.onClick.RemoveAllListeners();
+                _bankBtn.onClick.AddListener(() =>
+                {
+                    if (GameData.ItemOnCursor == null || GameData.ItemOnCursor == GameData.PlayerInv.Empty)
+                    {
+                        GameData.BankUI.OpenBank(GameData.PlayerControl.transform.position);
+                    }
+                    else
+                    {
+                        UpdateSocialLog.LogAdd("Remove item from cursor before interacting with a vendor.", "yellow");
+                    }
+                });
+            }
+        }
+
+        private static void SetupAuctionButton()
+        {
+            _auctionBtn = Find("panelBG/managerPan/auctionBtn")?.GetComponent<Button>();
+
+            if (_auctionBtn != null)
+            {
+                _auctionBtn.onClick.RemoveAllListeners();
+                _auctionBtn.onClick.AddListener(() =>
+                {
+                    if (GameData.ItemOnCursor == null || GameData.ItemOnCursor == GameData.PlayerInv.Empty)
+                    {
+                        GameData.AHUI.OpenAuctionHouse(GameData.PlayerControl.transform.position);
+                    }
+                    else
+                    {
+                        UpdateSocialLog.LogAdd("Remove item from cursor before interacting with a vendor.", "yellow");
+                    }
+                });
             }
         }
         
