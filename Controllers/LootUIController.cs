@@ -107,13 +107,12 @@ namespace LootManager
         private static readonly List<string> _equipmenttierOptions = new List<string> { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and up" };
         private static string _selectedequipmenttier;
         
+        
+        
         // Filterlist viewport
         private static Transform _filterlistContent;
         private static Toggle _filterGroupToggle;
 
-        
-        
-        
         
         
         // Banklist viewports
@@ -130,24 +129,27 @@ namespace LootManager
         
         
         
-        
-        
-        
         // Window Dragging
         private static bool dragging = false;
         private static Vector2 dragOffset;
         private static RectTransform panelRect;
+        
+        
         
         // Data
         private static List<string> _allItems = new List<string>();
         private static HashSet<string> _blacklist => Plugin.Blacklist;
         private static HashSet<string> _whitelist => Plugin.Whitelist;
         private static HashSet<string> _banklist => Plugin.Banklist;
+        
+        
 
         // Selection tracking
         private static List<(Text text, bool isBlacklist)> _selectedBlackEntries = new List<(Text text, bool isBlacklist)>();
         private static List<(Text text, bool isWhitelist)> _selectedWhiteEntries = new List<(Text text, bool isWhitelist)>();
         private static List<(Text text, bool isBanklist)> _selectedBankEntries = new List<(Text text, bool isBanklist)>();
+        
+        
         
         // Double click detection
         private static Dictionary<string, float> _lastClickTime = new Dictionary<string, float>();
@@ -250,6 +252,8 @@ namespace LootManager
             if (_menuBanklistBtn != null)
                 _menuBanklistBtn?.gameObject.SetActive(allowBanklist);
         }
+        
+        
         
         // Settings Panel
         private static void SetupSettingsPanel()
@@ -771,11 +775,6 @@ namespace LootManager
         private static void OnLootEquipToggleChanged(bool isOn)
         {
             Plugin.LootEquipment.Value = isOn;
-            
-          //  if (_bankMethodDropdown != null)
-          //      _autoDistanceSlider.interactable = isOn;
-            
-          // UpdateAutoDistanceInteractable();
         }
         
         private static void SetupEquipmentTierDropdown()
