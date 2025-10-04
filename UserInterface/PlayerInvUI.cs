@@ -33,9 +33,9 @@ namespace LootManager
             yield return null;
             Canvas.ForceUpdateCanvases();
 
-            // Move existing tabs
-            MoveButton(playerInv, "Button (1)", -65f, 0f);
-            MoveButton(playerInv, "Button",     -55f, 0f);
+            // Move existing tabs (anchor-safe)
+            MoveButtonRelative(playerInv, "Button (1)", "Button (1)", new Vector2(-65f, 0f));
+            MoveButtonRelative(playerInv, "Button",     "Button",     new Vector2(-55f, 0f));
 
             // Build a brand-new Button (2) and wire both Button.onClick + Proxy
             EnsureFreshManagerButton(playerInv);
@@ -130,7 +130,7 @@ namespace LootManager
             var go = new GameObject("Button (2)", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(playerInv.transform, false);
 
-            // Copy RectTransform layout from source
+            // Copy RectTransform layout from source (do NOT overwrite later)
             var dstRT = go.GetComponent<RectTransform>();
             if (srcRT != null)
             {
@@ -138,7 +138,7 @@ namespace LootManager
                 dstRT.anchorMax = srcRT.anchorMax;
                 dstRT.pivot     = srcRT.pivot;
                 dstRT.sizeDelta = srcRT.sizeDelta;
-                dstRT.anchoredPosition = srcRT.anchoredPosition;
+                dstRT.anchoredPosition = srcRT.anchoredPosition; // base position same as template
             }
 
             // Make layout independent so moves stick
@@ -161,10 +161,10 @@ namespace LootManager
             var btn2 = go.GetComponent<Button>();
             if (sourceBtn != null)
             {
-                btn2.transition       = sourceBtn.transition;
-                btn2.colors           = sourceBtn.colors;
-                btn2.spriteState      = sourceBtn.spriteState;
-                btn2.animationTriggers= sourceBtn.animationTriggers;
+                btn2.transition        = sourceBtn.transition;
+                btn2.colors            = sourceBtn.colors;
+                btn2.spriteState       = sourceBtn.spriteState;
+                btn2.animationTriggers = sourceBtn.animationTriggers;
             }
             var nav2 = btn2.navigation; nav2.mode = Navigation.Mode.None; btn2.navigation = nav2;
             btn2.onClick = new Button.ButtonClickedEvent();
@@ -205,9 +205,14 @@ namespace LootManager
             // Make sure parent chain allows interaction
             EnsureInteractiveChain(go.transform);
 
-            // Final position tweak and ordering with other tabs
-            MoveButton(playerInv, "Button (2)", 115f, 0f);
-            go.transform.SetSiblingIndex(sourceBtnTr != null ? sourceBtnTr.GetSiblingIndex() + 1 : playerInv.transform.childCount - 1);
+            // Final position tweak RELATIVE TO TEMPLATE (no anchor change)
+            MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
+
+            // Sibling ordering next to source
+            if (sourceBtnTr != null)
+                go.transform.SetSiblingIndex(sourceBtnTr.GetSiblingIndex() + 1);
+            else
+                go.transform.SetSiblingIndex(playerInv.transform.childCount - 1);
 
             return go;
         }
@@ -228,20 +233,25 @@ namespace LootManager
             }
         }
 
-        private void MoveButton(GameObject parent, string childName, float offsetX, float offsetY)
+        // NEW: anchor-safe mover — never force anchorMin/Max to 0.5
+        private void MoveButtonRelative(GameObject parent, string targetName, string templateName, Vector2 delta)
         {
-            GameObject go = parent.transform.Find(childName)?.gameObject;
-            if (go != null && go.TryGetComponent(out RectTransform rt))
-            {
-                var layoutElement = go.GetComponent<LayoutElement>();
-                if (layoutElement != null)
-                    layoutElement.ignoreLayout = true;
+            var targetRT   = parent.transform.Find(targetName)?.GetComponent<RectTransform>();
+            var templateRT = parent.transform.Find(templateName)?.GetComponent<RectTransform>();
+            if (targetRT == null || templateRT == null) return;
 
-                var saved = rt.anchoredPosition;
-                rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = saved;
-                rt.anchoredPosition = new Vector2(rt.anchoredPosition.x + offsetX, rt.anchoredPosition.y + offsetY);
-            }
+            // Mirror template anchors/pivot/size so layout math stays consistent
+            targetRT.anchorMin = templateRT.anchorMin;
+            targetRT.anchorMax = templateRT.anchorMax;
+            targetRT.pivot     = templateRT.pivot;
+            targetRT.sizeDelta = templateRT.sizeDelta;
+
+            // Ensure layout system won’t override us
+            var le = targetRT.GetComponent<LayoutElement>();
+            if (le != null) le.ignoreLayout = true;
+
+            // Position relative to template
+            targetRT.anchoredPosition = templateRT.anchoredPosition + delta;
         }
 
         private void UpdateButtonText(GameObject parent, string buttonName, string newText, Color newColor)
@@ -426,6 +436,8 @@ namespace LootManager
                     ManagerSlotController.Initialize(slot);
             }
 
+            // After layout settles, re-assert position relative to template
+            MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
             Canvas.ForceUpdateCanvases();
         }
         
@@ -454,11 +466,6 @@ namespace LootManager
         }
     }
 
-    /// <summary>
-    /// Belt-and-suspenders click catcher for Button (2).
-    /// Even if Button.onClick gets neutered by scene wiring,
-    /// this still receives the click and calls back.
-    /// </summary>
     public class ManagerButtonProxy : MonoBehaviour, IPointerClickHandler
     {
         private System.Action _onClicked;
@@ -471,7 +478,7 @@ namespace LootManager
         public void OnPointerClick(PointerEventData eventData)
         {
             _onClicked?.Invoke();
-            eventData.Use(); // consume so nothing upstream steals it
+            eventData.Use();
         }
     }
     
@@ -482,8 +489,7 @@ namespace LootManager
         public void OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData)
         {
             OnClicked?.Invoke();
-            // don't consume; let the game's tab system run too
+            // let the game's tab system also handle it
         }
     }
-
 }
