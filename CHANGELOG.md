@@ -31,6 +31,9 @@
 - Filterlist Groups - Groups of items to loot. 
     - Groups can be toggled on and off.
 
+### Known Issues
+- At times the Blacklist Slot will give the message "This item cannot go in this slot." Clicking again and/or moving item around the slot can resolve this.
+
 
 ## [2.0.2] - 6/23/2025
 ### Fixed

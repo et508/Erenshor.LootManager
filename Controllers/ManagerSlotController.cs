@@ -1,16 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using HarmonyLib;
 
 namespace LootManager
 {
     /// <summary>
-    /// Manages the Manager Slot UI prefab (managerSlotPanel) and wires up special slots like Blacklist.
+    /// Manages the Manager Slot UI prefab (managerSlotPanel) and wires up special slots like Blacklist/Banklist.
     /// </summary>
     public class ManagerSlotController
     {
@@ -24,7 +22,9 @@ namespace LootManager
         // Slots
         private static GameObject _BlacklistSlot;
         private static GameObject _BlacklistSlotItemIcon;
-        private static GameObject _BankSlot; // reserved for later
+
+        private static GameObject _BanklistSlot;
+        private static GameObject _BanklistSlotItemIcon;
 
         // Buttons
         private static Button _lootuiBtn;
@@ -36,7 +36,7 @@ namespace LootManager
             _managerSlotPrefab = managerSlotPrefab;
 
             _managerSlotPanel = managerSlotPrefab;
-            _panelBG = Find("panelBG")?.gameObject;
+            _panelBG    = Find("panelBG")?.gameObject;
             _managerPan = Find("panelBG/managerPan")?.gameObject;
 
             // Buttons
@@ -46,8 +46,7 @@ namespace LootManager
 
             // Special drop slots
             SetupBlacklistSlot();
-            // Bank slot comes later once Blacklist is perfect:
-            // SetupBanklistSlot();
+            SetupBanklistSlot();
         }
 
         // -------------------------
@@ -121,54 +120,84 @@ namespace LootManager
 
         private static void SetupBlacklistSlot()
         {
-            // Your prefab path: managerSlotPanel -> panelBG -> BlacklistSlot
-            _BlacklistSlot = Find("panelBG/managerPan/BlacklistSlot")?.gameObject;
-            _BlacklistSlotItemIcon = Find("panelBG/managerPan/BlacklistSlot/ItemIcon")?.gameObject;
+            _BlacklistSlot          = Find("panelBG/managerPan/BlacklistSlot")?.gameObject;
+            _BlacklistSlotItemIcon  = Find("panelBG/managerPan/BlacklistSlot/ItemIcon")?.gameObject;
 
-            if (_BlacklistSlot == null)
+            if (_BlacklistSlot == null || _BlacklistSlotItemIcon == null)
             {
-                Debug.LogWarning("[ManagerSlotController] BlacklistSlot not found at 'panelBG/BlacklistSlot'.");
+                Debug.LogWarning("[ManagerSlotController] BlacklistSlot or child ItemIcon not found.");
                 return;
             }
 
-            EnsureBlacklistDropTarget(_BlacklistSlotItemIcon);
+            EnsureDropTarget(_BlacklistSlotItemIcon, wantMarker: typeof(BlacklistDropZoneMarker));
             Debug.Log("[ManagerSlotController] BlacklistSlot ready.");
         }
 
-        /// <summary>
-        /// Ensures the given GO behaves like a valid ItemIcon drop target and is marked as our Blacklist zone.
-        /// </summary>
-        private static void EnsureBlacklistDropTarget(GameObject slotGO)
+        // -------------------------
+        // Banklist Slot (Drop to add & deposit via BankLoot)
+        // -------------------------
+
+        private static void SetupBanklistSlot()
         {
-            slotGO.tag = "ItemSlot";
-            
-            // 1) Ensure a subtle Image (ItemIcon.Awake() expects an Image on the same GO)
-            var img = slotGO.GetComponent<Image>();
-            if (img == null)
+            _BanklistSlot         = Find("panelBG/managerPan/BanklistSlot")?.gameObject;
+            _BanklistSlotItemIcon = Find("panelBG/managerPan/BanklistSlot/ItemIcon")?.gameObject;
+
+            if (_BanklistSlot == null || _BanklistSlotItemIcon == null)
             {
-                Debug.LogWarning("[ManagerSlotController] 'BlacklistSlot/Icon' Image not found'.");
+                Debug.LogWarning("[ManagerSlotController] BanklistSlot or child ItemIcon not found.");
                 return;
             }
 
-            // 2) Ensure a 2D trigger collider so ItemIcon.OnTriggerStay2D sees it
-            var col = slotGO.GetComponent<BoxCollider2D>();
-            if (col == null) col = slotGO.AddComponent<BoxCollider2D>();
+            EnsureDropTarget(_BanklistSlotItemIcon, wantMarker: typeof(BanklistDropZoneMarker));
+            Debug.Log("[ManagerSlotController] BanklistSlot ready.");
+        }
+
+        /// <summary>
+        /// Ensures the given GO (the child ItemIcon node) behaves like a valid ItemIcon drop target and is marked by a zone marker.
+        /// </summary>
+        private static void EnsureDropTarget(GameObject itemIconChild, Type wantMarker)
+        {
+            // Tag must be ItemSlot at runtime (bundle tag indexes can remap)
+            itemIconChild.tag = "ItemSlot";
+
+            // Needs an Image (vanilla child has its own Image)
+            var img = itemIconChild.GetComponent<Image>();
+            if (img == null)
+            {
+                img = itemIconChild.AddComponent<Image>();
+                img.raycastTarget = false;
+                img.color = new Color(1, 1, 1, 0); // invisible helper if needed
+            }
+
+            // Collider (trigger)
+            var col = itemIconChild.GetComponent<BoxCollider2D>();
+            if (col == null) col = itemIconChild.AddComponent<BoxCollider2D>();
             col.isTrigger = true;
 
-            // 5) Ensure ItemIcon exists and is configured as a neutral dummy slot
-            var icon = slotGO.GetComponent<ItemIcon>();
-            if (icon == null) icon = slotGO.AddComponent<ItemIcon>();
+            // Match vanilla: kinematic RB2D improves trigger reliability with UI
+            var rb = itemIconChild.GetComponent<Rigidbody2D>();
+            if (rb == null)
+            {
+                rb = itemIconChild.AddComponent<Rigidbody2D>();
+                rb.bodyType = RigidbodyType2D.Kinematic;
+                rb.gravityScale = 0f;
+                rb.useFullKinematicContacts = true;
+            }
 
-            icon.ThisSlotType = Item.SlotType.General;
-            icon.VendorSlot = false;
-            icon.LootSlot = false;
-            icon.BankSlot = false;
-            icon.TrashSlot = false;
-            icon.PlayerOwned = false;
-            icon.MouseSlot = false;
+            // ItemIcon
+            var icon = itemIconChild.GetComponent<ItemIcon>();
+            if (icon == null) icon = itemIconChild.AddComponent<ItemIcon>();
+
+            icon.ThisSlotType       = Item.SlotType.General;
+            icon.VendorSlot         = false;
+            icon.LootSlot           = false;
+            icon.BankSlot           = false;
+            icon.TrashSlot          = false;
+            icon.PlayerOwned        = false;
+            icon.MouseSlot          = false;
             icon.CanTakeBlessedItem = true;
-            icon.NotInInventory = true;
-            icon.Quantity = 1;
+            icon.NotInInventory     = true;
+            icon.Quantity           = 1;
 
             if (icon.MyItem == null)
                 icon.MyItem = GameData.PlayerInv.Empty;
@@ -178,9 +207,9 @@ namespace LootManager
 
             icon.UpdateSlotImage();
 
-            // 6) Add our marker so the Harmony prefix can detect this is the Blacklist drop zone
-            if (slotGO.GetComponent<BlacklistDropZoneMarker>() == null)
-                slotGO.AddComponent<BlacklistDropZoneMarker>();
+            // Marker
+            if (itemIconChild.GetComponent(wantMarker) == null)
+                itemIconChild.AddComponent(wantMarker);
         }
 
         // -------------------------
@@ -195,94 +224,142 @@ namespace LootManager
         }
     }
 
-    /// <summary>
-    /// Simple marker used to identify our special Blacklist drop zone.
-    /// </summary>
-    public class BlacklistDropZoneMarker : MonoBehaviour
-    {
-    }
+    /// <summary>Marker used to identify the Blacklist drop zone.</summary>
+    public class BlacklistDropZoneMarker : MonoBehaviour { }
+
+    /// <summary>Marker used to identify the Banklist drop zone.</summary>
+    public class BanklistDropZoneMarker : MonoBehaviour { }
 
     // ======================================================================
-    // Harmony: Intercept release on ItemIcon drag. If target is our marker,
-    // add to blacklist and DESTROY the item (clear mouse; leave origin empty).
+    // Harmony: Intercept release on ItemIcon drag.
+    // If target is Blacklist -> add to blacklist + destroy.
+    // If target is Banklist  -> add to banklist + deposit via BankLoot (no bank UI needed).
     // ======================================================================
 
     [HarmonyPatch(typeof(ItemIcon), nameof(ItemIcon.InteractItemSlot))]
-    public static class ItemIcon_InteractItemSlot_BlacklistPrefix
+    public static class ItemIcon_InteractItemSlot_DropZonesPrefix
     {
         public static bool Prefix(ItemIcon __instance)
         {
             try
             {
-                // Do we actually have an item on the cursor?
+                // Must have an item on cursor
                 if (GameData.MouseSlot == null ||
                     GameData.MouseSlot.MyItem == null ||
                     GameData.MouseSlot.MyItem == GameData.PlayerInv.Empty)
                 {
-                    return true; // let vanilla continue
+                    return true;
                 }
 
-                // Get SwapWith from the DRAGGING icon (MouseSlot), not from __instance
+                // Resolve target from the DRAGGING icon (MouseSlot)
                 ItemIcon target = GetSwapTargetFromMouseSlot(__instance);
-
                 if (target == null)
                     return true;
 
-                // Accept the marker on target or its parent (depending on where you put it)
                 bool isBlacklist =
                     target.GetComponent<BlacklistDropZoneMarker>() != null ||
-                    (target.transform.parent != null &&
-                     target.transform.parent.GetComponent<BlacklistDropZoneMarker>() != null);
+                    (target.transform.parent != null && target.transform.parent.GetComponent<BlacklistDropZoneMarker>() != null);
 
-                if (!isBlacklist)
+                bool isBanklist =
+                    target.GetComponent<BanklistDropZoneMarker>() != null ||
+                    (target.transform.parent != null && target.transform.parent.GetComponent<BanklistDropZoneMarker>() != null);
+
+                if (!isBlacklist && !isBanklist)
                     return true;
 
-                // We handle it: add to blacklist, destroy cursor item, skip vanilla
                 var draggedItem = GameData.MouseSlot.MyItem;
-                string itemName = draggedItem.ItemName; // or draggedItem.Id if that’s your key
+                int draggedQty  = Mathf.Max(1, GameData.MouseSlot.Quantity);
+                if (draggedItem == null || draggedItem == GameData.PlayerInv.Empty)
+                    return true;
 
-                bool added = false;
-                if (!Plugin.Blacklist.Contains(itemName))
+                if (isBlacklist)
                 {
-                    Plugin.Blacklist.Add(itemName);
-                    added = true;
-                    LootBlacklist.SaveBlacklist();
+                    HandleBlacklist(draggedItem);
+                    ClearCursorNoSnap();
+                    GameData.PlayerInv.UpdatePlayerInventory();
+                    return false; // swallow vanilla
                 }
 
-                // Clear cursor WITHOUT snapping back to MouseHomeSlot
-                GameData.MouseSlot.MyItem = GameData.PlayerInv.Empty;
-                GameData.MouseSlot.Quantity = 1;
-                GameData.ItemOnCursor = null;
-                GameData.MouseSlot.dragging = false;
+                if (isBanklist)
+                {
+                    HandleBanklistAndDeposit(draggedItem, draggedQty);
+                    ClearCursorNoSnap();
+                    GameData.PlayerInv.UpdatePlayerInventory();
+                    return false; // swallow vanilla
+                }
 
-                var fHome = typeof(ItemIcon).GetField("MouseHomeSlot", BindingFlags.Instance | BindingFlags.NonPublic);
-                if (fHome != null) fHome.SetValue(GameData.MouseSlot, null);
-
-                GameData.MouseSlot.UpdateSlotImage();
-                GameData.PlayerInv.UpdatePlayerInventory();
-
-                if (added)
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Blacklisted \"{itemName}\" and destroyed it.", "grey");
-                else
-                    UpdateSocialLog.LogAdd($"[Loot Manager] \"{itemName}\" is already blacklisted. Destroyed it.",
-                        "grey");
-
-                GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem,
-                    GameData.PlayerAud.volume / 2f * GameData.SFXVol);
-
-                // Block vanilla InteractItemSlot (prevents "This item cannot go in this slot.")
-                return false;
+                return true;
             }
             catch (Exception ex)
             {
-                Plugin.Log?.LogError($"[Loot Manager] InteractItemSlot blacklist prefix error: {ex}");
-                return true; // fail-safe
+                Plugin.Log?.LogError($"[Loot Manager] Drop zone prefix error: {ex}");
+                return true;
             }
+        }
+
+        private static void HandleBlacklist(Item item)
+        {
+            string key = item.ItemName; // or item.Id if preferred
+
+            bool added = false;
+            if (!Plugin.Blacklist.Contains(key))
+            {
+                Plugin.Blacklist.Add(key);
+                added = true;
+                LootBlacklist.SaveBlacklist();
+            }
+
+            if (added)
+                UpdateSocialLog.LogAdd($"[Loot Manager] Blacklisted \"{key}\" and destroyed it.", "grey");
+            else
+                UpdateSocialLog.LogAdd($"[Loot Manager] \"{key}\" is already blacklisted. Destroyed it.", "grey");
+
+            GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem,
+                GameData.PlayerAud.volume / 2f * GameData.SFXVol);
+        }
+
+        private static void HandleBanklistAndDeposit(Item item, int qty)
+        {
+            // 1) Add to persistent banklist
+            string key = item.ItemName; // list key (human-readable)
+            bool added = false;
+            if (!Plugin.Banklist.Contains(key))
+            {
+                Plugin.Banklist.Add(key);
+                added = true;
+                LootBanklist.SaveBanklist();
+            }
+
+            if (added)
+                UpdateSocialLog.LogAdd($"[Loot Manager] Added \"{key}\" to banklist.", "lightblue");
+
+            // 2) Deposit via BankLoot (works even if bank UI is closed; honors Page Mode)
+            //    Important: BankLoot expects the Item **Id** to match storage format.
+            string id = item.Id;
+            var entry = new BankLoot.LootEntry(id, qty, item.ItemName);
+            BankLoot.DepositLoot(new[] { entry });
+
+            // Audio feedback (optional here; BankLoot logs deposits per item)
+            GameData.PlayerAud.PlayOneShot(GameData.GM.GetComponent<Misc>().DropItem,
+                GameData.PlayerAud.volume / 2f * GameData.SFXVol);
+        }
+
+        private static void ClearCursorNoSnap()
+        {
+            // Clear cursor WITHOUT snapping back to MouseHomeSlot
+            GameData.MouseSlot.MyItem   = GameData.PlayerInv.Empty;
+            GameData.MouseSlot.Quantity = 1;
+            GameData.ItemOnCursor       = null;
+            GameData.MouseSlot.dragging = false;
+
+            var fHome = typeof(ItemIcon).GetField("MouseHomeSlot", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (fHome != null) fHome.SetValue(GameData.MouseSlot, null);
+
+            GameData.MouseSlot.UpdateSlotImage();
         }
 
         private static ItemIcon GetSwapTargetFromMouseSlot(ItemIcon fallbackSource)
         {
-            // Primary: read private SwapWith from GameData.MouseSlot
             var fSwap = typeof(ItemIcon).GetField("SwapWith", BindingFlags.Instance | BindingFlags.NonPublic);
             if (fSwap != null && GameData.MouseSlot != null)
             {
@@ -290,23 +367,10 @@ namespace LootManager
                 if (v != null) return v;
             }
 
-            // Fallback: try the __instance (sometimes also has SwapWith)
             if (fSwap != null && fallbackSource != null)
             {
                 var v2 = fSwap.GetValue(fallbackSource) as ItemIcon;
                 if (v2 != null) return v2;
-            }
-
-            // Last resort: small Physics2D overlap at cursor (since Physics2D module is referenced)
-            var mp = Input.mousePosition;
-            var world = Camera.main != null ? Camera.main.ScreenToWorldPoint(mp) : new Vector3(mp.x, mp.y, 0f);
-            foreach (var h in Physics2D.OverlapPointAll(new Vector2(world.x, world.y)))
-            {
-                if (h != null && h.CompareTag("ItemSlot"))
-                {
-                    var slot = h.GetComponent<ItemIcon>();
-                    if (slot != null) return slot;
-                }
             }
 
             return null;
