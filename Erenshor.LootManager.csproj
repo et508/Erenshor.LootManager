@@ -42,6 +42,9 @@
       <Reference Include="BepInEx">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\BepInEx.dll</HintPath>
       </Reference>
+      <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+        <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+      </Reference>
       <Reference Include="System">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\System.dll</HintPath>
       </Reference>
@@ -84,6 +87,7 @@
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />
       <Compile Include="LootLists\LootFilterlist.cs" />
+      <Compile Include="LootLists\LootFilterlistDefaults.cs" />
       <Compile Include="LootLists\LootWhitelist.cs" />
       <Compile Include="LootManagerController.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
@@ -102,6 +106,10 @@
       <Compile Include="Patches\LootWindowPatch.cs" />
       <Compile Include="PlayerInvUI.cs" />
       <Compile Include="Plugin.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="App.config" />
+      <None Include="packages.config" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

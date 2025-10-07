@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -347,40 +348,58 @@ namespace LootManager
 
         private void RebuildFilterToggles()
         {
-            if (_filterlistContent == null || _filterCategoryTemplate == null) return;
+            if (_filterlistContent == null || _filterCategoryTemplate == null)
+                return;
 
+            // Clear all children except the template
             for (int i = _filterlistContent.childCount - 1; i >= 0; i--)
             {
                 Transform child = _filterlistContent.GetChild(i);
-                if (child.gameObject == _filterCategoryTemplate.gameObject) continue;
+                if (child.gameObject == _filterCategoryTemplate.gameObject)
+                    continue;
+
                 GameObject.Destroy(child.gameObject);
             }
 
-            foreach (string category in Plugin.FilterList.Keys.Reverse())
+            // Read the latest categories and enabled states directly from LootFilterlist.ini
+            LootFilterlist.ReadAll(out var sections, out var enabledSet);
+
+            // Sort categories alphabetically for clean, predictable display
+            var sortedCategories = sections.Keys
+                .OrderBy(s => s, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (string category in sortedCategories)
             {
                 Toggle toggle = GameObject.Instantiate(_filterCategoryTemplate, _filterlistContent);
                 toggle.gameObject.name = "Toggle_" + category;
                 toggle.gameObject.SetActive(true);
 
+                // Set the label text
                 Text label = toggle.GetComponentInChildren<Text>();
-                if (label != null) label.text = category;
+                if (label != null)
+                    label.text = category;
 
-                bool isOn = Plugin.EnabledFilterGroups.Contains(category);
-                toggle.isOn = isOn;
+                // Set toggle state based on the current enabled set from disk
+                toggle.isOn = enabledSet.Contains(category);
 
+                // Capture category name for closure
+                string cat = category;
+
+                // Update the file instantly when toggled
                 toggle.onValueChanged.RemoveAllListeners();
-                toggle.onValueChanged.AddListener(delegate (bool val)
+                toggle.onValueChanged.AddListener((bool isOn) =>
                 {
-                    if (val)
-                        Plugin.EnabledFilterGroups.Add(category);
-                    else
-                        Plugin.EnabledFilterGroups.Remove(category);
+                    LootFilterlist.SetSectionEnabled(cat, isOn);
                 });
             }
 
+            // Force UI layout refresh
             Canvas.ForceUpdateCanvases();
             RectTransform rt = _filterlistContent.GetComponent<RectTransform>();
-            if (rt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            if (rt != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
         }
+
     }
 }
