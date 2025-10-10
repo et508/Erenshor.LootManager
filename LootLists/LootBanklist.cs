@@ -34,7 +34,7 @@ namespace LootManager
                 if (data?.items != null)
                 {
                     Plugin.Banklist = new HashSet<string>(data.items, StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"Loaded {Plugin.Banklist.Count} banklisted items.");
+                    Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.Banklist.Count} banklisted items.");
                 }
             }
             catch (Exception ex)

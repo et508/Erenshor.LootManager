@@ -34,7 +34,7 @@ namespace LootManager
                 if (data?.items != null)
                 {
                     Plugin.Blacklist = new HashSet<string>(data.items, StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"Loaded {Plugin.Blacklist.Count} blacklisted items.");
+                    Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.Blacklist.Count} blacklisted items.");
                 }
             }
             catch (Exception ex)

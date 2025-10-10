@@ -34,7 +34,7 @@ namespace LootManager
                 if (data?.items != null)
                 {
                     Plugin.Whitelist = new HashSet<string>(data.items, StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"Loaded {Plugin.Whitelist.Count} whitelisted items.");
+                    Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.Whitelist.Count} whitelisted items.");
                 }
             }
             catch (Exception ex)

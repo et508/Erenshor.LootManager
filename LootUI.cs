@@ -41,28 +41,28 @@ namespace LootManager
 
             if (!File.Exists(bundlePath))
             {
-                Debug.LogError($"[LootManagerUI] AssetBundle not found at: {bundlePath}");
+                Debug.LogError($"[LootUI] AssetBundle not found at: {bundlePath}");
                 return;
             }
 
             _uiBundle = AssetBundle.LoadFromFile(bundlePath);
             if (_uiBundle == null)
             {
-                Debug.LogError("[LootManagerUI] Failed to load AssetBundle!");
+                Debug.LogError("[LootUI] Failed to load AssetBundle!");
                 return;
             }
 
             GameObject prefab = _uiBundle.LoadAsset<GameObject>(PrefabAssetName);
             if (prefab == null)
             {
-                Debug.LogError($"[Loot Manager] Prefab '{PrefabAssetName}' not found in bundle.");
+                Debug.LogError($"[LootUI] Prefab '{PrefabAssetName}' not found in bundle.");
                 return;
             }
             
             _managerSlotPrefab = _uiBundle.LoadAsset<GameObject>(ManagerSlotPrefabName);
             if (_managerSlotPrefab == null)
             {
-                Debug.LogError($"[Loot Manager] Prefab '{ManagerSlotPrefabName}' not found in bundle.");
+                Debug.LogError($"[LootUI] Prefab '{ManagerSlotPrefabName}' not found in bundle.");
             }
             
             _uiRoot = Instantiate(prefab);
