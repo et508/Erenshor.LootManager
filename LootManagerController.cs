@@ -27,8 +27,6 @@ namespace LootManager
             SceneManager.activeSceneChanged += OnActiveSceneChanged_Static;
         }
 
-        // ---------- Static hooks / helpers ----------
-
         private static void OnSceneLoaded_Static(Scene scene, LoadSceneMode mode)
         {
             EnsureBootstrapExists();
@@ -87,8 +85,6 @@ namespace LootManager
 
         }
 
-        // ---------- MonoBehaviour lifecycle ----------
-
         private void OnEnable()
         {
             StartCoroutine(WaitForInventoryAndInit());
@@ -112,8 +108,6 @@ namespace LootManager
                 mover.AddComponent<PlayerInvUI>();
             }
         }
-
-        // ---------- Loot Manager Loader ----------
 
         private class Bootstrap : MonoBehaviour
         {

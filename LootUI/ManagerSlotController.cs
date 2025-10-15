@@ -10,20 +10,17 @@ namespace LootManager
     public class ManagerSlotController
     {
         private static GameObject _managerSlotPrefabRoot;
-
-        // Panels
+        
         private static GameObject _managerSlotPanel;
         private static GameObject _panelBG;
         private static GameObject _managerPan;
-
-        // Slots
+        
         private static GameObject _blacklistSlot;
         private static GameObject _blacklistSlotItemIcon;
 
         private static GameObject _banklistSlot;
         private static GameObject _banklistSlotItemIcon;
-
-        // Buttons
+        
         private static Button _lootuiBtn;
         private static Button _bankBtn;
         private static Button _auctionBtn;
@@ -55,7 +52,6 @@ namespace LootManager
             SetupBanklistSlot();
         }
         
-        // Buttons
         private static void SetupLootUIButton()
         {
             Transform t = UICommon.Find(_managerSlotPrefabRoot, "panelBG/managerPan/lootuiBtn");
@@ -129,8 +125,7 @@ namespace LootManager
                 Debug.LogWarning("[ManagerSlotController] auctionBtn not found in managerSlotPanel.");
             }
         }
-
-        // Blacklist Slot 
+        
         private static void SetupBlacklistSlot()
         {
             Transform slotT = UICommon.Find(_managerSlotPrefabRoot, "panelBG/managerPan/BlacklistSlot");
@@ -149,7 +144,6 @@ namespace LootManager
             Debug.Log("[ManagerSlotController] BlacklistSlot ready.");
         }
         
-        // Banklist Slot 
         private static void SetupBanklistSlot()
         {
             Transform slotT = UICommon.Find(_managerSlotPrefabRoot, "panelBG/managerPan/BanklistSlot");
@@ -181,7 +175,7 @@ namespace LootManager
                 if (img != null)
                 {
                     img.raycastTarget = false;
-                    img.color = new Color(1f, 1f, 1f, 0f); // invisible helper if needed
+                    img.color = new Color(1f, 1f, 1f, 0f); 
                 }
             }
             
@@ -226,7 +220,7 @@ namespace LootManager
                 itemIconChild.AddComponent(wantMarker);
         }
         
-        // Harmony patch (drop handling)
+
         [HarmonyPatch(typeof(ItemIcon), nameof(ItemIcon.InteractItemSlot))]
         public static class ItemIcon_InteractItemSlot_DropZonesPrefix
         {

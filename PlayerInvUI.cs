@@ -33,21 +33,17 @@ namespace LootManager
             yield return null;
             Canvas.ForceUpdateCanvases();
 
-            // Move existing tabs (anchor-safe)
             MoveButtonRelative(playerInv, "Button (1)", "Button (1)", new Vector2(-65f, 0f));
             MoveButtonRelative(playerInv, "Button",     "Button",     new Vector2(-55f, 0f));
 
-            // Build a brand-new Button (2) and wire both Button.onClick + Proxy
             EnsureFreshManagerButton(playerInv);
 
-            // Hook other tabs to hide ManagerPanel
             var btn0 = playerInv.transform.Find("Button")?.GetComponent<Button>();
             if (btn0 != null) AttachOtherTabProxy(playerInv.transform, "Button");
 
             var btn1 = playerInv.transform.Find("Button (1)")?.GetComponent<Button>();
             if (btn1 != null) AttachOtherTabProxy(playerInv.transform, "Button (1)");
 
-            // Clone AAScreen -> ManagerPanel (strip children & clean root scripts)
             var managerPanel = ClonePanelStripChildren(
                 parent: playerInv,
                 sourceName: SourcePanelName,
@@ -57,7 +53,6 @@ namespace LootManager
 
             if (managerPanel != null)
             {
-                // Title text: "Loot Manager" (no wrap)
                 var textTr = managerPanel.transform.Find("Text (TMP)");
                 if (textTr != null && textTr.TryGetComponent<TextMeshProUGUI>(out var tmp))
                 {
@@ -75,7 +70,6 @@ namespace LootManager
                     }
                 }
 
-                // Attach managerSlotPanel prefab once
                 var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
                 var slotPrefab = LootUI.Instance?.ManagerSlotPrefab;
                 if (managerPanelTr != null && slotPrefab != null && managerPanelTr.Find("managerSlotPanel") == null)
@@ -90,27 +84,23 @@ namespace LootManager
                         rt.anchorMin = new Vector2(0f, 1f);
                         rt.anchorMax = new Vector2(0f, 1f);
                         rt.pivot     = new Vector2(0f, 1f);
-                        rt.anchoredPosition = new Vector2(-160f, 300f); // tweak as needed
+                        rt.anchoredPosition = new Vector2(-160f, 300f);
                         slot.transform.localScale = Vector3.one;
                     }
                 }
 
-                // Start hidden until clicked
                 managerPanel.SetActive(false);
             }
         }
 
-        // Build/rebuild "Button (2)" with robust click handling
         private GameObject EnsureFreshManagerButton(GameObject playerInv)
         {
-            // If a stale Button (2) exists (from previous scene), destroy it and rebuild
             var existing = playerInv.transform.Find("Button (2)")?.gameObject;
             if (existing != null)
             {
                 Destroy(existing);
             }
 
-            // Use "Button" as a visual template only
             var sourceBtnTr = playerInv.transform.Find("Button");
             TextMeshProUGUI sourceTMP = null;
             Image sourceImg = null;
@@ -126,11 +116,9 @@ namespace LootManager
                 if (sourceTextTr != null) sourceTextTr.TryGetComponent(out sourceTMP);
             }
 
-            // Create GO + components
             var go = new GameObject("Button (2)", typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(playerInv.transform, false);
 
-            // Copy RectTransform layout from source (do NOT overwrite later)
             var dstRT = go.GetComponent<RectTransform>();
             if (srcRT != null)
             {
@@ -138,14 +126,12 @@ namespace LootManager
                 dstRT.anchorMax = srcRT.anchorMax;
                 dstRT.pivot     = srcRT.pivot;
                 dstRT.sizeDelta = srcRT.sizeDelta;
-                dstRT.anchoredPosition = srcRT.anchoredPosition; // base position same as template
+                dstRT.anchoredPosition = srcRT.anchoredPosition;
             }
 
-            // Make layout independent so moves stick
             var le = go.AddComponent<LayoutElement>();
             le.ignoreLayout = true;
 
-            // Image styling and raycast
             var img = go.GetComponent<Image>();
             if (sourceImg != null)
             {
@@ -155,9 +141,8 @@ namespace LootManager
                 img.material = sourceImg.material;
                 img.pixelsPerUnitMultiplier = sourceImg.pixelsPerUnitMultiplier;
             }
-            img.raycastTarget = true; // ensure clickable
+            img.raycastTarget = true;
 
-            // Configure Button with ONLY our listener
             var btn2 = go.GetComponent<Button>();
             if (sourceBtn != null)
             {
@@ -170,7 +155,6 @@ namespace LootManager
             btn2.onClick = new Button.ButtonClickedEvent();
             btn2.onClick.AddListener(OnManagerButtonClicked);
 
-            // Add child TMP text (raycast OFF so text never eats clicks)
             var textGO = new GameObject("Text (TMP)", typeof(RectTransform), typeof(TextMeshProUGUI));
             textGO.transform.SetParent(go.transform, false);
             var textRT = textGO.GetComponent<RectTransform>();
@@ -198,17 +182,13 @@ namespace LootManager
             }
             tmp.raycastTarget = false;
 
-            // Add proxy click handler to belt-and-suspenders the click
             var proxy = go.AddComponent<ManagerButtonProxy>();
             proxy.Bind(() => OnManagerButtonClicked());
 
-            // Make sure parent chain allows interaction
             EnsureInteractiveChain(go.transform);
 
-            // Final position tweak RELATIVE TO TEMPLATE (no anchor change)
             MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
 
-            // Sibling ordering next to source
             if (sourceBtnTr != null)
                 go.transform.SetSiblingIndex(sourceBtnTr.GetSiblingIndex() + 1);
             else
@@ -219,7 +199,6 @@ namespace LootManager
 
         private void EnsureInteractiveChain(Transform leaf)
         {
-            // Walk up to root, enabling interaction on any CanvasGroup we find
             var t = leaf;
             while (t != null)
             {
@@ -233,24 +212,20 @@ namespace LootManager
             }
         }
 
-        // NEW: anchor-safe mover — never force anchorMin/Max to 0.5
         private void MoveButtonRelative(GameObject parent, string targetName, string templateName, Vector2 delta)
         {
             var targetRT   = parent.transform.Find(targetName)?.GetComponent<RectTransform>();
             var templateRT = parent.transform.Find(templateName)?.GetComponent<RectTransform>();
             if (targetRT == null || templateRT == null) return;
 
-            // Mirror template anchors/pivot/size so layout math stays consistent
             targetRT.anchorMin = templateRT.anchorMin;
             targetRT.anchorMax = templateRT.anchorMax;
             targetRT.pivot     = templateRT.pivot;
             targetRT.sizeDelta = templateRT.sizeDelta;
 
-            // Ensure layout system won’t override us
             var le = targetRT.GetComponent<LayoutElement>();
             if (le != null) le.ignoreLayout = true;
 
-            // Position relative to template
             targetRT.anchoredPosition = templateRT.anchoredPosition + delta;
         }
 
@@ -278,7 +253,6 @@ namespace LootManager
 
             var panel = panelTr.gameObject;
 
-            // Ensure visible and interactive
             panel.SetActive(true);
             panel.transform.SetSiblingIndex(27);
 
@@ -386,23 +360,19 @@ namespace LootManager
 
             var playerInv = GameObject.Find(PlayerInvName);
 
-            // Let the game finish wiring its UI first
             yield return null;
             yield return new WaitForEndOfFrame();
 
-            // Recreate Button (2) fresh and bind it (Button + Proxy)
             EnsureFreshManagerButton(playerInv);
             AttachOtherTabProxy(playerInv.transform, "Button");
             AttachOtherTabProxy(playerInv.transform, "Button (1)");
             UpdateButtonText(playerInv, "Button (2)", "Manager", TabInactiveColor);
 
-            // Re-hook other tabs to hide ManagerPanel
             var btn0 = playerInv.transform.Find("Button")?.GetComponent<Button>();
             var btn1 = playerInv.transform.Find("Button (1)")?.GetComponent<Button>();
             if (btn0 != null) btn0.onClick.AddListener(OnOtherTabClicked);
             if (btn1 != null) btn1.onClick.AddListener(OnOtherTabClicked);
 
-            // Ensure ManagerPanel exists and is hidden on new scene
             var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
             if (managerPanelTr == null)
             {
@@ -415,7 +385,6 @@ namespace LootManager
                 managerPanelTr.gameObject.SetActive(false);
             }
 
-            // Ensure managerSlotPanel exists and is initialized
             if (managerPanelTr != null)
             {
                 var slot = managerPanelTr.Find("managerSlotPanel")?.gameObject;
@@ -436,7 +405,6 @@ namespace LootManager
                     ManagerSlotController.Initialize(slot);
             }
 
-            // After layout settles, re-assert position relative to template
             MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
             Canvas.ForceUpdateCanvases();
         }
@@ -446,15 +414,12 @@ namespace LootManager
             var tr = parent.Find(childName);
             if (tr == null) return;
 
-            // Ensure there is a Button (we don't rely on its onClick, but it's fine either way)
             var btn = tr.GetComponent<Button>();
             if (btn != null)
             {
-                // (Optional) also bind onClick as a secondary path
                 btn.onClick.AddListener(OnOtherTabClicked);
             }
 
-            // Add or reuse our proxy so clicks always call our handler
             var proxy = tr.GetComponent<OtherTabProxy>();
             if (proxy == null) proxy = tr.gameObject.AddComponent<OtherTabProxy>();
             proxy.OnClicked = OnOtherTabClicked;
@@ -489,7 +454,6 @@ namespace LootManager
         public void OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData)
         {
             OnClicked?.Invoke();
-            // let the game's tab system also handle it
         }
     }
 }

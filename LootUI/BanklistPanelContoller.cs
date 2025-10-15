@@ -19,7 +19,13 @@ namespace LootManager
         private Button _removeBtn;
         private GameObject _dragHandle;
 
-        private readonly List<(TMP_Text text, bool isBanklist)> _selected = new List<(TMP_Text text, bool isBanklist)>();
+        private UIVirtualList _leftList;
+        private UIVirtualList _rightList;
+
+        private List<string> _leftData = new List<string>();
+        private List<string> _rightData = new List<string>();
+
+        private readonly HashSet<string> _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
 
@@ -39,14 +45,12 @@ namespace LootManager
             _removeBtn            = UICommon.Find(_root, "container/panelBGbanklist/banklistPanel/bankremoveBtn")?.GetComponent<Button>();
             _dragHandle           = UICommon.Find(_root, "container/panelBGbanklist/lootUIDragHandle")?.gameObject;
 
-            // Drag handler
             if (_dragHandle != null && _containerRect != null)
             {
                 var dh = _dragHandle.GetComponent<DragHandler>() ?? _dragHandle.AddComponent<DragHandler>();
                 dh.PanelToMove = _containerRect;
             }
 
-            // Buttons
             if (_addBtn != null)
             {
                 _addBtn.onClick.RemoveAllListeners();
@@ -59,15 +63,33 @@ namespace LootManager
                 _removeBtn.onClick.AddListener(RemoveSelected);
             }
 
-            // Keep template hidden
             if (_banklistItemTemplate != null)
                 _banklistItemTemplate.gameObject.SetActive(false);
 
-            // Build shared caches once
             ItemLookup.EnsureBuilt();
 
-            // Debouncer for filter input
             _debounce = DebounceInvoker.Attach(_root);
+
+            BuildVirtualLists();
+        }
+
+        private void BuildVirtualLists()
+        {
+            if (_banklistItemTemplate == null) return;
+
+            var leftScroll  = _bankitemContent  ? _bankitemContent.GetComponentInParent<ScrollRect>()  : null;
+            var rightScroll = _banklistContent ? _banklistContent.GetComponentInParent<ScrollRect>() : null;
+
+            float rowHeight = (_banklistItemTemplate.transform as RectTransform)?.sizeDelta.y ?? 24f;
+            if (rowHeight <= 0f) rowHeight = 28f;
+
+            _leftList  = new UIVirtualList(leftScroll,  (RectTransform)_bankitemContent,  _banklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
+            _rightList = new UIVirtualList(rightScroll, (RectTransform)_banklistContent, _banklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
+
+            _leftList.Enable(true);
+            _rightList.Enable(true);
+
+            Debug.Log($"[Banklist] virtual rowHeight={rowHeight}");
         }
 
         public void Show()
@@ -85,16 +107,17 @@ namespace LootManager
             }
 
             RefreshUI();
-        }
 
-        // ---------- Core UI ----------
+            _leftList?.RecalculateAndRefresh();
+            _rightList?.RecalculateAndRefresh();
+
+            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_bankitemContent));
+            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_banklistContent));
+        }
 
         private void RefreshUI()
         {
-            // Preserve the template in the left column
-            UICommon.ClearListExceptTemplate(_bankitemContent, _banklistItemTemplate != null ? _banklistItemTemplate.gameObject : null);
-            UICommon.ClearList(_banklistContent);
-            _selected.Clear();
+            _selectedNames.Clear();
 
             string filter = _bankfilterInput != null && _bankfilterInput.text != null
                 ? _bankfilterInput.text.ToLowerInvariant()
@@ -102,52 +125,58 @@ namespace LootManager
 
             var source = ItemLookup.AllItems;
 
-            // Left list (available items not in banklist)
-            var filteredItems = string.IsNullOrEmpty(filter)
-                ? (source as List<string> ?? source.ToList())
-                : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
-
-            // Right list (current banklist)
-            var filteredBanklist = Plugin.Banklist
+            _rightData = Plugin.Banklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
                 .OrderBy(i => i)
                 .ToList();
 
-            UILayoutBatch.WithLayoutSuspended(_bankitemContent, () =>
-            {
-                foreach (var item in filteredItems)
-                {
-                    if (!filteredBanklist.Contains(item))
-                        CreateRow(_bankitemContent, item, false);
-                }
-            });
+            _leftData = string.IsNullOrEmpty(filter)
+                ? (source as List<string> ?? source.ToList())
+                : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
-            UILayoutBatch.WithLayoutSuspended(_banklistContent, () =>
+            if (_rightData.Count > 0)
             {
-                foreach (var item in filteredBanklist)
-                    CreateRow(_banklistContent, item, true);
-            });
+                var mask = new HashSet<string>(_rightData);
+                _leftData.RemoveAll(mask.Contains);
+            }
+
+            _leftList?.SetData(_leftData.Count, BindLeftRow);
+            _rightList?.SetData(_rightData.Count, BindRightRow);
+
+            UIVirtualList.FinalizeListLayout(_bankitemContent);
+            UIVirtualList.FinalizeListLayout(_banklistContent);
         }
 
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.color = new Color(1f, 1f, 1f, 0f); // fully transparent but raycastable
+            img.color = new Color(1f, 1f, 1f, 0f);
             img.raycastTarget = true;
             return img;
         }
 
-        private void CreateRow(Transform parent, string itemName, bool isBanklist)
+        private void BindLeftRow(GameObject row, int index)
         {
-            var go = GameObject.Instantiate(_banklistItemTemplate.gameObject, parent);
-            go.name = "banklistItem_" + itemName;
-            go.SetActive(true);
+            if (index < 0 || index >= _leftData.Count) { row.SetActive(false); return; }
+            string itemName = _leftData[index];
+            BindRowCommon(row, itemName, isBanklist: false);
+        }
 
-            var btn = go.GetComponent<Button>() ?? go.AddComponent<Button>();
-            btn.targetGraphic = EnsureClickTargetGraphic(go);
+        private void BindRightRow(GameObject row, int index)
+        {
+            if (index < 0 || index >= _rightData.Count) { row.SetActive(false); return; }
+            string itemName = _rightData[index];
+            BindRowCommon(row, itemName, isBanklist: true);
+        }
 
-            var iconTr  = go.transform.Find("Icon");
-            var labelTr = go.transform.Find("Label");
+        private void BindRowCommon(GameObject row, string itemName, bool isBanklist)
+        {
+            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var rootImg = EnsureClickTargetGraphic(row);
+            btn.targetGraphic = rootImg;
+
+            var iconTr  = row.transform.Find("Icon");
+            var labelTr = row.transform.Find("Label");
 
             var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
             var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
@@ -155,8 +184,10 @@ namespace LootManager
             if (label != null)
             {
                 label.text = itemName;
-                label.color = isBanklist ? Color.blue : Color.white;
-                label.raycastTarget = false; // let root handle clicks
+                label.raycastTarget = false;
+                label.color = _selectedNames.Contains(itemName)
+                    ? Color.green
+                    : isBanklist ? Color.blue : Color.white;
             }
 
             if (icon != null)
@@ -164,12 +195,11 @@ namespace LootManager
                 var sprite = ItemLookup.GetIcon(itemName);
                 icon.sprite = sprite;
                 icon.preserveAspect = true;
-                icon.raycastTarget = false; // let root handle clicks
-                // icon.enabled = (sprite != null); // optional
+                icon.raycastTarget = false;
             }
 
             btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(delegate
+            btn.onClick.AddListener(() =>
             {
                 if (_doubleClick.IsDoubleClick(itemName))
                 {
@@ -189,56 +219,37 @@ namespace LootManager
                     return;
                 }
 
-                if (label == null) return;
-
                 bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                bool already = _selected.Any(e => e.text == label);
-
                 if (ctrl)
                 {
-                    if (already)
-                    {
-                        label.color = isBanklist ? Color.blue : Color.white;
-                        _selected.RemoveAll(e => e.text == label);
-                    }
+                    if (_selectedNames.Contains(itemName))
+                        _selectedNames.Remove(itemName);
                     else
-                    {
-                        label.color = Color.green;
-                        _selected.Add((label, isBanklist));
-                    }
+                        _selectedNames.Add(itemName);
                 }
                 else
                 {
-                    foreach (var entry in _selected.ToArray())
-                    {
-                        var t = entry.text;
-                        bool wasBank = entry.isBanklist;
-                        if (t != null) t.color = wasBank ? Color.blue : Color.white;
-                    }
-                    _selected.Clear();
-
-                    label.color = Color.green;
-                    _selected.Add((label, isBanklist));
+                    _selectedNames.Clear();
+                    _selectedNames.Add(itemName);
                 }
+
+                _leftList?.Refresh();
+                _rightList?.Refresh();
             });
         }
-
-        // ---------- Actions ----------
 
         private void AddSelected()
         {
             bool changed = false;
-            foreach (var entry in _selected.ToArray())
+            foreach (var name in _selectedNames.ToArray())
             {
-                var t = entry.text;
-                if (t == null) continue;
-
-                if (!Plugin.Banklist.Contains(t.text))
+                if (!Plugin.Banklist.Contains(name))
                 {
-                    Plugin.Banklist.Add(t.text);
+                    Plugin.Banklist.Add(name);
                     changed = true;
                 }
             }
+
             if (changed)
             {
                 LootBanklist.SaveBanklist();
@@ -254,17 +265,15 @@ namespace LootManager
         private void RemoveSelected()
         {
             bool changed = false;
-            foreach (var entry in _selected.ToArray())
+            foreach (var name in _selectedNames.ToArray())
             {
-                var t = entry.text;
-                if (t == null) continue;
-
-                if (Plugin.Banklist.Contains(t.text))
+                if (Plugin.Banklist.Contains(name))
                 {
-                    Plugin.Banklist.Remove(t.text);
+                    Plugin.Banklist.Remove(name);
                     changed = true;
                 }
             }
+
             if (changed)
             {
                 LootBanklist.SaveBanklist();

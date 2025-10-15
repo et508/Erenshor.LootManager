@@ -1,21 +1,26 @@
+![GitHub Release](https://img.shields.io/github/v/release/et508/Erenshor.LootManager)
+
 # Loot Manager
-Your Loot Your Way!!! Loot using Blacklist filtering. Send all your loot directly to your bank, or setup a bank filter and only send the loot you want to the bank. Easily modify your Blacklist and Banklist using LootUI.
+Loot using Blacklist or Whitelist filtering. Send all your loot directly to your bank, or setup a bank filter and only send the loot you want to the bank.
 
 ## Installation
-- Install [BepInEx Mod Pack](https://thunderstore.io/c/erenshor/p/BepInEx/BepInExPack/)
-- Download the latest [release](https://github.com/et508/Erenshor.LootManager)
+- Install [BepInEx](https://github.com/et508/Erenshor.BepInEx/releases/tag/e1)
+- [Download the latest release](https://github.com/et508/Erenshor.LootManager/releases)
 - Extract the folder from Erenshor.LootManager.zip into Erenshor\BepInEx\plugins\ folder.
 
+### It is highly recommended to use BepInEx 5.4.23.x
+
 ## How It Works
-- Open the LootUI window with `/lootui` or by pressing F6. Hotkey currently is not configuable. Will be coming in a later update. 
+- Open the LootUI window by pressing F6 or using the LootUI button on the new manager tab in the inventory. Hotkey currently is not configuable.
 - Choose your settings
 - Setup your Blacklist and/or Banklist
 
 ## LootUI Settings
 - Autoloot - Toggle On or Off
 - Autoloot Distance - Set the distance to autoloot 0 to 200 units
-- Loot Method - Choose between Blacklist or Standard
+- Loot Method - Choose between Blacklist, Whitelist, or Standard
     - Blacklist - Will use the blicklist filter you setup. Destroying the items you do not want to loot.
+    - Whitelist - Destroy everything. Only looting what you choose to loot.
     - Standard - This the default game looting behavior.
 - Bankloot - Toggle On or Off
 - Bankloot Method - All or Filtered
@@ -30,10 +35,7 @@ Your Loot Your Way!!! Loot using Blacklist filtering. Send all your loot directl
 - On the left is a list of every item in the game. 
 - On the right is the blacklist(red) or banklist(blue).
 - Item search filtering is available. Not case sensitive.
-- Double-click to add or remove a single item or select multiple with left ctrl + click then click add or remove. Currently you can not select multiple and filter at the same time. Changing your filter will clear your selections. A fix for this is coming in a later update. 
-
-## Loot Manager Commands
-- A revamp of commands is currently in the works. In the current release only `/lootui` is supported. This will open the Loot Manager UI window. 
+- Double-click to add or remove a single item or select multiple with left ctrl + click then click add or remove. Currently you can not select multiple and filter at the same time. Changing your filter will clear your selections. A fix for this is coming in a later update.
 
 ## Add Items Directly From Inventory
 - Add items to the list just by placing them in the "Blacklist" inventory slot.

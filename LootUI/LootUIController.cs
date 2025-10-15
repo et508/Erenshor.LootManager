@@ -8,8 +8,7 @@ namespace LootManager
     public static class LootUIController
     {
         private static GameObject _uiRoot;
-
-        // Top-level panels
+        
         private static GameObject _container;
         private static GameObject _panelBGsettings;
         private static GameObject _settingsPanel;
@@ -21,15 +20,13 @@ namespace LootManager
         private static GameObject _banklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
-
-        // Menu Buttons
+        
         private static Button _menuSettingsBtn;
         private static Button _menuBlacklistBtn;
         private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
         private static Button _closeBtn;
-
-        // Panel controllers
+        
         private static SettingsPanelController _settings;
         private static BlacklistPanelController _blacklist;
         private static WhitelistPanelController _whitelist;

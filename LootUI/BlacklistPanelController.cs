@@ -19,7 +19,13 @@ namespace LootManager
         private Button _blackremoveBtn;
         private GameObject _dragHandle;
 
-        private readonly List<(TMP_Text text, bool isBlacklist)> _selected = new List<(TMP_Text text, bool isBlacklist)>();
+        private UIVirtualList _leftList;
+        private UIVirtualList _rightList;
+
+        private List<string> _leftData = new List<string>();
+        private List<string> _rightData = new List<string>();
+
+        private readonly HashSet<string> _selectedNames = new HashSet<string>();
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
 
@@ -39,14 +45,12 @@ namespace LootManager
             _blackremoveBtn        = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
             _dragHandle            = UICommon.Find(_root, "container/panelBGblacklist/lootUIDragHandle")?.gameObject;
 
-            // Drag handler
             if (_dragHandle != null && _containerRect != null)
             {
                 var dh = _dragHandle.GetComponent<DragHandler>() ?? _dragHandle.AddComponent<DragHandler>();
                 dh.PanelToMove = _containerRect;
             }
 
-            // Buttons
             if (_blackaddBtn != null)
             {
                 _blackaddBtn.onClick.RemoveAllListeners();
@@ -59,15 +63,30 @@ namespace LootManager
                 _blackremoveBtn.onClick.AddListener(RemoveSelected);
             }
 
-            // Keep template hidden
             if (_blacklistItemTemplate != null)
                 _blacklistItemTemplate.gameObject.SetActive(false);
 
-            // Build shared caches once
             ItemLookup.EnsureBuilt();
 
-            // Debouncer for filter input
             _debounce = DebounceInvoker.Attach(_root);
+
+            BuildVirtualLists();
+        }
+
+        private void BuildVirtualLists()
+        {
+            if (_blacklistItemTemplate == null) return;
+
+            var leftScroll  = _blackitemContent  ? _blackitemContent.GetComponentInParent<ScrollRect>()  : null;
+            var rightScroll = _blacklistContent ? _blacklistContent.GetComponentInParent<ScrollRect>() : null;
+
+            float rowHeight = (_blacklistItemTemplate.transform as RectTransform)?.sizeDelta.y ?? 24f;
+
+            _leftList  = new UIVirtualList(leftScroll,  (RectTransform)_blackitemContent,  _blacklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
+            _rightList = new UIVirtualList(rightScroll, (RectTransform)_blacklistContent, _blacklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
+
+            _leftList.Enable(true);
+            _rightList.Enable(true);
         }
 
         public void Show()
@@ -85,16 +104,17 @@ namespace LootManager
             }
 
             RefreshUI();
-        }
 
-        // ---------- Core UI ----------
+            _leftList?.RecalculateAndRefresh();
+            _rightList?.RecalculateAndRefresh();
+            
+            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_blackitemContent));
+            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_blacklistContent));
+        }
 
         private void RefreshUI()
         {
-            // Preserve the template under left list
-            UICommon.ClearListExceptTemplate(_blackitemContent, _blacklistItemTemplate != null ? _blacklistItemTemplate.gameObject : null);
-            UICommon.ClearList(_blacklistContent);
-            _selected.Clear();
+            _selectedNames.Clear();
 
             string filter = _blackfilterInput != null && _blackfilterInput.text != null
                 ? _blackfilterInput.text.ToLowerInvariant()
@@ -102,52 +122,58 @@ namespace LootManager
 
             var source = ItemLookup.AllItems;
 
-            // Left list (available items not in blacklist)
-            var filteredItems = string.IsNullOrEmpty(filter)
-                ? (source as List<string> ?? source.ToList())
-                : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
-
-            // Right list (current blacklist)
-            var filteredBlacklist = Plugin.Blacklist
+            _rightData = Plugin.Blacklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
                 .OrderBy(i => i)
                 .ToList();
 
-            UILayoutBatch.WithLayoutSuspended(_blackitemContent, () =>
-            {
-                foreach (var item in filteredItems)
-                {
-                    if (!filteredBlacklist.Contains(item))
-                        CreateRow(_blackitemContent, item, false);
-                }
-            });
+            _leftData = string.IsNullOrEmpty(filter)
+                ? (source as List<string> ?? source.ToList())
+                : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
-            UILayoutBatch.WithLayoutSuspended(_blacklistContent, () =>
+            if (_rightData.Count > 0)
             {
-                foreach (var item in filteredBlacklist)
-                    CreateRow(_blacklistContent, item, true);
-            });
+                var mask = new HashSet<string>(_rightData);
+                _leftData.RemoveAll(mask.Contains);
+            }
+
+            _leftList?.SetData(_leftData.Count, BindLeftRow);
+            _rightList?.SetData(_rightData.Count, BindRightRow);
+            
+            UIVirtualList.FinalizeListLayout(_blackitemContent);
+            UIVirtualList.FinalizeListLayout(_blacklistContent);
         }
 
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.color = new Color(1f, 1f, 1f, 0f); // fully transparent but raycastable
+            img.color = new Color(1f, 1f, 1f, 0f);
             img.raycastTarget = true;
             return img;
         }
 
-        private void CreateRow(Transform parent, string itemName, bool isBlacklist)
+        private void BindLeftRow(GameObject row, int index)
         {
-            var go = GameObject.Instantiate(_blacklistItemTemplate.gameObject, parent);
-            go.name = "blacklistItem_" + itemName;
-            go.SetActive(true);
+            if (index < 0 || index >= _leftData.Count) { row.SetActive(false); return; }
+            string itemName = _leftData[index];
+            BindRowCommon(row, itemName, isBlacklist: false);
+        }
 
-            var btn = go.GetComponent<Button>() ?? go.AddComponent<Button>();
-            btn.targetGraphic = EnsureClickTargetGraphic(go);
+        private void BindRightRow(GameObject row, int index)
+        {
+            if (index < 0 || index >= _rightData.Count) { row.SetActive(false); return; }
+            string itemName = _rightData[index];
+            BindRowCommon(row, itemName, isBlacklist: true);
+        }
 
-            var iconTr  = go.transform.Find("Icon");
-            var labelTr = go.transform.Find("Label");
+        private void BindRowCommon(GameObject row, string itemName, bool isBlacklist)
+        {
+            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var rootImg = EnsureClickTargetGraphic(row);
+            btn.targetGraphic = rootImg;
+
+            var iconTr  = row.transform.Find("Icon");
+            var labelTr = row.transform.Find("Label");
 
             var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
             var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
@@ -155,8 +181,10 @@ namespace LootManager
             if (label != null)
             {
                 label.text = itemName;
-                label.color = isBlacklist ? Color.red : Color.white;
-                label.raycastTarget = false; // let root handle clicks
+                label.raycastTarget = false;
+                label.color = _selectedNames.Contains(itemName)
+                    ? Color.green
+                    : isBlacklist ? Color.red : Color.white;
             }
 
             if (icon != null)
@@ -164,12 +192,11 @@ namespace LootManager
                 var sprite = ItemLookup.GetIcon(itemName);
                 icon.sprite = sprite;
                 icon.preserveAspect = true;
-                icon.raycastTarget = false; // let root handle clicks
-                // icon.enabled = (sprite != null); // optional
+                icon.raycastTarget = false;
             }
 
             btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(delegate
+            btn.onClick.AddListener(() =>
             {
                 if (_doubleClick.IsDoubleClick(itemName))
                 {
@@ -189,56 +216,37 @@ namespace LootManager
                     return;
                 }
 
-                if (label == null) return;
-
                 bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                bool already = _selected.Any(e => e.text == label);
-
                 if (ctrl)
                 {
-                    if (already)
-                    {
-                        label.color = isBlacklist ? Color.red : Color.white;
-                        _selected.RemoveAll(e => e.text == label);
-                    }
+                    if (_selectedNames.Contains(itemName))
+                        _selectedNames.Remove(itemName);
                     else
-                    {
-                        label.color = Color.green;
-                        _selected.Add((label, isBlacklist));
-                    }
+                        _selectedNames.Add(itemName);
                 }
                 else
                 {
-                    foreach (var entry in _selected.ToArray())
-                    {
-                        var t = entry.text;
-                        bool wasBlack = entry.isBlacklist;
-                        if (t != null) t.color = wasBlack ? Color.red : Color.white;
-                    }
-                    _selected.Clear();
-
-                    label.color = Color.green;
-                    _selected.Add((label, isBlacklist));
+                    _selectedNames.Clear();
+                    _selectedNames.Add(itemName);
                 }
+
+                _leftList?.Refresh();
+                _rightList?.Refresh();
             });
         }
-
-        // ---------- Actions ----------
 
         private void AddSelected()
         {
             bool changed = false;
-            foreach (var entry in _selected.ToArray())
+            foreach (var name in _selectedNames.ToArray())
             {
-                var t = entry.text;
-                if (t == null) continue;
-
-                if (!Plugin.Blacklist.Contains(t.text))
+                if (!Plugin.Blacklist.Contains(name))
                 {
-                    Plugin.Blacklist.Add(t.text);
+                    Plugin.Blacklist.Add(name);
                     changed = true;
                 }
             }
+
             if (changed)
             {
                 LootBlacklist.SaveBlacklist();
@@ -254,17 +262,15 @@ namespace LootManager
         private void RemoveSelected()
         {
             bool changed = false;
-            foreach (var entry in _selected.ToArray())
+            foreach (var name in _selectedNames.ToArray())
             {
-                var t = entry.text;
-                if (t == null) continue;
-
-                if (Plugin.Blacklist.Contains(t.text))
+                if (Plugin.Blacklist.Contains(name))
                 {
-                    Plugin.Blacklist.Remove(t.text);
+                    Plugin.Blacklist.Remove(name);
                     changed = true;
                 }
             }
+
             if (changed)
             {
                 LootBlacklist.SaveBlacklist();

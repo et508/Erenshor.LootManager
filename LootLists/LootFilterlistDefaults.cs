@@ -3,18 +3,10 @@ using System.Collections.Generic;
 
 namespace LootManager
 {
-    /// <summary>
-    /// Supplies the default data used to seed LootFilterlist.json on first run.
-    /// Matches LootFilterlist.Load() expectations (Newtonsoft.Json model).
-    /// </summary>
     public static class LootFilterlistDefaults
     {
-        /// <summary>
-        /// Returns the default categories and items (all sections enabled).
-        /// </summary>
         public static Dictionary<string, LootFilterCategory> GetDefaultData()
         {
-            // Note: StringComparer.OrdinalIgnoreCase for user-friendly lookups later.
             var data = new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase)
             {
                 ["CONSUMABLE"] = new LootFilterCategory

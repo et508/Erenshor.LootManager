@@ -14,16 +14,9 @@ namespace LootManager
         [JsonProperty] public List<string> Items = new List<string>();
     }
 
-    /// <summary>
-    /// JSON-backed filterlist handler that mirrors LootWhitelist.cs style.
-    /// - File: BepInEx/config/LootManager/LootFilterlist.json
-    /// - Load(): populates Plugin.FilterList and Plugin.EnabledFilterCategories
-    /// - SaveFilterlist(): writes current in-memory state to disk
-    /// Also exposes helpers previously used by the UI/loot logic.
-    /// </summary>
     public static class LootFilterlist
     {
-        private const string FileName  = "LootFilterlist.json";
+        private const string FileName = "LootFilterlist.json";
         private const string ConfigSub = "LootManager";
 
         private static readonly JsonSerializerSettings _jsonSettings = new JsonSerializerSettings
@@ -32,12 +25,9 @@ namespace LootManager
             NullValueHandling = NullValueHandling.Ignore
         };
 
-        /// <summary>
-        /// Load the filter list file (create defaults if missing) and populate Plugin.FilterList and Plugin.EnabledFilterCategories.
-        /// </summary>
         public static void Load()
         {
-            string dir  = Path.Combine(Paths.ConfigPath, ConfigSub);
+            string dir = Path.Combine(Paths.ConfigPath, ConfigSub);
             string path = Path.Combine(dir, FileName);
 
             try
@@ -46,7 +36,6 @@ namespace LootManager
 
                 if (!File.Exists(path))
                 {
-                    // Seed defaults and write file
                     var defaults = LootFilterlistDefaults.GetDefaultData()
                                    ?? new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase);
 
@@ -58,8 +47,7 @@ namespace LootManager
                     return;
                 }
 
-                // Load existing file
-                var text   = File.ReadAllText(path);
+                var text = File.ReadAllText(path);
                 var loaded = JsonConvert.DeserializeObject<Dictionary<string, LootFilterCategory>>(text)
                              ?? new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase);
 
@@ -69,20 +57,16 @@ namespace LootManager
             catch (Exception ex)
             {
                 Plugin.Log.LogError("[Loot Manager] Failed to load LootFilterlist.json: " + ex);
-                // Safe empty state
                 Plugin.FilterList = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 Plugin.EnabledFilterCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
-        /// <summary>
-        /// Save current Plugin.FilterList and Plugin.EnabledFilterCategories to disk.
-        /// </summary>
         public static void SaveFilterlist()
         {
             try
             {
-                string dir  = Path.Combine(Paths.ConfigPath, ConfigSub);
+                string dir = Path.Combine(Paths.ConfigPath, ConfigSub);
                 string path = Path.Combine(dir, FileName);
                 Directory.CreateDirectory(dir);
 
@@ -93,13 +77,12 @@ namespace LootManager
                     string sectionName = kv.Key;
                     var set = kv.Value ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                    // FIX: avoid HashSet<string> ?? string[] — build a sequence separately
                     IEnumerable<string> itemsSeq = set.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim());
 
                     data[sectionName] = new LootFilterCategory
                     {
                         IsEnabled = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
-                        Items     = itemsSeq.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList()
+                        Items = itemsSeq.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList()
                     };
                 }
 
@@ -113,10 +96,6 @@ namespace LootManager
                 Plugin.Log.LogError("[Loot Manager] Failed to save LootFilterlist.json: " + ex);
             }
         }
-
-        // ------------------------------------------------------------------
-        // Snapshots for callers (mirrors your previous helpers)
-        // ------------------------------------------------------------------
 
         public static void ReadAll(out Dictionary<string, HashSet<string>> sections, out HashSet<string> enabled)
         {
@@ -161,7 +140,7 @@ namespace LootManager
                 Plugin.FilterList[sectionName] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (isEnabled) Plugin.EnabledFilterCategories.Add(sectionName);
-            else           Plugin.EnabledFilterCategories.Remove(sectionName);
+            else Plugin.EnabledFilterCategories.Remove(sectionName);
 
             SaveFilterlist();
         }
@@ -181,7 +160,7 @@ namespace LootManager
             if (setEnabled.HasValue)
             {
                 if (setEnabled.Value) Plugin.EnabledFilterCategories.Add(sectionName);
-                else                  Plugin.EnabledFilterCategories.Remove(sectionName);
+                else Plugin.EnabledFilterCategories.Remove(sectionName);
             }
 
             SaveFilterlist();
@@ -194,14 +173,10 @@ namespace LootManager
             SaveFilterlist();
         }
 
-        // ------------------------------------------------------------------
-        // Internals
-        // ------------------------------------------------------------------
-
         private static void ApplyToPluginState(Dictionary<string, LootFilterCategory> input)
         {
             var sections = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var enabled  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var enabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (input != null)
             {

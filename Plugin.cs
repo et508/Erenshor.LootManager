@@ -14,21 +14,17 @@ namespace LootManager
     public class Plugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
-
-        // Public state used by other classes
+        
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        // Filter categories and their items
+        
         public static Dictionary<string, HashSet<string>> FilterList =
             new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-        // Which categories are currently enabled (persisted via LootFilterlist.ini IsEnabled=)
+        
         public static HashSet<string> EnabledFilterCategories =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        // Config entries
+        
         public static ConfigEntry<bool>  AutoLootEnabled;
         public static ConfigEntry<float> AutoLootDistance;
         public static ConfigEntry<string> LootMethod;
@@ -43,10 +39,7 @@ namespace LootManager
         private void Awake()
         {
             Log = Logger;
-
-            // ----------------------------
-            // BepInEx config bindings
-            // ----------------------------
+            
             AutoLootEnabled   = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance  = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
             LootMethod        = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
@@ -59,27 +52,17 @@ namespace LootManager
 
             LootEquipment     = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
             LootEquipmentTier = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
-
-            // ----------------------------
-            // Load external lists
-            // ----------------------------
-            // These should populate Blacklist/Whitelist/Banklist (your existing code)
+            
             LootBlacklist.Load();
             LootWhitelist.Load();
             LootBanklist.Load();
-
-            // This will read or create BepInEx/config/LootManager/LootFilterlist.ini,
-            // set Plugin.FilterList, and set Plugin.EnabledFilterCategories based on IsEnabled flags.
+            
             LootFilterlist.Load();
 
             Log.LogInfo("Loot Manager loaded.");
-
-            // ----------------------------
-            // Harmony patching
-            // ----------------------------
+            
             var harmony = new Harmony("et508.erenshor.lootmanager");
-
-            // Optionally unpatch QoL if present (kept from your code)
+            
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (asm.GetName().Name == "ErenshorQoL")

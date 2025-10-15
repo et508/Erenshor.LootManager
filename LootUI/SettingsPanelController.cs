@@ -10,8 +10,7 @@ namespace LootManager
         private readonly GameObject _root;
         private readonly RectTransform _containerRect;
         private readonly System.Action _visibilityChanged;
-
-        // UI refs
+        
         private Toggle _autoLootToggle;
         private Slider _autoDistanceSlider;
         private TextMeshProUGUI _autoDistanceText;
@@ -74,7 +73,7 @@ namespace LootManager
 
         public void Show()
         {
-            // nothing dynamic to refresh beyond Init wiring
+            // nothing to load
         }
 
         private void SetupAutoLootToggle()

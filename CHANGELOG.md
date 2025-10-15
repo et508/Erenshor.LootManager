@@ -31,6 +31,9 @@
 - Filterlist Groups - Groups of items to loot. 
     - Groups can be toggled on and off.
 
+### Performance Improvments
+- Fixed list loading in LootUI. Changing windows in LootUI should not be smoother and better load times for the item lists.
+
 ### Known Issues
 - At times the Blacklist Slot will give the message "This item cannot go in this slot." Clicking again and/or moving item around the slot can resolve this.
 

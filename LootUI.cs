@@ -70,14 +70,13 @@ namespace LootManager
 
             DontDestroyOnLoad(_uiRoot);
             
-            _uiRoot.SetActive(false); // Start hidden
+            _uiRoot.SetActive(false); 
             
             Plugin.Log.LogInfo("[Loot Manager] Loot UI initialized successfully.");
         }
         
         private void Update()
         {
-            // Toggle UI on F6 keypress
             if (Input.GetKeyDown(KeyCode.F6) && Instance == this)
             {
                 ToggleUI();
@@ -88,13 +87,10 @@ namespace LootManager
         {
             if (_uiRoot == null)
                 return;
-
-            // figure out the new state and apply it
+            
             bool shouldBeActive = !_uiRoot.activeSelf;
             _uiRoot.SetActive(shouldBeActive);
-
-            // when UI is open we treat the player as “typing” (so movement is blocked);
-            // when UI is closed we clear that flag
+            
             GameData.PlayerTyping = shouldBeActive;
             
         }
