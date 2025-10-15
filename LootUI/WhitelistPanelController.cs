@@ -12,6 +12,7 @@ namespace LootManager
         private readonly GameObject _root;
         private readonly RectTransform _containerRect;
 
+        // View refs
         private Transform _whiteitemContent;
         private Transform _whitelistContent;
         private Button _whitelistItemTemplate;
@@ -24,10 +25,10 @@ namespace LootManager
         private Toggle _filterCategoryTemplate;
         private GameObject _dragHandle;
 
-        private readonly List<string> _allItems = new List<string>();
+        // Local state
         private readonly List<(TMP_Text text, bool isWhitelist)> _selected = new List<(TMP_Text text, bool isWhitelist)>();
-        private readonly Dictionary<string, Sprite> _iconCache = new Dictionary<string, Sprite>();
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
+        private DebounceInvoker _debounce;
 
         public WhitelistPanelController(GameObject root, RectTransform containerRect)
         {
@@ -37,6 +38,7 @@ namespace LootManager
 
         public void Init()
         {
+            // Lookups
             _whiteitemContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
             _whitelistContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
             _whitelistItemTemplate   = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
@@ -49,13 +51,14 @@ namespace LootManager
             _filterCategoryTemplate  = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
             _dragHandle              = UICommon.Find(_root, "container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
 
+            // Drag
             if (_dragHandle != null && _containerRect != null)
             {
-                DragHandler dh = _dragHandle.GetComponent<DragHandler>();
-                if (dh == null) dh = _dragHandle.AddComponent<DragHandler>();
+                var dh = _dragHandle.GetComponent<DragHandler>() ?? _dragHandle.AddComponent<DragHandler>();
                 dh.PanelToMove = _containerRect;
             }
 
+            // Buttons
             if (_addBtn != null)
             {
                 _addBtn.onClick.RemoveAllListeners();
@@ -68,14 +71,20 @@ namespace LootManager
                 _removeBtn.onClick.AddListener(RemoveSelected);
             }
 
+            // Template inactive
             if (_whitelistItemTemplate != null)
                 _whitelistItemTemplate.gameObject.SetActive(false);
 
-            RebuildAllItems();
-            BuildIconCache();
+            // Shared caches built once
+            ItemLookup.EnsureBuilt();
+
+            // Toggles & dropdowns
             SetupLootEquipToggle();
             SetupEquipmentTierDropdown();
             RebuildFilterToggles();
+
+            // Debouncer (for filter input)
+            _debounce = DebounceInvoker.Attach(_root);
         }
 
         public void Show()
@@ -89,51 +98,13 @@ namespace LootManager
             if (_filterInput != null)
             {
                 _filterInput.onValueChanged.RemoveAllListeners();
-                _filterInput.onValueChanged.AddListener(delegate { RefreshUI(); });
+                _filterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
             }
 
             RefreshUI();
         }
 
-        private void RebuildAllItems()
-        {
-            _allItems.Clear();
-            List<string> list = GameData.ItemDB.ItemDB
-                .Where(i => i != null && !string.IsNullOrWhiteSpace(i.ItemName))
-                .Select(i => i.ItemName)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-            _allItems.AddRange(list);
-        }
-
-        private void BuildIconCache()
-        {
-            var db = GameData.ItemDB != null ? GameData.ItemDB.ItemDB : null;
-            if (db == null) return;
-
-            foreach (var it in db)
-            {
-                if (it == null) continue;
-                string name = it.ItemName;
-                if (string.IsNullOrWhiteSpace(name)) continue;
-                if (_iconCache.ContainsKey(name)) continue;
-
-                _iconCache[name] = it.ItemIcon;
-            }
-        }
-
-        private Sprite GetIcon(string itemName)
-        {
-            if (string.IsNullOrEmpty(itemName)) return null;
-            Sprite s;
-            if (_iconCache.TryGetValue(itemName, out s)) return s;
-
-            var item = GameData.ItemDB != null ? GameData.ItemDB.ItemDB.FirstOrDefault(i => i != null && i.ItemName == itemName) : null;
-            s = item != null ? item.ItemIcon : null;
-            _iconCache[itemName] = s;
-            return s;
-        }
+        // ---------- Core UI ----------
 
         private void RefreshUI()
         {
@@ -145,38 +116,39 @@ namespace LootManager
                 ? _filterInput.text.ToLowerInvariant()
                 : string.Empty;
 
-            List<string> filteredItems = string.IsNullOrEmpty(filter)
-                ? _allItems
-                : _allItems.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+            var source = ItemLookup.AllItems;
 
+            // Left list (available items)
+            List<string> filteredItems = string.IsNullOrEmpty(filter)
+                ? (source as List<string> ?? source.ToList())
+                : source.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+
+            // Right list (in whitelist)
             List<string> filteredWhitelist = Plugin.Whitelist
                 .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
                 .OrderBy(item => item)
                 .ToList();
 
-            foreach (string item in filteredItems)
+            UILayoutBatch.WithLayoutSuspended(_whiteitemContent, () =>
             {
-                if (!filteredWhitelist.Contains(item))
-                    CreateRow(_whiteitemContent, item, false);
-            }
+                foreach (string item in filteredItems)
+                {
+                    if (!filteredWhitelist.Contains(item))
+                        CreateRow(_whiteitemContent, item, false);
+                }
+            });
 
-            foreach (string item in filteredWhitelist)
+            UILayoutBatch.WithLayoutSuspended(_whitelistContent, () =>
             {
-                CreateRow(_whitelistContent, item, true);
-            }
-
-            Canvas.ForceUpdateCanvases();
-            RectTransform rtA = _whiteitemContent != null ? _whiteitemContent.GetComponent<RectTransform>() : null;
-            if (rtA != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rtA);
-            RectTransform rtB = _whitelistContent != null ? _whitelistContent.GetComponent<RectTransform>() : null;
-            if (rtB != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rtB);
+                foreach (string item in filteredWhitelist)
+                    CreateRow(_whitelistContent, item, true);
+            });
         }
 
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
-            Image img = go.GetComponent<Image>();
-            if (img == null) img = go.AddComponent<Image>();
-            img.color = new Color(1f, 1f, 1f, 0f);
+            var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
+            img.color = new Color(1f, 1f, 1f, 0f); // fully transparent but raycastable
             img.raycastTarget = true;
             return img;
         }
@@ -187,29 +159,29 @@ namespace LootManager
             go.name = "whitelistItem_" + itemName;
             go.SetActive(true);
 
-            Button btn = go.GetComponent<Button>();
-            if (btn == null) btn = go.AddComponent<Button>();
+            Button btn = go.GetComponent<Button>() ?? go.AddComponent<Button>();
             btn.targetGraphic = EnsureClickTargetGraphic(go);
 
             Transform iconTr  = go.transform.Find("Icon");
             Transform labelTr = go.transform.Find("Label");
 
-            Image icon  = iconTr != null ? iconTr.GetComponent<Image>() : null;
-            TMP_Text label = labelTr != null ? labelTr.GetComponent<TMP_Text>() : null;
+            Image icon      = iconTr  ? iconTr.GetComponent<Image>()     : null;
+            TMP_Text label  = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
 
             if (label != null)
             {
                 label.text = itemName;
                 label.color = isWhitelist ? Color.white : Color.red;
-                label.raycastTarget = false;
+                label.raycastTarget = false; // let root handle clicks
             }
 
             if (icon != null)
             {
-                Sprite sprite = GetIcon(itemName);
+                Sprite sprite = ItemLookup.GetIcon(itemName);
                 icon.sprite = sprite;
                 icon.preserveAspect = true;
-                icon.raycastTarget = false;
+                icon.raycastTarget = false; // let root handle clicks
+                // icon.enabled = (sprite != null); // optional: hide placeholder if missing
             }
 
             btn.onClick.RemoveAllListeners();
@@ -232,6 +204,8 @@ namespace LootManager
                     RefreshUI();
                     return;
                 }
+
+                if (label == null) return;
 
                 bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
                 bool already = _selected.Any(e => e.text == label);
@@ -264,6 +238,8 @@ namespace LootManager
                 }
             });
         }
+
+        // ---------- Actions ----------
 
         private void AddSelected()
         {
@@ -315,12 +291,14 @@ namespace LootManager
             }
         }
 
+        // ---------- Settings UI ----------
+
         private void SetupLootEquipToggle()
         {
             if (_lootEquipToggle == null) return;
             _lootEquipToggle.SetIsOnWithoutNotify(Plugin.LootEquipment.Value);
             _lootEquipToggle.onValueChanged.RemoveAllListeners();
-            _lootEquipToggle.onValueChanged.AddListener(delegate (bool v)
+            _lootEquipToggle.onValueChanged.AddListener(v =>
             {
                 Plugin.LootEquipment.Value = v;
             });
@@ -339,7 +317,7 @@ namespace LootManager
 
             _equipmentTierDropdown.SetValueWithoutNotify(idx);
             _equipmentTierDropdown.onValueChanged.RemoveAllListeners();
-            _equipmentTierDropdown.onValueChanged.AddListener(delegate (int i)
+            _equipmentTierDropdown.onValueChanged.AddListener(i =>
             {
                 if (i < 0 || i >= options.Count) return;
                 Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)i;
@@ -357,7 +335,6 @@ namespace LootManager
                 Transform child = _filterlistContent.GetChild(i);
                 if (child.gameObject == _filterCategoryTemplate.gameObject)
                     continue;
-
                 GameObject.Destroy(child.gameObject);
             }
 
@@ -397,9 +374,7 @@ namespace LootManager
             // Force UI layout refresh
             Canvas.ForceUpdateCanvases();
             RectTransform rt = _filterlistContent.GetComponent<RectTransform>();
-            if (rt != null)
-                LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            if (rt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
         }
-
     }
 }

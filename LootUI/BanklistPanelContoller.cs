@@ -19,10 +19,9 @@ namespace LootManager
         private Button _removeBtn;
         private GameObject _dragHandle;
 
-        private readonly List<string> _allItems = new List<string>();
         private readonly List<(TMP_Text text, bool isBanklist)> _selected = new List<(TMP_Text text, bool isBanklist)>();
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
-        private readonly Dictionary<string, Sprite> _iconByName = new Dictionary<string, Sprite>();
+        private DebounceInvoker _debounce;
 
         public BanklistPanelController(GameObject root, RectTransform containerRect)
         {
@@ -40,12 +39,14 @@ namespace LootManager
             _removeBtn            = UICommon.Find(_root, "container/panelBGbanklist/banklistPanel/bankremoveBtn")?.GetComponent<Button>();
             _dragHandle           = UICommon.Find(_root, "container/panelBGbanklist/lootUIDragHandle")?.gameObject;
 
+            // Drag handler
             if (_dragHandle != null && _containerRect != null)
             {
                 var dh = _dragHandle.GetComponent<DragHandler>() ?? _dragHandle.AddComponent<DragHandler>();
                 dh.PanelToMove = _containerRect;
             }
 
+            // Buttons
             if (_addBtn != null)
             {
                 _addBtn.onClick.RemoveAllListeners();
@@ -58,11 +59,15 @@ namespace LootManager
                 _removeBtn.onClick.AddListener(RemoveSelected);
             }
 
+            // Keep template hidden
             if (_banklistItemTemplate != null)
-                _banklistItemTemplate.gameObject.SetActive(false); // keep as hidden prefab
+                _banklistItemTemplate.gameObject.SetActive(false);
 
-            RebuildAllItems();
-            BuildIconCache();
+            // Build shared caches once
+            ItemLookup.EnsureBuilt();
+
+            // Debouncer for filter input
+            _debounce = DebounceInvoker.Attach(_root);
         }
 
         public void Show()
@@ -76,54 +81,17 @@ namespace LootManager
             if (_bankfilterInput != null)
             {
                 _bankfilterInput.onValueChanged.RemoveAllListeners();
-                _bankfilterInput.onValueChanged.AddListener(delegate { RefreshUI(); });
+                _bankfilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
             }
 
             RefreshUI();
         }
 
-        private void RebuildAllItems()
-        {
-            _allItems.Clear();
-            var list = GameData.ItemDB.ItemDB
-                .Where(x => x != null && !string.IsNullOrWhiteSpace(x.ItemName))
-                .Select(x => x.ItemName)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-            _allItems.AddRange(list);
-        }
-
-        private void BuildIconCache()
-        {
-            var db = GameData.ItemDB?.ItemDB;
-            if (db == null) return;
-
-            foreach (var item in db)
-            {
-                if (item == null) continue;
-                var name = item.ItemName;
-                if (string.IsNullOrWhiteSpace(name)) continue;
-
-                if (!_iconByName.ContainsKey(name))
-                    _iconByName[name] = item.ItemIcon; // may be null; still cached
-            }
-        }
-
-        private Sprite GetIcon(string itemName)
-        {
-            if (string.IsNullOrEmpty(itemName)) return null;
-            if (_iconByName.TryGetValue(itemName, out var s)) return s;
-
-            var itm = GameData.ItemDB?.ItemDB?.FirstOrDefault(i => i != null && i.ItemName == itemName);
-            s = itm?.ItemIcon;
-            _iconByName[itemName] = s;
-            return s;
-        }
+        // ---------- Core UI ----------
 
         private void RefreshUI()
         {
-            // IMPORTANT: preserve the template under _bankitemContent
+            // Preserve the template in the left column
             UICommon.ClearListExceptTemplate(_bankitemContent, _banklistItemTemplate != null ? _banklistItemTemplate.gameObject : null);
             UICommon.ClearList(_banklistContent);
             _selected.Clear();
@@ -132,31 +100,33 @@ namespace LootManager
                 ? _bankfilterInput.text.ToLowerInvariant()
                 : string.Empty;
 
-            var filteredItems = string.IsNullOrEmpty(filter)
-                ? _allItems
-                : _allItems.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+            var source = ItemLookup.AllItems;
 
+            // Left list (available items not in banklist)
+            var filteredItems = string.IsNullOrEmpty(filter)
+                ? (source as List<string> ?? source.ToList())
+                : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
+
+            // Right list (current banklist)
             var filteredBanklist = Plugin.Banklist
-                .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
-                .OrderBy(item => item)
+                .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
+                .OrderBy(i => i)
                 .ToList();
 
-            foreach (var item in filteredItems)
+            UILayoutBatch.WithLayoutSuspended(_bankitemContent, () =>
             {
-                if (!filteredBanklist.Contains(item))
-                    CreateRow(_bankitemContent, item, false);
-            }
+                foreach (var item in filteredItems)
+                {
+                    if (!filteredBanklist.Contains(item))
+                        CreateRow(_bankitemContent, item, false);
+                }
+            });
 
-            foreach (var item in filteredBanklist)
+            UILayoutBatch.WithLayoutSuspended(_banklistContent, () =>
             {
-                CreateRow(_banklistContent, item, true);
-            }
-
-            Canvas.ForceUpdateCanvases();
-            var a = _bankitemContent?.GetComponent<RectTransform>();
-            if (a != null) LayoutRebuilder.ForceRebuildLayoutImmediate(a);
-            var b = _banklistContent?.GetComponent<RectTransform>();
-            if (b != null) LayoutRebuilder.ForceRebuildLayoutImmediate(b);
+                foreach (var item in filteredBanklist)
+                    CreateRow(_banklistContent, item, true);
+            });
         }
 
         private static Image EnsureClickTargetGraphic(GameObject go)
@@ -191,7 +161,7 @@ namespace LootManager
 
             if (icon != null)
             {
-                var sprite = GetIcon(itemName);
+                var sprite = ItemLookup.GetIcon(itemName);
                 icon.sprite = sprite;
                 icon.preserveAspect = true;
                 icon.raycastTarget = false; // let root handle clicks
@@ -252,6 +222,8 @@ namespace LootManager
                 }
             });
         }
+
+        // ---------- Actions ----------
 
         private void AddSelected()
         {
