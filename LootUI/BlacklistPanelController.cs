@@ -65,6 +65,16 @@ namespace LootManager
 
             if (_blacklistItemTemplate != null)
                 _blacklistItemTemplate.gameObject.SetActive(false);
+            
+            if (_blackfilterInput != null)
+            {
+                var mute = _blackfilterInput.gameObject.GetComponent<TypingInputeMute>()
+                           ?? _blackfilterInput.gameObject.AddComponent<TypingInputeMute>();
+
+                mute.input      = _blackfilterInput;
+                mute.windowRoot = UICommon.Find(_root, "container/panelBGblacklist")?.gameObject;
+                mute.log        = true;
+            }
 
             ItemLookup.EnsureBuilt();
 

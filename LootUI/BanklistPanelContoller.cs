@@ -65,6 +65,16 @@ namespace LootManager
 
             if (_banklistItemTemplate != null)
                 _banklistItemTemplate.gameObject.SetActive(false);
+            
+            if (_bankfilterInput != null)
+            {
+                var mute = _bankfilterInput.gameObject.GetComponent<TypingInputeMute>()
+                           ?? _bankfilterInput.gameObject.AddComponent<TypingInputeMute>();
+
+                mute.input      = _bankfilterInput;
+                mute.windowRoot = UICommon.Find(_root, "container/panelBGbanklist")?.gameObject;
+                mute.log        = true;
+            }
 
             ItemLookup.EnsureBuilt();
 

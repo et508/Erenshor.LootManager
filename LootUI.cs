@@ -90,9 +90,6 @@ namespace LootManager
             
             bool shouldBeActive = !_uiRoot.activeSelf;
             _uiRoot.SetActive(shouldBeActive);
-            
-            GameData.PlayerTyping = shouldBeActive;
-            
         }
 
         private void OnDestroy()

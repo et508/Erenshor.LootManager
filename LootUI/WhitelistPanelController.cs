@@ -15,7 +15,7 @@ namespace LootManager
         private Transform _whiteitemContent;
         private Transform _whitelistContent;
         private Button _whitelistItemTemplate;
-        private TMP_InputField _filterInput;
+        private TMP_InputField _whitefilterInput;
         private Button _addBtn;
         private Button _removeBtn;
         private Toggle _lootEquipToggle;
@@ -45,7 +45,7 @@ namespace LootManager
             _whiteitemContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
             _whitelistContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
             _whitelistItemTemplate = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
-            _filterInput = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
+            _whitefilterInput = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
             _addBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
             _removeBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
             _lootEquipToggle = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
@@ -74,6 +74,16 @@ namespace LootManager
             
             if (_whitelistItemTemplate != null)
                 _whitelistItemTemplate.gameObject.SetActive(false);
+            
+            if (_whitefilterInput != null)
+            {
+                var mute = _whitefilterInput.gameObject.GetComponent<TypingInputeMute>()
+                           ?? _whitefilterInput.gameObject.AddComponent<TypingInputeMute>();
+
+                mute.input = _whitefilterInput;
+                mute.windowRoot = UICommon.Find(_root, "container/panelBGwhitelist")?.gameObject;
+                mute.log        = true;
+            }
             
             ItemLookup.EnsureBuilt();
             
@@ -110,10 +120,10 @@ namespace LootManager
                 return;
             }
 
-            if (_filterInput != null)
+            if (_whitefilterInput != null)
             {
-                _filterInput.onValueChanged.RemoveAllListeners();
-                _filterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
+                _whitefilterInput.onValueChanged.RemoveAllListeners();
+                _whitefilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
             }
 
             RefreshUI();
@@ -129,8 +139,8 @@ namespace LootManager
         {
             _selectedNames.Clear();
 
-            string filter = _filterInput != null && _filterInput.text != null
-                ? _filterInput.text.ToLowerInvariant()
+            string filter = _whitefilterInput != null && _whitefilterInput.text != null
+                ? _whitefilterInput.text.ToLowerInvariant()
                 : string.Empty;
 
             var source = ItemLookup.AllItems;
