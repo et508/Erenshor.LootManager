@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 
-[DefaultExecutionOrder(-50000)] // run very early so PlayerTyping/CanMove are set before PlayerControl.Update()
+[DefaultExecutionOrder(-50000)] 
 public sealed class TypingInputeMute : MonoBehaviour
 {
     [Header("Assign your TMP_InputField")]
@@ -12,25 +12,20 @@ public sealed class TypingInputeMute : MonoBehaviour
 
     [Header("Debug")]
     public bool log;
-
-    // per-instance focus tracker
+    
     private bool _wasFocused;
-
-    // static ref-count to support multiple fields/components safely
+    
     private static int s_activeMutes;
-
-    // cached originals (shared) so we only save/restore once
+    
     private static bool   s_haveCache;
     private static KeyCode sF, sB, sL, sR, sSL, sSR, sJump;
 
     void Update()
     {
-        // If you want this to only apply when a specific UI is visible
         if (windowRoot != null && !windowRoot.activeInHierarchy)
         {
-            // if we were muting, unmute now
             if (_wasFocused) TryUnmute();
-            // clear flags unless the game's global text box is open
+          
             if (!(GameData.TextInput?.InputBox?.activeSelf ?? false))
             {
                 if (GameData.PlayerTyping) GameData.PlayerTyping = false;
@@ -46,17 +41,16 @@ public sealed class TypingInputeMute : MonoBehaviour
 
         if (focused)
         {
-            // assert typing + no-move every frame while focused
             GameData.PlayerTyping = true;
             if (GameData.PlayerControl != null)
             {
                 GameData.PlayerControl.CanMove = false;
-                GameData.PlayerControl.Autorun  = false; // stop carry-over movement
+                GameData.PlayerControl.Autorun  = false; 
             }
 
             if (!_wasFocused)
             {
-                TryMute(); // first frame of focus: mute movement keys
+                TryMute(); 
                 if (log) Debug.Log($"[TypingInputeMute] {input.name} FOCUSED — typing TRUE, CanMove FALSE, movement keys muted");
             }
         }
@@ -64,7 +58,7 @@ public sealed class TypingInputeMute : MonoBehaviour
         {
             if (_wasFocused)
             {
-                TryUnmute(); // first frame after blur: restore keys
+                TryUnmute(); 
                 if (!(GameData.TextInput?.InputBox?.activeSelf ?? false))
                 {
                     GameData.PlayerTyping = false;
@@ -79,12 +73,10 @@ public sealed class TypingInputeMute : MonoBehaviour
 
     private void TryMute()
     {
-        // Increase global mute count; only on the first mute do we cache/override InputManager keys.
         if (s_activeMutes == 0)
         {
             CacheOriginalKeysIfNeeded();
-
-            // Mute only movement-related keys; leaves mouse/UI intact.
+            
             InputManager.Forward  = KeyCode.None;
             InputManager.Backward = KeyCode.None;
             InputManager.Left     = KeyCode.None;
@@ -106,7 +98,6 @@ public sealed class TypingInputeMute : MonoBehaviour
             s_activeMutes--;
             if (s_activeMutes == 0)
             {
-                // Restore movement keys exactly once when the last focus releases
                 InputManager.Forward  = sF;
                 InputManager.Backward = sB;
                 InputManager.Left     = sL;
@@ -137,10 +128,8 @@ public sealed class TypingInputeMute : MonoBehaviour
 
     void OnDisable()
     {
-        // If this component gets disabled while focused, clean up safely.
         if (_wasFocused) TryUnmute();
-
-        // Only clear typing if no other text box is open
+        
         if (!(GameData.TextInput?.InputBox?.activeSelf ?? false))
             GameData.PlayerTyping = false;
     }
