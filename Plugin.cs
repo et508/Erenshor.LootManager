@@ -56,7 +56,6 @@ namespace LootManager
             LootBlacklist.Load();
             LootWhitelist.Load();
             LootBanklist.Load();
-            
             LootFilterlist.Load();
 
             Log.LogInfo("Loot Manager loaded.");
