@@ -11,9 +11,9 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 ### It is highly recommended to use BepInEx 5.4.23.x
 
 ## How It Works
-- Open the LootUI window by pressing F6 or using the LootUI button on the new manager tab in the inventory. Hotkey currently is not configuable.
-- Choose your settings
-- Setup your Blacklist and/or Banklist
+- Open the LootUI window by pressing F6 or using the LootUI button on the manager tab in the inventory. Hotkey currently is not configuable.
+- Choose your settings.
+- Setup your Blacklist/Whitelist, and/or Banklist.
 
 ## LootUI Settings
 - Autoloot - Toggle On or Off

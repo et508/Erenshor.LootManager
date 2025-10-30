@@ -3,7 +3,7 @@
 - The Whitelist loot method has been implemented. 
 - New Manager button added to the inventory window.
 - Blacklist slot and bank slot.
-- You can now open the bank and aucton windows from the Loot Manager inventory tab.
+- You can now open the bank and auction windows from the Manager inventory tab.
 
 ### Removed
 - Removed the Blacklist Slot from the inventory window.
@@ -11,6 +11,8 @@
 ### Loot UI
 - Menu buttons will now be active or disabled dependent on settings.
 - Moved the close button to the menu bar.
+- Item icons have been added to lists.
+- A hover effect and selection effect has been added in place of the green text color change.
 - Whitelist UI Menu
     - Whitelist Transfer List
     - Equipment Toggle
@@ -32,7 +34,7 @@
     - Groups can be toggled on and off.
 
 ### Performance Improvments
-- Fixed list loading in LootUI. Changing windows in LootUI should not be smoother and better load times for the item lists.
+- Fixed list loading in LootUI. Changing windows in LootUI should now be smoother and better load times for the item lists.
 
 ### Known Issues
 - At times the Blacklist Slot will give the message "This item cannot go in this slot." Clicking again and/or moving item around the slot can resolve this.
