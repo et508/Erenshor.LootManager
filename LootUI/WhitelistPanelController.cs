@@ -87,8 +87,8 @@ namespace LootManager
             
             if (_whitefilterInput != null)
             {
-                var mute = _whitefilterInput.gameObject.GetComponent<TypingInputeMute>()
-                           ?? _whitefilterInput.gameObject.AddComponent<TypingInputeMute>();
+                var mute = _whitefilterInput.gameObject.GetComponent<TypingInputMute>()
+                           ?? _whitefilterInput.gameObject.AddComponent<TypingInputMute>();
 
                 mute.input = _whitefilterInput;
                 mute.windowRoot = UICommon.Find(_root, "container/panelBGwhitelist")?.gameObject;
@@ -160,8 +160,7 @@ namespace LootManager
                 .Distinct()
                 .OrderBy(item => item)
                 .ToList();
-
-            // IMPORTANT: always copy; never alias the master list
+            
             _leftData = string.IsNullOrEmpty(filter)
                 ? new List<string>(source)
                 : source.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
@@ -221,7 +220,6 @@ namespace LootManager
             {
                 label.text = itemName;
                 label.raycastTarget = false;
-                // keep colors; remove green selection color
                 label.color = isInWhitelist ? Color.white : Color.red;
             }
 

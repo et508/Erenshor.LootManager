@@ -24,8 +24,7 @@ namespace LootManager
 
         private List<string> _leftData = new List<string>();
         private List<string> _rightData = new List<string>();
-
-        // Use Ordinal for consistent matching across UI ops
+        
         private readonly HashSet<string> _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
@@ -79,8 +78,8 @@ namespace LootManager
             
             if (_blackfilterInput != null)
             {
-                var mute = _blackfilterInput.gameObject.GetComponent<TypingInputeMute>()
-                           ?? _blackfilterInput.gameObject.AddComponent<TypingInputeMute>();
+                var mute = _blackfilterInput.gameObject.GetComponent<TypingInputMute>()
+                           ?? _blackfilterInput.gameObject.AddComponent<TypingInputMute>();
 
                 mute.input      = _blackfilterInput;
                 mute.windowRoot = UICommon.Find(_root, "container/panelBGblacklist")?.gameObject;
@@ -145,18 +144,17 @@ namespace LootManager
 
             _rightData = Plugin.Blacklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
-                .Distinct() // safety
+                .Distinct() 
                 .OrderBy(i => i)
                 .ToList();
 
-            // IMPORTANT FIX: always copy to avoid mutating the master list
+            
             _leftData = string.IsNullOrEmpty(filter)
-                ? new List<string>(source) // <-- copy, do NOT alias
+                ? new List<string>(source) 
                 : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
             if (_rightData.Count > 0)
             {
-                // Use Ordinal to match how we store/compare names elsewhere
                 var mask = new HashSet<string>(_rightData, System.StringComparer.Ordinal);
                 _leftData.RemoveAll(mask.Contains);
             }
@@ -171,9 +169,9 @@ namespace LootManager
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.sprite = GetWhite1x1();               // ensure background renders
+            img.sprite = GetWhite1x1();              
             img.type = Image.Type.Simple;
-            img.color = new Color(1f, 1f, 1f, 0f);    // fully transparent base
+            img.color = new Color(1f, 1f, 1f, 0f);   
             img.raycastTarget = true;
             return img;
         }

@@ -141,7 +141,6 @@ namespace LootManager
             }
 
             EnsureDropTarget(_blacklistSlotItemIcon, typeof(BlacklistDropZoneMarker));
-            Debug.Log("[ManagerSlotController] BlacklistSlot ready.");
         }
         
         private static void SetupBanklistSlot()
@@ -159,7 +158,6 @@ namespace LootManager
             }
 
             EnsureDropTarget(_banklistSlotItemIcon, typeof(BanklistDropZoneMarker));
-            Debug.Log("[ManagerSlotController] BanklistSlot ready.");
         }
         
         private static void EnsureDropTarget(GameObject itemIconChild, Type wantMarker)

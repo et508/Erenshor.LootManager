@@ -78,8 +78,8 @@ namespace LootManager
             
             if (_bankfilterInput != null)
             {
-                var mute = _bankfilterInput.gameObject.GetComponent<TypingInputeMute>()
-                           ?? _bankfilterInput.gameObject.AddComponent<TypingInputeMute>();
+                var mute = _bankfilterInput.gameObject.GetComponent<TypingInputMute>()
+                           ?? _bankfilterInput.gameObject.AddComponent<TypingInputMute>();
 
                 mute.input      = _bankfilterInput;
                 mute.windowRoot = UICommon.Find(_root, "container/panelBGbanklist")?.gameObject;
@@ -108,8 +108,6 @@ namespace LootManager
 
             _leftList.Enable(true);
             _rightList.Enable(true);
-
-            Debug.Log($"[Banklist] virtual rowHeight={rowHeight}");
         }
 
         public void Show()
@@ -150,8 +148,7 @@ namespace LootManager
                 .Distinct()
                 .OrderBy(i => i)
                 .ToList();
-
-            // IMPORTANT: always copy; never alias the master list
+            
             _leftData = string.IsNullOrEmpty(filter)
                 ? new List<string>(source)
                 : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();

@@ -2,7 +2,7 @@ using UnityEngine;
 using TMPro;
 
 [DefaultExecutionOrder(-50000)] 
-public sealed class TypingInputeMute : MonoBehaviour
+public sealed class TypingInputMute : MonoBehaviour
 {
     [Header("Assign your TMP_InputField")]
     public TMP_InputField input;
@@ -18,7 +18,7 @@ public sealed class TypingInputeMute : MonoBehaviour
     private static int s_activeMutes;
     
     private static bool   s_haveCache;
-    private static KeyCode sF, sB, sL, sR, sSL, sSR, sJump;
+    private static KeyCode sF, sB, sL, sR, sSL, sSR, sJump, sM;
 
     void Update()
     {
@@ -84,6 +84,7 @@ public sealed class TypingInputeMute : MonoBehaviour
             InputManager.StrafeL  = KeyCode.None;
             InputManager.StrafeR  = KeyCode.None;
             InputManager.Jump     = KeyCode.None;
+            InputManager.Map      = KeyCode.None;
 
             if (log) Debug.Log("[TypingInputeMute] Movement keys muted; autorun off");
         }
@@ -105,6 +106,7 @@ public sealed class TypingInputeMute : MonoBehaviour
                 InputManager.StrafeL  = sSL;
                 InputManager.StrafeR  = sSR;
                 InputManager.Jump     = sJump;
+                InputManager.Map      = sM;
 
                 if (log) Debug.Log("[TypingInputeMute] Movement keys restored");
             }
@@ -122,6 +124,7 @@ public sealed class TypingInputeMute : MonoBehaviour
         sSL  = InputManager.StrafeL;
         sSR  = InputManager.StrafeR;
         sJump= InputManager.Jump;
+        sM   = InputManager.Map;
 
         s_haveCache = true;
     }
