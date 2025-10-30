@@ -28,6 +28,16 @@ namespace LootManager
         private readonly HashSet<string> _selectedNames = new HashSet<string>();
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
+        
+        private static Sprite _white1x1;
+        private static Sprite GetWhite1x1()
+        {
+            if (_white1x1 != null) return _white1x1;
+            var tex = Texture2D.whiteTexture;
+            _white1x1 = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+            _white1x1.name = "LootUI_White1x1";
+            return _white1x1;
+        }
 
         public BlacklistPanelController(GameObject root, RectTransform containerRect)
         {
@@ -157,7 +167,9 @@ namespace LootManager
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.color = new Color(1f, 1f, 1f, 0f);
+            img.sprite = GetWhite1x1();               // ensure background renders
+            img.type = Image.Type.Simple;
+            img.color = new Color(1f, 1f, 1f, 0f);    // fully transparent base
             img.raycastTarget = true;
             return img;
         }
@@ -177,73 +189,89 @@ namespace LootManager
         }
 
         private void BindRowCommon(GameObject row, string itemName, bool isBlacklist)
+{
+    var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+    var rootImg = EnsureClickTargetGraphic(row);
+    btn.targetGraphic = rootImg;
+    btn.transition = Selectable.Transition.None;
+    btn.interactable = true;
+
+    var iconTr  = row.transform.Find("Icon");
+    var labelTr = row.transform.Find("Label");
+
+    var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
+    var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
+
+    if (label != null)
+    {
+        label.text = itemName;
+        label.raycastTarget = false;
+        // remove green selection color; keep existing per-list colors only
+        label.color = isBlacklist ? Color.red : Color.white;
+    }
+
+    if (icon != null)
+    {
+        var sprite = ItemLookup.GetIcon(itemName);
+        icon.sprite = sprite;
+        icon.preserveAspect = true;
+        icon.raycastTarget = false;
+    }
+
+    // add hover/highlight/pressed + selected background states
+    var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
+    hover.Init(
+        rootImg,
+        // normal/hover/pressed
+        new Color(1f, 1f, 1f, 0f),
+        new Color(1f, 1f, 1f, 0.12f),
+        new Color(1f, 1f, 1f, 0.20f),
+        // selected normal/hover/pressed
+        new Color(1f, 1f, 1f, 0.10f),
+        new Color(1f, 1f, 1f, 0.18f),
+        new Color(1f, 1f, 1f, 0.26f)
+    );
+    hover.SetSelected(_selectedNames.Contains(itemName));
+
+    btn.onClick.RemoveAllListeners();
+    btn.onClick.AddListener(() =>
+    {
+        if (_doubleClick.IsDoubleClick(itemName))
         {
-            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
-            var rootImg = EnsureClickTargetGraphic(row);
-            btn.targetGraphic = rootImg;
-
-            var iconTr  = row.transform.Find("Icon");
-            var labelTr = row.transform.Find("Label");
-
-            var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
-            var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
-
-            if (label != null)
+            if (isBlacklist)
             {
-                label.text = itemName;
-                label.raycastTarget = false;
-                label.color = _selectedNames.Contains(itemName)
-                    ? Color.green
-                    : isBlacklist ? Color.red : Color.white;
+                Plugin.Blacklist.Remove(itemName);
+                LootBlacklist.SaveBlacklist();
+                UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "yellow");
             }
-
-            if (icon != null)
+            else
             {
-                var sprite = ItemLookup.GetIcon(itemName);
-                icon.sprite = sprite;
-                icon.preserveAspect = true;
-                icon.raycastTarget = false;
+                Plugin.Blacklist.Add(itemName);
+                LootBlacklist.SaveBlacklist();
+                UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "yellow");
             }
-
-            btn.onClick.RemoveAllListeners();
-            btn.onClick.AddListener(() =>
-            {
-                if (_doubleClick.IsDoubleClick(itemName))
-                {
-                    if (isBlacklist)
-                    {
-                        Plugin.Blacklist.Remove(itemName);
-                        LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "yellow");
-                    }
-                    else
-                    {
-                        Plugin.Blacklist.Add(itemName);
-                        LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "yellow");
-                    }
-                    RefreshUI();
-                    return;
-                }
-
-                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                if (ctrl)
-                {
-                    if (_selectedNames.Contains(itemName))
-                        _selectedNames.Remove(itemName);
-                    else
-                        _selectedNames.Add(itemName);
-                }
-                else
-                {
-                    _selectedNames.Clear();
-                    _selectedNames.Add(itemName);
-                }
-
-                _leftList?.Refresh();
-                _rightList?.Refresh();
-            });
+            RefreshUI();
+            return;
         }
+
+        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (ctrl)
+        {
+            if (_selectedNames.Contains(itemName))
+                _selectedNames.Remove(itemName);
+            else
+                _selectedNames.Add(itemName);
+        }
+        else
+        {
+            _selectedNames.Clear();
+            _selectedNames.Add(itemName);
+        }
+
+        _leftList?.Refresh();
+        _rightList?.Refresh();
+    });
+}
 
         private void AddSelected()
         {
