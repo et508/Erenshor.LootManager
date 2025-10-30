@@ -40,23 +40,5 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 ## Add Items Directly From Inventory
 - Add items to the list just by placing them in the "Blacklist" inventory slot.
 
-## Manual Editing of the LootLists
-- Manual editing of both the blacklist and banklist is supported.
-- Located in your BepInEx\config folder. 
-- LootBlacklist.json
-- LootBanklist.json
-- Your loot lists must follow the correct syntax to work properly; item names are case sensitive and must be spelled exactly how they are in-game.
-```
- {
-    "items": [
-        "Citrine Stone",
-        "Water",
-        "Wolf Meat",
-        "Ancient Bone",
-        "Star Stone"
-    ]
-}
-```
-
 
 

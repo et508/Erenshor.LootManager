@@ -33,6 +33,13 @@
 - Filterlist Groups - Groups of items to loot. 
     - Groups can be toggled on and off.
 
+### Loot Lists
+- Changed how the loot list json files are handled. Now using Newtonsoft.Json to read/write. 
+- Changed the location of the files. They are now located in `Erenshor/BepInEx/Config/Loot Manager/`.
+  - Your current legacy loot lists should migrate over, so there should be no data loss.
+- Manual editing of the files is no longer supported. If you need to edit the file manually for whatever reason. You will need exit out of the game first.
+  - It is stongly recommended to use the in game UI to make changes. 
+
 ### Performance Improvments
 - Fixed list loading in LootUI. Changing windows in LootUI should now be smoother and better load times for the item lists.
 
