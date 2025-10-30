@@ -25,7 +25,8 @@ namespace LootManager
         private List<string> _leftData = new List<string>();
         private List<string> _rightData = new List<string>();
 
-        private readonly HashSet<string> _selectedNames = new HashSet<string>();
+        // Use Ordinal for consistent matching across UI ops
+        private readonly HashSet<string> _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
         
@@ -144,16 +145,19 @@ namespace LootManager
 
             _rightData = Plugin.Blacklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
+                .Distinct() // safety
                 .OrderBy(i => i)
                 .ToList();
 
+            // IMPORTANT FIX: always copy to avoid mutating the master list
             _leftData = string.IsNullOrEmpty(filter)
-                ? (source as List<string> ?? source.ToList())
+                ? new List<string>(source) // <-- copy, do NOT alias
                 : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
             if (_rightData.Count > 0)
             {
-                var mask = new HashSet<string>(_rightData);
+                // Use Ordinal to match how we store/compare names elsewhere
+                var mask = new HashSet<string>(_rightData, System.StringComparer.Ordinal);
                 _leftData.RemoveAll(mask.Contains);
             }
 
@@ -189,89 +193,87 @@ namespace LootManager
         }
 
         private void BindRowCommon(GameObject row, string itemName, bool isBlacklist)
-{
-    var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
-    var rootImg = EnsureClickTargetGraphic(row);
-    btn.targetGraphic = rootImg;
-    btn.transition = Selectable.Transition.None;
-    btn.interactable = true;
-
-    var iconTr  = row.transform.Find("Icon");
-    var labelTr = row.transform.Find("Label");
-
-    var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
-    var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
-
-    if (label != null)
-    {
-        label.text = itemName;
-        label.raycastTarget = false;
-        // remove green selection color; keep existing per-list colors only
-        label.color = isBlacklist ? Color.red : Color.white;
-    }
-
-    if (icon != null)
-    {
-        var sprite = ItemLookup.GetIcon(itemName);
-        icon.sprite = sprite;
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-    }
-
-    // add hover/highlight/pressed + selected background states
-    var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
-    hover.Init(
-        rootImg,
-        // normal/hover/pressed
-        new Color(1f, 1f, 1f, 0f),
-        new Color(1f, 1f, 1f, 0.12f),
-        new Color(1f, 1f, 1f, 0.20f),
-        // selected normal/hover/pressed
-        new Color(1f, 1f, 1f, 0.10f),
-        new Color(1f, 1f, 1f, 0.18f),
-        new Color(1f, 1f, 1f, 0.26f)
-    );
-    hover.SetSelected(_selectedNames.Contains(itemName));
-
-    btn.onClick.RemoveAllListeners();
-    btn.onClick.AddListener(() =>
-    {
-        if (_doubleClick.IsDoubleClick(itemName))
         {
-            if (isBlacklist)
+            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var rootImg = EnsureClickTargetGraphic(row);
+            btn.targetGraphic = rootImg;
+            btn.transition = Selectable.Transition.None;
+            btn.interactable = true;
+
+            var iconTr  = row.transform.Find("Icon");
+            var labelTr = row.transform.Find("Label");
+
+            var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
+            var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
+
+            if (label != null)
             {
-                Plugin.Blacklist.Remove(itemName);
-                LootBlacklist.SaveBlacklist();
-                UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "yellow");
+                label.text = itemName;
+                label.raycastTarget = false;
+                label.color = isBlacklist ? Color.red : Color.white;
             }
-            else
+
+            if (icon != null)
             {
-                Plugin.Blacklist.Add(itemName);
-                LootBlacklist.SaveBlacklist();
-                UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "yellow");
+                var sprite = ItemLookup.GetIcon(itemName);
+                icon.sprite = sprite;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
             }
-            RefreshUI();
-            return;
-        }
 
-        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        if (ctrl)
-        {
-            if (_selectedNames.Contains(itemName))
-                _selectedNames.Remove(itemName);
-            else
-                _selectedNames.Add(itemName);
-        }
-        else
-        {
-            _selectedNames.Clear();
-            _selectedNames.Add(itemName);
-        }
+            var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
+            hover.Init(
+                rootImg,
+                // normal/hover/pressed
+                new Color(1f, 1f, 1f, 0f),
+                new Color(1f, 1f, 1f, 0.12f),
+                new Color(1f, 1f, 1f, 0.20f),
+                // selected normal/hover/pressed
+                new Color(1f, 1f, 1f, 0.10f),
+                new Color(1f, 1f, 1f, 0.18f),
+                new Color(1f, 1f, 1f, 0.26f)
+            );
+            hover.SetSelected(_selectedNames.Contains(itemName));
 
-        _leftList?.Refresh();
-        _rightList?.Refresh();
-    });
-}
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() =>
+            {
+                if (_doubleClick.IsDoubleClick(itemName))
+                {
+                    if (isBlacklist)
+                    {
+                        Plugin.Blacklist.Remove(itemName);
+                        LootBlacklist.SaveBlacklist();
+                        UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "yellow");
+                    }
+                    else
+                    {
+                        Plugin.Blacklist.Add(itemName);
+                        LootBlacklist.SaveBlacklist();
+                        UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "yellow");
+                    }
+                    RefreshUI();
+                    return;
+                }
+
+                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                if (ctrl)
+                {
+                    if (_selectedNames.Contains(itemName))
+                        _selectedNames.Remove(itemName);
+                    else
+                        _selectedNames.Add(itemName);
+                }
+                else
+                {
+                    _selectedNames.Clear();
+                    _selectedNames.Add(itemName);
+                }
+
+                _leftList?.Refresh();
+                _rightList?.Refresh();
+            });
+        }
 
         private void AddSelected()
         {

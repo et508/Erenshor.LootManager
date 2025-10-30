@@ -147,16 +147,18 @@ namespace LootManager
 
             _rightData = Plugin.Banklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
+                .Distinct()
                 .OrderBy(i => i)
                 .ToList();
 
+            // IMPORTANT: always copy; never alias the master list
             _leftData = string.IsNullOrEmpty(filter)
-                ? (source as List<string> ?? source.ToList())
+                ? new List<string>(source)
                 : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
             if (_rightData.Count > 0)
             {
-                var mask = new HashSet<string>(_rightData);
+                var mask = new HashSet<string>(_rightData, System.StringComparer.Ordinal);
                 _leftData.RemoveAll(mask.Contains);
             }
 
@@ -192,89 +194,87 @@ namespace LootManager
         }
 
         private void BindRowCommon(GameObject row, string itemName, bool isBanklist)
-{
-    var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
-    var rootImg = EnsureClickTargetGraphic(row);
-    btn.targetGraphic = rootImg;
-    btn.transition = Selectable.Transition.None;
-    btn.interactable = true;
-
-    var iconTr  = row.transform.Find("Icon");
-    var labelTr = row.transform.Find("Label");
-
-    var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
-    var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
-
-    if (label != null)
-    {
-        label.text = itemName;
-        label.raycastTarget = false;
-        // keep colors; remove green selection color
-        label.color = isBanklist ? Color.blue : Color.white;
-    }
-
-    if (icon != null)
-    {
-        var sprite = ItemLookup.GetIcon(itemName);
-        icon.sprite = sprite;
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-    }
-
-    // hover/pressed + selected background (no green text)
-    var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
-    hover.Init(
-        rootImg,
-        // normal, highlighted, pressed
-        new Color(1f, 1f, 1f, 0f),
-        new Color(1f, 1f, 1f, 0.12f),
-        new Color(1f, 1f, 1f, 0.20f),
-        // selected normal, highlighted, pressed
-        new Color(1f, 1f, 1f, 0.10f),
-        new Color(1f, 1f, 1f, 0.18f),
-        new Color(1f, 1f, 1f, 0.26f)
-    );
-    hover.SetSelected(_selectedNames.Contains(itemName));
-
-    btn.onClick.RemoveAllListeners();
-    btn.onClick.AddListener(() =>
-    {
-        if (_doubleClick.IsDoubleClick(itemName))
         {
-            if (isBanklist)
+            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var rootImg = EnsureClickTargetGraphic(row);
+            btn.targetGraphic = rootImg;
+            btn.transition = Selectable.Transition.None;
+            btn.interactable = true;
+
+            var iconTr  = row.transform.Find("Icon");
+            var labelTr = row.transform.Find("Label");
+
+            var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
+            var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
+
+            if (label != null)
             {
-                Plugin.Banklist.Remove(itemName);
-                LootBanklist.SaveBanklist();
-                UpdateSocialLog.LogAdd("[LootUI] Removed from banklist: " + itemName, "yellow");
+                label.text = itemName;
+                label.raycastTarget = false;
+                label.color = isBanklist ? Color.blue : Color.white;
             }
-            else
+
+            if (icon != null)
             {
-                Plugin.Banklist.Add(itemName);
-                LootBanklist.SaveBanklist();
-                UpdateSocialLog.LogAdd("[LootUI] Added to banklist: " + itemName, "yellow");
+                var sprite = ItemLookup.GetIcon(itemName);
+                icon.sprite = sprite;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
             }
-            RefreshUI();
-            return;
-        }
 
-        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        if (ctrl)
-        {
-            if (_selectedNames.Contains(itemName))
-                _selectedNames.Remove(itemName);
-            else
-                _selectedNames.Add(itemName);
-        }
-        else
-        {
-            _selectedNames.Clear();
-            _selectedNames.Add(itemName);
-        }
+            var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
+            hover.Init(
+                rootImg,
+                // normal, highlighted, pressed
+                new Color(1f, 1f, 1f, 0f),
+                new Color(1f, 1f, 1f, 0.12f),
+                new Color(1f, 1f, 1f, 0.20f),
+                // selected normal, highlighted, pressed
+                new Color(1f, 1f, 1f, 0.10f),
+                new Color(1f, 1f, 1f, 0.18f),
+                new Color(1f, 1f, 1f, 0.26f)
+            );
+            hover.SetSelected(_selectedNames.Contains(itemName));
 
-        _leftList?.Refresh();
-        _rightList?.Refresh();
-    });
-}
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() =>
+            {
+                if (_doubleClick.IsDoubleClick(itemName))
+                {
+                    if (isBanklist)
+                    {
+                        Plugin.Banklist.Remove(itemName);
+                        LootBanklist.SaveBanklist();
+                        UpdateSocialLog.LogAdd("[LootUI] Removed from banklist: " + itemName, "yellow");
+                    }
+                    else
+                    {
+                        Plugin.Banklist.Add(itemName);
+                        LootBanklist.SaveBanklist();
+                        UpdateSocialLog.LogAdd("[LootUI] Added to banklist: " + itemName, "yellow");
+                    }
+                    RefreshUI();
+                    return;
+                }
+
+                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                if (ctrl)
+                {
+                    if (_selectedNames.Contains(itemName))
+                        _selectedNames.Remove(itemName);
+                    else
+                        _selectedNames.Add(itemName);
+                }
+                else
+                {
+                    _selectedNames.Clear();
+                    _selectedNames.Add(itemName);
+                }
+
+                _leftList?.Refresh();
+                _rightList?.Refresh();
+            });
+        }
 
         private void AddSelected()
         {

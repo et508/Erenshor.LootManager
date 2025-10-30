@@ -157,17 +157,18 @@ namespace LootManager
 
             _rightData = Plugin.Whitelist
                 .Where(item => string.IsNullOrEmpty(filter) || item.ToLowerInvariant().Contains(filter))
+                .Distinct()
                 .OrderBy(item => item)
                 .ToList();
 
-            if (string.IsNullOrEmpty(filter))
-                _leftData = source as List<string> ?? source.ToList();
-            else
-                _leftData = source.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
+            // IMPORTANT: always copy; never alias the master list
+            _leftData = string.IsNullOrEmpty(filter)
+                ? new List<string>(source)
+                : source.Where(item => item.ToLowerInvariant().Contains(filter)).ToList();
 
             if (_rightData.Count > 0)
             {
-                var mask = new HashSet<string>(_rightData);
+                var mask = new HashSet<string>(_rightData, StringComparer.Ordinal);
                 _leftData.RemoveAll(mask.Contains);
             }
 
@@ -203,88 +204,88 @@ namespace LootManager
         }
 
         private void BindRowCommon(GameObject row, string itemName, bool isInWhitelist)
-{
-    var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
-    var rootImg = EnsureClickTargetGraphic(row);
-    btn.targetGraphic = rootImg;
-    btn.transition = Selectable.Transition.None;
-    btn.interactable = true;
-
-    var iconTr = row.transform.Find("Icon");
-    var labelTr = row.transform.Find("Label");
-
-    var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
-    var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
-
-    if (label != null)
-    {
-        label.text = itemName;
-        label.raycastTarget = false;
-        // keep colors; remove green selection color
-        label.color = isInWhitelist ? Color.white : Color.red;
-    }
-
-    if (icon != null)
-    {
-        var sprite = ItemLookup.GetIcon(itemName);
-        icon.sprite = sprite;
-        icon.preserveAspect = true;
-        icon.raycastTarget = false;
-    }
-
-    var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
-    hover.Init(
-        rootImg,
-        // normal, highlighted, pressed
-        new Color(1f, 1f, 1f, 0f),
-        new Color(1f, 1f, 1f, 0.12f),
-        new Color(1f, 1f, 1f, 0.20f),
-        // selected normal, highlighted, pressed
-        new Color(1f, 1f, 1f, 0.10f),
-        new Color(1f, 1f, 1f, 0.18f),
-        new Color(1f, 1f, 1f, 0.26f)
-    );
-    hover.SetSelected(_selectedNames.Contains(itemName));
-
-    btn.onClick.RemoveAllListeners();
-    btn.onClick.AddListener(() =>
-    {
-        if (_doubleClick.IsDoubleClick(itemName))
         {
-            if (isInWhitelist)
+            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var rootImg = EnsureClickTargetGraphic(row);
+            btn.targetGraphic = rootImg;
+            btn.transition = Selectable.Transition.None;
+            btn.interactable = true;
+
+            var iconTr = row.transform.Find("Icon");
+            var labelTr = row.transform.Find("Label");
+
+            var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
+            var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
+
+            if (label != null)
             {
-                Plugin.Whitelist.Remove(itemName);
-                LootWhitelist.SaveWhitelist();
-                UpdateSocialLog.LogAdd("[LootUI] Removed from whitelist: " + itemName, "yellow");
+                label.text = itemName;
+                label.raycastTarget = false;
+                // keep colors; remove green selection color
+                label.color = isInWhitelist ? Color.white : Color.red;
             }
-            else
+
+            if (icon != null)
             {
-                Plugin.Whitelist.Add(itemName);
-                LootWhitelist.SaveWhitelist();
-                UpdateSocialLog.LogAdd("[LootUI] Added to whitelist: " + itemName, "yellow");
+                var sprite = ItemLookup.GetIcon(itemName);
+                icon.sprite = sprite;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
             }
-            RefreshUI();
-            return;
-        }
 
-        bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-        if (ctrl)
-        {
-            if (_selectedNames.Contains(itemName))
-                _selectedNames.Remove(itemName);
-            else
-                _selectedNames.Add(itemName);
-        }
-        else
-        {
-            _selectedNames.Clear();
-            _selectedNames.Add(itemName);
-        }
+            var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
+            hover.Init(
+                rootImg,
+                // normal, highlighted, pressed
+                new Color(1f, 1f, 1f, 0f),
+                new Color(1f, 1f, 1f, 0.12f),
+                new Color(1f, 1f, 1f, 0.20f),
+                // selected normal, highlighted, pressed
+                new Color(1f, 1f, 1f, 0.10f),
+                new Color(1f, 1f, 1f, 0.18f),
+                new Color(1f, 1f, 1f, 0.26f)
+            );
+            hover.SetSelected(_selectedNames.Contains(itemName));
 
-        _leftList?.Refresh();
-        _rightList?.Refresh();
-    });
-}
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() =>
+            {
+                if (_doubleClick.IsDoubleClick(itemName))
+                {
+                    if (isInWhitelist)
+                    {
+                        Plugin.Whitelist.Remove(itemName);
+                        LootWhitelist.SaveWhitelist();
+                        UpdateSocialLog.LogAdd("[LootUI] Removed from whitelist: " + itemName, "yellow");
+                    }
+                    else
+                    {
+                        Plugin.Whitelist.Add(itemName);
+                        LootWhitelist.SaveWhitelist();
+                        UpdateSocialLog.LogAdd("[LootUI] Added to whitelist: " + itemName, "yellow");
+                    }
+                    RefreshUI();
+                    return;
+                }
+
+                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+                if (ctrl)
+                {
+                    if (_selectedNames.Contains(itemName))
+                        _selectedNames.Remove(itemName);
+                    else
+                        _selectedNames.Add(itemName);
+                }
+                else
+                {
+                    _selectedNames.Clear();
+                    _selectedNames.Add(itemName);
+                }
+
+                _leftList?.Refresh();
+                _rightList?.Refresh();
+            });
+        }
 
         private void AddSelected()
         {
