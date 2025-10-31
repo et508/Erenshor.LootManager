@@ -7,6 +7,7 @@
 
 ### Removed
 - Removed the Blacklist Slot from the inventory window.
+- Support for ctrl+click multiple selection was removed.
 
 ### Loot UI
 - Menu buttons will now be active or disabled dependent on settings.
@@ -20,18 +21,21 @@
     - Filterlist Group Toggles
 
 ### Manager Slot UI
-- Manager Slot UI window added to the inventory. 
-    - Blacklist Slot
-    - Bank Slot
-    - Button to toggle LootUI
-    - Bank and Auction Buttons
+- Manager Slot UI window added to the inventory.
+  - Blacklist Slot
+  - Bank Slot
+  - Button to toggle LootUI
+  - Bank and Auction Buttons
 
 ### Loot Method - Whitelist
 - Story Items - Story items will not be destroyed.
 - Equipment Toggle - Loot all equipable items.
 - Equipment Tier - Filter equipment looting by tier.
 - Filterlist Groups - Groups of items to loot. 
-    - Groups can be toggled on and off.
+  - Groups can be toggled on and off.
+  - Groups can be edited using the edit button next to the group name.
+    - This will display a transfer list to allow for adding or removing items to the category.
+
 
 ### Loot Lists
 - Changed how the loot list json files are handled. Now using Newtonsoft.Json to read/write. 
