@@ -20,6 +20,7 @@ namespace LootManager
         private static GameObject _banklistPanel;
         private static GameObject _menuBar;
         private static GameObject _titleImage;
+        private static GameObject _panelBGeditlist;
         
         private static Button _menuSettingsBtn;
         private static Button _menuBlacklistBtn;
@@ -31,6 +32,7 @@ namespace LootManager
         private static BlacklistPanelController _blacklist;
         private static WhitelistPanelController _whitelist;
         private static BanklistPanelController _banklist;
+        private static EditlistPanelController _editlist;
 
         private static readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
 
@@ -49,6 +51,7 @@ namespace LootManager
             _banklistPanel    = UICommon.Find(_uiRoot, "container/panelBGbanklist/banklistPanel")?.gameObject;
             _menuBar          = UICommon.Find(_uiRoot, "panelBG/menuBar")?.gameObject;
             _titleImage       = UICommon.Find(_uiRoot, "panelBG/titleImage")?.gameObject;
+            _panelBGeditlist  = UICommon.Find(_uiRoot, "panelBGeditlist")?.gameObject;
 
             SetupMenuBarButtons();
 
@@ -72,6 +75,11 @@ namespace LootManager
                 _uiRoot,
                 _container != null ? _container.GetComponent<RectTransform>() : null);
             _banklist.Init();
+            
+            _editlist = new EditlistPanelController(
+                _uiRoot,
+                _panelBGeditlist != null ? _panelBGeditlist.GetComponent<RectTransform>() : null);
+            _editlist.Init();
 
             ShowPanel(_settingsPanel);
             OnUIVisibilityPossiblyChanged();
@@ -125,6 +133,7 @@ namespace LootManager
         {
             if (_menuBar != null) _menuBar.SetActive(true);
             if (_titleImage != null) _titleImage.SetActive(true);
+            if (_panelBGeditlist != null) _panelBGeditlist.SetActive(false);
 
             bool isSettings  = activePanel == _settingsPanel;
             bool isBlacklist = activePanel == _blacklistPanel;
@@ -164,6 +173,16 @@ namespace LootManager
 
             if (_menuBanklistBtn != null)
                 _menuBanklistBtn.gameObject.SetActive(Plugin.BankLootEnabled.Value);
+        }
+        
+        public static void ShowEditCategory(string categoryName)
+        {
+            if (_editlist == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Edit panel not ready.", "red");
+                return;
+            }
+            _editlist.Show(categoryName);
         }
     }
 }

@@ -4,8 +4,6 @@ using UnityEngine;
 namespace LootManager
 {
     [HarmonyPatch(typeof(Character), "DoDeath")]
-    [HarmonyPriority(50000)]
-    [HarmonyAfter("Brumdail.ErenshorREL")]
     public class Autoloot
     {
         private static void Postfix(Character __instance)
@@ -16,6 +14,16 @@ namespace LootManager
             if (__instance == null || !__instance.isNPC || __instance.MyNPC == null)
                 return;
 
+            // Respect vanilla: if the game would destroy/rot this NPC on death, don't loot it.
+            // (Vanilla: if (this.DestroyOnDeath && GetComponent<NPC>() != null) NPC.ExpediteRot(50f); )
+            // We mirror that check here to preserve the intended “no loot” behavior.
+            var npcComp = __instance.GetComponent<NPC>();
+            if (__instance.DestroyOnDeath && npcComp != null)
+            {
+                UpdateSocialLog.LogAdd("[Loot Manager] Skipping autoloot (DestroyOnDeath).", "yellow");
+                return;
+            }
+            
             var playerChar = GameData.PlayerControl.Myself;
             if (playerChar == null || !playerChar.Alive)
                 return;
@@ -27,7 +35,7 @@ namespace LootManager
             );
             if (dist >= autoLootRange)
                 return;
-
+            
             LootTable lootTable = __instance.MyNPC.GetComponent<LootTable>();
             if (lootTable != null)
             {

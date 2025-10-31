@@ -52,17 +52,17 @@ namespace LootManager
 
         public void Init()
         {
-            _whiteitemContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
-            _whitelistContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
-            _whitelistItemTemplate = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
-            _whitefilterInput = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
-            _addBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
-            _removeBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
-            _lootEquipToggle = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
-            _equipmentTierDropdown = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
-            _filterlistContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
-            _filterCategoryTemplate = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
-            _dragHandle = UICommon.Find(_root, "container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
+            _whiteitemContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
+            _whitelistContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
+            _whitelistItemTemplate   = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
+            _whitefilterInput        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
+            _addBtn                  = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
+            _removeBtn               = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
+            _lootEquipToggle         = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
+            _equipmentTierDropdown   = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
+            _filterlistContent       = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
+            _filterCategoryTemplate  = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
+            _dragHandle              = UICommon.Find(_root, "container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             if (_dragHandle != null && _containerRect != null)
             {
@@ -99,6 +99,7 @@ namespace LootManager
             
             SetupLootEquipToggle();
             SetupEquipmentTierDropdown();
+
             RebuildFilterToggles();
             
             _debounce = DebounceInvoker.Attach(_root);
@@ -265,21 +266,6 @@ namespace LootManager
                     RefreshUI();
                     return;
                 }
-
-                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                if (ctrl)
-                {
-                    if (_selectedNames.Contains(itemName))
-                        _selectedNames.Remove(itemName);
-                    else
-                        _selectedNames.Add(itemName);
-                }
-                else
-                {
-                    _selectedNames.Clear();
-                    _selectedNames.Add(itemName);
-                }
-
                 _leftList?.Refresh();
                 _rightList?.Refresh();
             });
@@ -395,6 +381,15 @@ namespace LootManager
 
                 toggle.onValueChanged.RemoveAllListeners();
                 toggle.onValueChanged.AddListener((bool isOn) => { LootFilterlist.SetSectionEnabled(cat, isOn); });
+                
+                var editBtnTr = toggle.transform.Find("filterCategoryEditBtn");
+                var editBtn = editBtnTr ? editBtnTr.GetComponent<Button>() : null;
+                if (editBtn != null)
+                {
+                    editBtn.onClick.RemoveAllListeners();
+                    string captured = cat;
+                    editBtn.onClick.AddListener(() => LootUIController.ShowEditCategory(captured));
+                }
             }
 
             Canvas.ForceUpdateCanvases();

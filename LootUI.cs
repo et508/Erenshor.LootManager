@@ -75,13 +75,13 @@ namespace LootManager
             Plugin.Log.LogInfo("[Loot Manager] Loot UI initialized successfully.");
         }
         
-        /*private void Update()
+        private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F6) && Instance == this)
             {
                 ToggleUI();
             }
-        }*/
+        }
         
         public void ToggleUI()
         {
