@@ -253,21 +253,6 @@ namespace LootManager
                     RefreshUI();
                     return;
                 }
-
-                bool ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-                if (ctrl)
-                {
-                    if (_selectedNames.Contains(itemName))
-                        _selectedNames.Remove(itemName);
-                    else
-                        _selectedNames.Add(itemName);
-                }
-                else
-                {
-                    _selectedNames.Clear();
-                    _selectedNames.Add(itemName);
-                }
-
                 _leftList?.Refresh();
                 _rightList?.Refresh();
             });
