@@ -5,6 +5,9 @@
 - Blacklist slot and bank slot.
 - You can now open the bank and auction windows from the Manager inventory tab.
 
+### Fixed
+- Flag check to prevent looting NPCs that should not normally be able to be looted.
+
 ### Removed
 - Removed the Blacklist Slot from the inventory window.
 - Support for ctrl+click multiple selection was removed.
@@ -33,8 +36,10 @@
 - Equipment Tier - Filter equipment looting by tier.
 - Filterlist Groups - Groups of items to loot. 
   - Groups can be toggled on and off.
+  - New groups can be created by entering a name and clicking `New Group`.
   - Groups can be edited using the edit button next to the group name.
     - This will display a transfer list to allow for adding or removing items to the category.
+  - Groups can be deleted by clicking the `X` next to the group name.
 
 
 ### Loot Lists

@@ -9,7 +9,7 @@ namespace LootManager
 {
     public sealed class WhitelistPanelController
     {
-        private const bool ENABLE_BY_DEFAULT = true; // new categories start enabled
+        private const bool ENABLE_BY_DEFAULT = false;
 
         private readonly GameObject _root;
         private readonly RectTransform _containerRect;
@@ -454,13 +454,13 @@ namespace LootManager
             string name = raw?.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                UpdateSocialLog.LogAdd("[LootUI] Category name is empty.", "red");
+                UpdateSocialLog.LogAdd("[LootUI] Group name is empty.", "red");
                 return;
             }
             
             if (Plugin.FilterList.ContainsKey(name))
             {
-                UpdateSocialLog.LogAdd($"[LootUI] Category '{name}' already exists.", "red");
+                UpdateSocialLog.LogAdd($"[LootUI] Group {name} already exists.", "red");
                 return;
             }
             
@@ -469,7 +469,7 @@ namespace LootManager
                 Plugin.EnabledFilterCategories.Add(name);
 
             LootFilterlist.SaveFilterlist();
-            UpdateSocialLog.LogAdd($"[LootUI] Created new category '{name}'.", "yellow");
+            UpdateSocialLog.LogAdd($"[LootUI] Created new group {name}.", "yellow");
 
             if (_newCategoryInput != null) _newCategoryInput.text = string.Empty;
 
@@ -482,7 +482,7 @@ namespace LootManager
             
             if (!Plugin.FilterList.ContainsKey(name))
             {
-                UpdateSocialLog.LogAdd($"[LootUI] Category '{name}' not found.", "red");
+                UpdateSocialLog.LogAdd($"[LootUI] Group {name} not found.", "red");
                 return;
             }
 
@@ -490,7 +490,7 @@ namespace LootManager
             Plugin.EnabledFilterCategories.Remove(name);
 
             LootFilterlist.SaveFilterlist();
-            UpdateSocialLog.LogAdd($"[LootUI] Deleted category '{name}'.", "yellow");
+            UpdateSocialLog.LogAdd($"[LootUI] Deleted group {name}.", "yellow");
 
             RebuildFilterToggles();
         }

@@ -52,7 +52,7 @@ namespace LootManager
                              ?? new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase);
 
                 ApplyToPluginState(loaded);
-                Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.FilterList.Count} filter categories.");
+                Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.FilterList.Count} filter groups.");
             }
             catch (Exception ex)
             {

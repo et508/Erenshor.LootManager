@@ -39,7 +39,7 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 
 ## Whitelist
 - While using the Whitelist loot method you will not loot anything. Everything will be destroyed. 
-  - Items that have the `NoTradeNoDestroy` flag will be preserved. As these are typically quest items or event items that can not be looted again.
+  - Items that have the `NoTradeNoDestroy` flag will be preserved. As these are typically quest items or event items that can not be gained again.
 - On the Whitelist panel you will see a transfer list that works the same as the blacklist and banklist.
   - On the left(red), a list of every item in the game. 
   - On the right(white), are the items you will loot. 
@@ -53,7 +53,12 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
     - Blessed And Up: Loot blue and purple tiered equipment
   - This will also follow any bank rules you have set.
 - Filterlist Groups are togglable sets of items you wish to loot.
+  - A few pre-made groups are provided the first time you run Loot Manager. 
+    - These can be edited or removed to your liking.
+  - New groups can be created by entering a name and clicking `New Group`.
+    - These groups start empty and disabled by default.
   - Clicking `Edit` next to each group name will open a transfer list window. This works the same as the others.
+  - Click the `X` next to the group name will delete the group. This is permanent and can not be reversed. 
 
 ## Add Blacklist Items Directly From Inventory
 - Add items to the Blacklist just by placing them in the "Blacklist" inventory slot.
