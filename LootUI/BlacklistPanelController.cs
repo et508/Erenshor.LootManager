@@ -121,6 +121,7 @@ namespace LootManager
             {
                 _blackfilterInput.onValueChanged.RemoveAllListeners();
                 _blackfilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
+                _blackfilterInput.text = string.Empty;
             }
 
             RefreshUI();

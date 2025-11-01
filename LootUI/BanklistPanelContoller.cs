@@ -122,6 +122,7 @@ namespace LootManager
             {
                 _bankfilterInput.onValueChanged.RemoveAllListeners();
                 _bankfilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
+                _bankfilterInput.text = string.Empty;
             }
 
             RefreshUI();

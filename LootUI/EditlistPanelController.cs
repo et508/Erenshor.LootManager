@@ -121,10 +121,7 @@ namespace LootManager
             _leftList.Enable(true);
             _rightList.Enable(true);
         }
-
-        /// <summary>
-        /// Opens the editor for the given LootFilterlist category.
-        /// </summary>
+        
         public void Show(string categoryName)
         {
             _currentCategory = categoryName?.Trim();
@@ -149,7 +146,7 @@ namespace LootManager
             {
                 _editfilterInput.onValueChanged.RemoveAllListeners();
                 _editfilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
-                _editfilterInput.text = string.Empty; // fresh filter each open
+                _editfilterInput.text = string.Empty;
             }
 
             RefreshUI();
@@ -158,15 +155,11 @@ namespace LootManager
             _rightList?.RecalculateAndRefresh();
 
             if (_panelBGeditlist != null) _panelBGeditlist.SetActive(true);
-
-            // kick layout finalize like other panels
+            
             _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_edititemContent));
             _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_editlistContent));
         }
-
-        /// <summary>
-        /// Optional: hide panel (call from external close/back button if desired)
-        /// </summary>
+        
         public void Hide()
         {
             if (_panelBGeditlist != null) _panelBGeditlist.SetActive(false);
@@ -248,7 +241,6 @@ namespace LootManager
             {
                 label.text = itemName;
                 label.raycastTarget = false;
-                // same visual language as your other panels: left=red, right=white
                 label.color = isInCategory ? Color.white : Color.red;
             }
 

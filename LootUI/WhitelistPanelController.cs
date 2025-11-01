@@ -9,6 +9,8 @@ namespace LootManager
 {
     public sealed class WhitelistPanelController
     {
+        private const bool ENABLE_BY_DEFAULT = true; // new categories start enabled
+
         private readonly GameObject _root;
         private readonly RectTransform _containerRect;
         
@@ -20,8 +22,14 @@ namespace LootManager
         private Button _removeBtn;
         private Toggle _lootEquipToggle;
         private TMP_Dropdown _equipmentTierDropdown;
+
         private Transform _filterlistContent;
         private Toggle _filterCategoryTemplate;
+
+        
+        private TMP_InputField _newCategoryInput;
+        private Button _newCategoryAddBtn;
+
         private GameObject _dragHandle;
 
         private UIVirtualList _leftList;
@@ -52,17 +60,22 @@ namespace LootManager
 
         public void Init()
         {
-            _whiteitemContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
-            _whitelistContent        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
-            _whitelistItemTemplate   = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
-            _whitefilterInput        = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
-            _addBtn                  = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
-            _removeBtn               = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
-            _lootEquipToggle         = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
-            _equipmentTierDropdown   = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
-            _filterlistContent       = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
-            _filterCategoryTemplate  = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
-            _dragHandle              = UICommon.Find(_root, "container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
+            _whiteitemContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent");
+            _whitelistContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistView/Viewport/whitelistContent");
+            _whitelistItemTemplate = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteitemView/Viewport/whiteitemContent/whitelistItem")?.GetComponent<Button>();
+            _whitefilterInput = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whitelistFilter")?.GetComponent<TMP_InputField>();
+            _addBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteaddBtn")?.GetComponent<Button>();
+            _removeBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/whiteremoveBtn")?.GetComponent<Button>();
+            _lootEquipToggle = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/lootequipToggle")?.GetComponent<Toggle>();
+            _equipmentTierDropdown = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/equipmenttierDropdown")?.GetComponent<TMP_Dropdown>();
+
+            _filterlistContent = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent");
+            _filterCategoryTemplate = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistView/Viewport/filterlistContent/filterCategoryToggle")?.GetComponent<Toggle>();
+            
+            _newCategoryInput = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistNewName")?.GetComponent<TMP_InputField>();
+            _newCategoryAddBtn = UICommon.Find(_root, "container/panelBGwhitelist/whitelistPanel/filterlistNewAddBtn")?.GetComponent<Button>();
+
+            _dragHandle = UICommon.Find(_root, "container/panelBGwhitelist/lootUIDragHandle")?.gameObject;
             
             if (_dragHandle != null && _containerRect != null)
             {
@@ -93,6 +106,34 @@ namespace LootManager
                 mute.input = _whitefilterInput;
                 mute.windowRoot = UICommon.Find(_root, "container/panelBGwhitelist")?.gameObject;
                 mute.log        = true;
+            }
+            
+            if (_newCategoryInput != null)
+            {
+                var mute = _newCategoryInput.gameObject.GetComponent<TypingInputMute>()
+                           ?? _newCategoryInput.gameObject.AddComponent<TypingInputMute>();
+
+                mute.input = _newCategoryInput;
+                mute.windowRoot = UICommon.Find(_root, "container/panelBGwhitelist")?.gameObject;
+                mute.log        = true;
+            }
+            
+            if (_newCategoryAddBtn != null)
+            {
+                _newCategoryAddBtn.onClick.RemoveAllListeners();
+                _newCategoryAddBtn.onClick.AddListener(TryAddCategoryFromInput);
+                
+                if (_newCategoryAddBtn != null)
+                    _newCategoryAddBtn.interactable = !string.IsNullOrEmpty(_newCategoryInput.text);
+            }
+            
+            if (_newCategoryInput != null && _newCategoryAddBtn != null)
+            {
+                _newCategoryInput.onValueChanged.RemoveAllListeners();
+                _newCategoryInput.onValueChanged.AddListener(value =>
+                {
+                    _newCategoryAddBtn.interactable = !string.IsNullOrWhiteSpace(value);
+                });
             }
             
             ItemLookup.EnsureBuilt();
@@ -135,6 +176,7 @@ namespace LootManager
             {
                 _whitefilterInput.onValueChanged.RemoveAllListeners();
                 _whitefilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
+                _whitefilterInput.text = string.Empty;
             }
 
             RefreshUI();
@@ -390,11 +432,67 @@ namespace LootManager
                     string captured = cat;
                     editBtn.onClick.AddListener(() => LootUIController.ShowEditCategory(captured));
                 }
+                
+                var delBtnTr = toggle.transform.Find("filterCategoryDeleteBtn");
+                var delBtn = delBtnTr ? delBtnTr.GetComponent<Button>() : null;
+                if (delBtn != null)
+                {
+                    delBtn.onClick.RemoveAllListeners();
+                    string captured = cat;
+                    delBtn.onClick.AddListener(() => TryDeleteCategory(captured));
+                }
             }
 
             Canvas.ForceUpdateCanvases();
             RectTransform rt = _filterlistContent.GetComponent<RectTransform>();
             if (rt != null) LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+        }
+        
+        private void TryAddCategoryFromInput()
+        {
+            string raw = _newCategoryInput != null ? _newCategoryInput.text : null;
+            string name = raw?.Trim();
+            if (string.IsNullOrEmpty(name))
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Category name is empty.", "red");
+                return;
+            }
+            
+            if (Plugin.FilterList.ContainsKey(name))
+            {
+                UpdateSocialLog.LogAdd($"[LootUI] Category '{name}' already exists.", "red");
+                return;
+            }
+            
+            Plugin.FilterList[name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (ENABLE_BY_DEFAULT)
+                Plugin.EnabledFilterCategories.Add(name);
+
+            LootFilterlist.SaveFilterlist();
+            UpdateSocialLog.LogAdd($"[LootUI] Created new category '{name}'.", "yellow");
+
+            if (_newCategoryInput != null) _newCategoryInput.text = string.Empty;
+
+            RebuildFilterToggles();
+        }
+
+        private void TryDeleteCategory(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return;
+            
+            if (!Plugin.FilterList.ContainsKey(name))
+            {
+                UpdateSocialLog.LogAdd($"[LootUI] Category '{name}' not found.", "red");
+                return;
+            }
+
+            Plugin.FilterList.Remove(name);
+            Plugin.EnabledFilterCategories.Remove(name);
+
+            LootFilterlist.SaveFilterlist();
+            UpdateSocialLog.LogAdd($"[LootUI] Deleted category '{name}'.", "yellow");
+
+            RebuildFilterToggles();
         }
     }
 }
