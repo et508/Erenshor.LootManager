@@ -465,8 +465,8 @@ namespace LootManager
             }
             
             Plugin.FilterList[name] = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (ENABLE_BY_DEFAULT)
-                Plugin.EnabledFilterCategories.Add(name);
+            /*if (ENABLE_BY_DEFAULT)
+                Plugin.EnabledFilterCategories.Add(name);*/
 
             LootFilterlist.SaveFilterlist();
             UpdateSocialLog.LogAdd($"[LootUI] Created new group {name}.", "yellow");

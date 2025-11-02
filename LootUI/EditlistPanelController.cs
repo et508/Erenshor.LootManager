@@ -10,6 +10,7 @@ namespace LootManager
     public sealed class EditlistPanelController
     {
         private readonly GameObject _root;
+        private GameObject _container;
         private GameObject _panelBGeditlist;
         private readonly RectTransform _containerRect;
 
@@ -52,6 +53,7 @@ namespace LootManager
 
         public void Init()
         {
+            _container            = UICommon.Find(_root, "container")?.gameObject;
             _panelBGeditlist      = UICommon.Find(_root, "panelBGeditlist")?.gameObject;
             _edititemContent      = UICommon.Find(_root, "panelBGeditlist/editPanel/edititemView/Viewport/edititemContent");
             _editlistContent      = UICommon.Find(_root, "panelBGeditlist/editPanel/editlistView/Viewport/editlistContent");
@@ -125,14 +127,14 @@ namespace LootManager
         public void Show(string categoryName)
         {
             _currentCategory = categoryName?.Trim();
-            Plugin.Editlist.Clear();
-            Plugin.Editlist.UnionWith(LootFilterlist.ReadSectionItems(_currentCategory));
-
             if (string.IsNullOrEmpty(_currentCategory))
             {
                 Debug.LogError("[LootUI] EditlistPanelController.Show called with empty category.");
                 return;
             }
+            
+            Plugin.Editlist.Clear();
+            Plugin.Editlist.UnionWith(LootFilterlist.ReadSectionItems(_currentCategory));
 
             if (_edititemContent == null || _editlistContent == null || _editlistItemTemplate == null)
             {
@@ -140,6 +142,7 @@ namespace LootManager
                 return;
             }
             
+            if (_container != null) _container.SetActive(false);
             if (_panelBGeditlist != null) _panelBGeditlist.SetActive(true);
 
             if (_editfilterInput != null)
@@ -153,8 +156,6 @@ namespace LootManager
 
             _leftList?.RecalculateAndRefresh();
             _rightList?.RecalculateAndRefresh();
-
-            if (_panelBGeditlist != null) _panelBGeditlist.SetActive(true);
             
             _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_edititemContent));
             _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_editlistContent));
@@ -163,6 +164,8 @@ namespace LootManager
         public void Hide()
         {
             if (_panelBGeditlist != null) _panelBGeditlist.SetActive(false);
+            if (_container != null) _container.SetActive(true);
+            _selectedNames.Clear();
         }
 
         private void RefreshUI()
