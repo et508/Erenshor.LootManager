@@ -103,6 +103,7 @@
       <Compile Include="LootUI\EditlistPanelController.cs" />
       <Compile Include="LootUI\Helpers\DebounceInvoker.cs" />
       <Compile Include="LootUI\Helpers\DragHandler.cs" />
+      <Compile Include="LootUI\Helpers\HotkeyBindControl.cs" />
       <Compile Include="LootUI\Helpers\ItemLookup.cs" />
       <Compile Include="LootUI\Helpers\RowHover.cs" />
       <Compile Include="LootUI\Helpers\TypingInputMute.cs" />

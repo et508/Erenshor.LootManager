@@ -77,7 +77,9 @@ namespace LootManager
         
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F6) && Instance == this)
+            if (Plugin.ToggleLootUIHotkey != null &&
+                Plugin.ToggleLootUIHotkey.Value.IsDown() &&
+                Instance == this)
             {
                 ToggleUI();
             }

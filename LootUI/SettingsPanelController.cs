@@ -11,6 +11,11 @@ namespace LootManager
         private readonly RectTransform _containerRect;
         private readonly System.Action _visibilityChanged;
         
+        private Button _toggleUIHotkeyBtn;
+        private TextMeshProUGUI _toggleUIBindingText;
+        private Outline _toggleUIOutline;
+        private HotkeyBindControl _toggleUIBinder;
+        
         private Toggle _autoLootToggle;
         private Slider _autoDistanceSlider;
         private TextMeshProUGUI _autoDistanceText;
@@ -69,6 +74,7 @@ namespace LootManager
             SetupBankPageMode();
             SetupPageRange();
             UpdatePageRangeInteractable();
+            SetupToggleUIHotkey(); 
         }
 
         public void Show()
@@ -234,6 +240,42 @@ namespace LootManager
             bool slidersOn = Plugin.BankLootEnabled.Value && Plugin.BankLootPageMode.Value == "Page Range";
             if (_bankPageFirstSlider != null) _bankPageFirstSlider.interactable = slidersOn;
             if (_bankPageLastSlider  != null) _bankPageLastSlider.interactable  = slidersOn;
+        }
+        
+        private void SetupToggleUIHotkey()
+        {
+            var btnGO   = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn");
+            var labelGO = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn/toggleUIBinding");
+
+            if (btnGO == null || labelGO == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Hotkey button or label not found in prefab.", "red");
+                return;
+            }
+
+            _toggleUIHotkeyBtn    = btnGO.GetComponent<Button>();
+            _toggleUIBindingText  = labelGO.GetComponent<TextMeshProUGUI>();
+            _toggleUIOutline      = btnGO.GetComponent<Outline>();
+
+            if (_toggleUIHotkeyBtn == null || _toggleUIBindingText == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Missing Button or TextMeshProUGUI component for hotkey binder.", "red");
+                return;
+            }
+            
+            _toggleUIBinder = btnGO.GetComponent<HotkeyBindControl>();
+            if (_toggleUIBinder == null)
+                _toggleUIBinder = btnGO.gameObject.AddComponent<HotkeyBindControl>();
+            
+            _toggleUIBinder.SetLabel(_toggleUIBindingText);
+            if (_toggleUIOutline != null)
+            {
+                _toggleUIBinder.SetListeningHighlight(_toggleUIOutline);
+                _toggleUIBinder.SetListeningHighlight(_toggleUIOutline);
+            }
+            
+            _toggleUIHotkeyBtn.onClick.RemoveAllListeners();
+            _toggleUIHotkeyBtn.onClick.AddListener(_toggleUIBinder.BeginListening);
         }
     }
 }

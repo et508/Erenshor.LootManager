@@ -4,6 +4,7 @@
 - New Manager button added to the inventory window.
 - Blacklist slot and bank slot.
 - You can now open the bank and auction windows from the Manager inventory tab.
+- LootUI toggle hotkey can now be customized in the settings panel.
 
 ### Fixed
 - Flag check to prevent looting NPCs that should not normally be able to be looted.
