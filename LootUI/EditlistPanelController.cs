@@ -14,6 +14,7 @@ namespace LootManager
         private GameObject _panelBGeditlist;
         private readonly RectTransform _containerRect;
 
+        private TMP_Text _groupNameTMP;
         private Transform _edititemContent;
         private Transform _editlistContent;
         private Button _editlistItemTemplate;
@@ -55,6 +56,7 @@ namespace LootManager
         {
             _container            = UICommon.Find(_root, "container")?.gameObject;
             _panelBGeditlist      = UICommon.Find(_root, "panelBGeditlist")?.gameObject;
+            _groupNameTMP         = UICommon.Find(_root, "panelBGeditlist/editPanel/titleImage/groupName")?.GetComponent<TMP_Text>();
             _edititemContent      = UICommon.Find(_root, "panelBGeditlist/editPanel/edititemView/Viewport/edititemContent");
             _editlistContent      = UICommon.Find(_root, "panelBGeditlist/editPanel/editlistView/Viewport/editlistContent");
             _editlistItemTemplate = UICommon.Find(_root, "panelBGeditlist/editPanel/edititemView/Viewport/edititemContent/editlistItem")?.GetComponent<Button>();
@@ -133,6 +135,8 @@ namespace LootManager
                 return;
             }
             
+            SetTitle(_currentCategory);
+            
             Plugin.Editlist.Clear();
             Plugin.Editlist.UnionWith(LootFilterlist.ReadSectionItems(_currentCategory));
 
@@ -140,6 +144,14 @@ namespace LootManager
             {
                 Debug.LogError("[LootUI] Edit list content/template not found.");
                 return;
+            }
+            
+            // Match the edit panel's position/size to the main panel's current RectTransform
+            var mainRT = _container ? _container.GetComponent<RectTransform>() : null;
+            var editRT = _panelBGeditlist ? _panelBGeditlist.GetComponent<RectTransform>() : null;
+            if (mainRT != null && editRT != null)
+            {
+                editRT.anchoredPosition = mainRT.anchoredPosition;
             }
             
             if (_container != null) _container.SetActive(false);
@@ -332,6 +344,15 @@ namespace LootManager
             {
                 UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
             }
+        }
+        
+        private void SetTitle(string category)
+        {
+            var title = string.IsNullOrEmpty(category) 
+                ? "Edit Group" 
+                : $"Editing: {category}";
+            
+            if (_groupNameTMP != null) _groupNameTMP.text = title;
         }
     }
 }

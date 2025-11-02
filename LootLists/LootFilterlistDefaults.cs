@@ -9,7 +9,7 @@ namespace LootManager
         {
             var data = new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase)
             {
-                ["CONSUMABLE"] = new LootFilterCategory
+                ["Consumable"] = new LootFilterCategory
                 {
                     IsEnabled = true,
                     Items = new List<string>
@@ -30,7 +30,7 @@ namespace LootManager
                         "Water"
                     }
                 },
-                ["KEYS"] = new LootFilterCategory
+                ["Keys"] = new LootFilterCategory
                 {
                     IsEnabled = true,
                     Items = new List<string>
@@ -55,7 +55,7 @@ namespace LootManager
                         "Key To Traitor's Halls"
                     }
                 },
-                ["CHESS"] = new LootFilterCategory
+                ["Chess Pieces"] = new LootFilterCategory
                 {
                     IsEnabled = true,
                     Items = new List<string>
@@ -70,7 +70,7 @@ namespace LootManager
                         "The Necromancer"
                     }
                 },
-                ["SPECIAL"] = new LootFilterCategory
+                ["Special"] = new LootFilterCategory
                 {
                     IsEnabled = true,
                     Items = new List<string>
