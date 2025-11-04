@@ -20,6 +20,22 @@ namespace LootManager
 
         private bool _listening;
 
+        private System.Func<KeyboardShortcut> _getter;
+        private System.Action<KeyboardShortcut> _setter;
+        private System.Action _saver;
+
+        public void Configure(System.Func<KeyboardShortcut> getter, System.Action<KeyboardShortcut> setter, System.Action saver)
+        {
+            _getter = getter;
+            _setter = setter;
+            _saver  = saver;
+            RefreshLabel();
+            SetListeningVisual(false);
+        }
+
+        public void SetLabel(TextMeshProUGUI label) => labelText = label;
+        public void SetListeningHighlight(Behaviour outline) => listeningHighlight = outline;
+
         private void Awake()
         {
             RefreshLabel();
@@ -60,13 +76,15 @@ namespace LootManager
         private void RefreshLabel()
         {
             if (!labelText) return;
-            var ks = Plugin.ToggleLootUIHotkey != null ? Plugin.ToggleLootUIHotkey.Value : default;
+            var ks = _getter != null ? _getter() : default;
             labelText.text = ToHumanString(ks);
         }
 
         private void Update()
         {
             if (!_listening) return;
+			if (GameData.PlayerTyping || TypingInputMute.IsAnyActive) return;
+          
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -134,40 +152,10 @@ namespace LootManager
 
         private void SetBinding(KeyboardShortcut ks)
         {
-            if (Plugin.ToggleLootUIHotkey == null) return;
-            Plugin.ToggleLootUIHotkey.Value = ks;
-            Plugin.ToggleLootUIHotkey.ConfigFile.Save();
+            if (_setter == null) return;
+            _setter(ks);
+            _saver?.Invoke();
             RefreshLabel();
-        }
-
-        private static void CollectShift(List<KeyCode> mods)
-        {
-            if (Input.GetKey(KeyCode.LeftShift))  mods.Add(KeyCode.LeftShift);
-            if (Input.GetKey(KeyCode.RightShift)) mods.Add(KeyCode.RightShift);
-            if (mods.Count == 0) mods.Add(KeyCode.LeftShift);
-        }
-
-        private static void CollectCtrl(List<KeyCode> mods)
-        {
-            if (Input.GetKey(KeyCode.LeftControl))  mods.Add(KeyCode.LeftControl);
-            if (Input.GetKey(KeyCode.RightControl)) mods.Add(KeyCode.RightControl);
-            if (mods.Count == 0) mods.Add(KeyCode.LeftControl);
-        }
-
-        private static void CollectAlt(List<KeyCode> mods)
-        {
-            if (Input.GetKey(KeyCode.LeftAlt))  mods.Add(KeyCode.LeftAlt);
-            if (Input.GetKey(KeyCode.RightAlt)) mods.Add(KeyCode.RightAlt);
-            if (mods.Count == 0) mods.Add(KeyCode.LeftAlt);
-        }
-
-        private static void CollectCommand(List<KeyCode> mods)
-        {
-            if (Input.GetKey(KeyCode.LeftCommand))  mods.Add(KeyCode.LeftCommand);
-            if (Input.GetKey(KeyCode.RightCommand)) mods.Add(KeyCode.RightCommand);
-            if (Input.GetKey(KeyCode.LeftWindows))  mods.Add(KeyCode.LeftWindows);
-            if (Input.GetKey(KeyCode.RightWindows)) mods.Add(KeyCode.RightWindows);
-            if (mods.Count == 0) mods.Add(KeyCode.LeftCommand);
         }
 
         private string ToHumanString(KeyboardShortcut ks)
@@ -209,8 +197,5 @@ namespace LootManager
                 default: return code.ToString();
             }
         }
-
-        public void SetLabel(TextMeshProUGUI label) => labelText = label;
-        public void SetListeningHighlight(Behaviour outline) => listeningHighlight = outline;
     }
 }

@@ -1,3 +1,6 @@
+using BepInEx;
+using BepInEx.Logging;
+using BepInEx.Configuration;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -11,10 +14,8 @@ namespace LootManager
         private readonly RectTransform _containerRect;
         private readonly System.Action _visibilityChanged;
         
-        private Button _toggleUIHotkeyBtn;
-        private TextMeshProUGUI _toggleUIBindingText;
-        private Outline _toggleUIOutline;
         private HotkeyBindControl _toggleUIBinder;
+        private HotkeyBindControl _autoLootBinder;
         
         private Toggle _autoLootToggle;
         private Slider _autoDistanceSlider;
@@ -74,7 +75,8 @@ namespace LootManager
             SetupBankPageMode();
             SetupPageRange();
             UpdatePageRangeInteractable();
-            SetupToggleUIHotkey(); 
+            SetupToggleUIHotkey();
+            SetupAutoLootHotkey();
         }
 
         public void Show()
@@ -244,38 +246,70 @@ namespace LootManager
         
         private void SetupToggleUIHotkey()
         {
-            var btnGO   = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn");
-            var labelGO = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn/toggleUIBinding");
-
-            if (btnGO == null || labelGO == null)
-            {
-                UpdateSocialLog.LogAdd("[LootUI] Hotkey button or label not found in prefab.", "red");
-                return;
-            }
-
-            _toggleUIHotkeyBtn    = btnGO.GetComponent<Button>();
-            _toggleUIBindingText  = labelGO.GetComponent<TextMeshProUGUI>();
-            _toggleUIOutline      = btnGO.GetComponent<Outline>();
-
-            if (_toggleUIHotkeyBtn == null || _toggleUIBindingText == null)
-            {
-                UpdateSocialLog.LogAdd("[LootUI] Missing Button or TextMeshProUGUI component for hotkey binder.", "red");
-                return;
-            }
-            
-            _toggleUIBinder = btnGO.GetComponent<HotkeyBindControl>();
-            if (_toggleUIBinder == null)
-                _toggleUIBinder = btnGO.gameObject.AddComponent<HotkeyBindControl>();
-            
-            _toggleUIBinder.SetLabel(_toggleUIBindingText);
-            if (_toggleUIOutline != null)
-            {
-                _toggleUIBinder.SetListeningHighlight(_toggleUIOutline);
-                _toggleUIBinder.SetListeningHighlight(_toggleUIOutline);
-            }
-            
-            _toggleUIHotkeyBtn.onClick.RemoveAllListeners();
-            _toggleUIHotkeyBtn.onClick.AddListener(_toggleUIBinder.BeginListening);
+            SetupHotkeyBinder(
+                "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn",
+                "container/panelBGsettings/settingsPanel/toggleUIHotkeyBtn/toggleUIBinding",
+                Plugin.ToggleLootUIHotkey,
+                out _toggleUIBinder
+            );
         }
+        
+        private void SetupAutoLootHotkey()
+        {
+            SetupHotkeyBinder(
+                "container/panelBGsettings/settingsPanel/autoLootHotkeyBtn",
+                "container/panelBGsettings/settingsPanel/autoLootHotkeyBtn/autoLootBinding",
+                Plugin.AutoLootHotkey,
+                out _autoLootBinder
+            );
+        }
+        
+        private void SetupHotkeyBinder(string buttonPath, string labelPath, BepInEx.Configuration.ConfigEntry<KeyboardShortcut> configEntry, out HotkeyBindControl binderOut)
+        {
+            binderOut = null;
+
+            var btnTr   = UICommon.Find(_root, buttonPath);
+            var labelTr = UICommon.Find(_root, labelPath);
+            if (btnTr == null || labelTr == null)
+            {
+                UpdateSocialLog.LogAdd($"[LootUI] Hotkey binder missing ui path(s): {buttonPath} / {labelPath}", "red");
+                return;
+            }
+
+            var btn   = btnTr.GetComponent<Button>();
+            var label = labelTr.GetComponent<TextMeshProUGUI>();
+            var outline = btnTr.GetComponent<Outline>();
+
+            if (btn == null || label == null)
+            {
+                UpdateSocialLog.LogAdd("[LootUI] Hotkey binder missing Button or TMP label.", "red");
+                return;
+            }
+
+            var binder = btnTr.GetComponent<HotkeyBindControl>();
+            if (binder == null)
+                binder = btnTr.gameObject.AddComponent<HotkeyBindControl>();
+
+            binder.SetLabel(label);
+            if (outline != null)
+            {
+                binder.SetListeningHighlight(outline);
+                outline.enabled = false;
+            }
+
+            binder.Configure(
+                getter: () => configEntry.Value,
+                setter: v => configEntry.Value = v,
+                saver : () => configEntry.ConfigFile.Save()
+            );
+
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(binder.BeginListening);
+
+            binderOut = binder;
+        }
+
+
+
     }
 }

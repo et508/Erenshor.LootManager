@@ -78,7 +78,8 @@ namespace LootManager
         private void Update()
         {
             if (Plugin.ToggleLootUIHotkey != null &&
-                Plugin.ToggleLootUIHotkey.Value.IsDown() &&
+                Plugin.ToggleLootUIHotkey.Value.IsDown() && !GameData.PlayerTyping &&
+                !TypingInputMute.IsAnyActive &&
                 Instance == this)
             {
                 ToggleUI();

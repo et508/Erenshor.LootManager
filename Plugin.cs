@@ -27,6 +27,7 @@ namespace LootManager
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         public static ConfigEntry<KeyboardShortcut> ToggleLootUIHotkey;
+        public static ConfigEntry<KeyboardShortcut> AutoLootHotkey;
         public static ConfigEntry<bool>  AutoLootEnabled;
         public static ConfigEntry<float> AutoLootDistance;
         public static ConfigEntry<string> LootMethod;
@@ -43,7 +44,8 @@ namespace LootManager
         {
             Log = Logger;
             
-            ToggleLootUIHotkey = Config.Bind("Hotkeys", "Toggle Loot UI",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
+            ToggleLootUIHotkey = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
+            AutoLootHotkey     = Config.Bind("Hotkeys", "Autoloot Toggle Hotkey", new KeyboardShortcut(KeyCode.F10), "Hotkey to toggle auto looting on and off.");
             
             AutoLootEnabled   = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance  = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
