@@ -87,6 +87,7 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
+      <Compile Include="AutoLootHotkeyListener.cs" />
       <Compile Include="LootEnums.cs" />
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />

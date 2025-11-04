@@ -33,6 +33,8 @@ namespace LootManager
         private TextMeshProUGUI _pageLastText;
 
         private GameObject _dragHandle;
+        
+        private static SettingsPanelController s_instance;
 
         private readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
         private readonly List<string> _bankMethodOptions = new List<string> { "All", "Filtered" };
@@ -47,6 +49,8 @@ namespace LootManager
 
         public void Init()
         {
+            s_instance = this;
+            
             _autoLootToggle      = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/autoLootToggle")?.GetComponent<Toggle>();
             _autoDistanceSlider  = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/autoDistance")?.GetComponent<Slider>();
             _autoDistanceText    = UICommon.Find(_root, "container/panelBGsettings/settingsPanel/autoText")?.GetComponent<TextMeshProUGUI>();
@@ -95,6 +99,20 @@ namespace LootManager
                 UpdateAutoDistanceInteractable();
             });
             UpdateAutoDistanceInteractable();
+        }
+        
+        // ADD inside SettingsPanelController class
+        public static void ApplyAutoLootFromExternal(bool value)
+        {
+            // Update config
+            Plugin.AutoLootEnabled.Value = value;
+
+            // If the settings UI exists, sync the toggle without firing its onValueChanged
+            if (s_instance != null && s_instance._autoLootToggle != null)
+            {
+                s_instance._autoLootToggle.SetIsOnWithoutNotify(value);
+                s_instance.UpdateAutoDistanceInteractable();
+            }
         }
 
         private void SetupAutoLootDistance()
@@ -259,7 +277,7 @@ namespace LootManager
             SetupHotkeyBinder(
                 "container/panelBGsettings/settingsPanel/autoLootHotkeyBtn",
                 "container/panelBGsettings/settingsPanel/autoLootHotkeyBtn/autoLootBinding",
-                Plugin.AutoLootHotkey,
+                Plugin.ToggleAutoLootHotkey,
                 out _autoLootBinder
             );
         }
@@ -308,8 +326,5 @@ namespace LootManager
 
             binderOut = binder;
         }
-
-
-
     }
 }
