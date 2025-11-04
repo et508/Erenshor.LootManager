@@ -1,4 +1,4 @@
-## [2.1.0] - TBD
+## [2.1.0] - 11/4/2025
 ### Added
 - The Whitelist loot method has been implemented. 
 - New Manager button added to the inventory window.
