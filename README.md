@@ -5,8 +5,8 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 
 ## Installation
 - Install [BepInEx](https://github.com/et508/Erenshor.BepInEx/releases/tag/e1)
-- [Download the latest release](https://github.com/et508/Erenshor.LootManager/releases)
-- Extract the folder from Erenshor.LootManager.zip into Erenshor\BepInEx\plugins\ folder.
+- [Download the latest release](https://github.com/et508/Erenshor.LootManager/releases/latest)
+- Extract the folder from Erenshor.LootManager.zip into `Erenshor\BepInEx\plugins\` folder.
 
 ### It is highly recommended to use BepInEx 5.4.23.x
 
@@ -18,6 +18,7 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 
 ## LootUI Settings
 - Autoloot - Toggle On or Off
+- Autoloot Hotkey - Set a custom keybind to toggle autolooting on or off. `F10` by default.
 - Autoloot Distance - Set the distance to autoloot 0 to 200 units
 - Loot Method - Choose between Blacklist, Whitelist, or Standard
     - Blacklist - Will use the blicklist filter you setup. Destroying the items you do not want to loot.
@@ -46,12 +47,12 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
   - On the right(white), are the items you will loot. 
     - Looting these items will follow any Banklist rules you have set. 
 - Loot Equipment toggle, will allow for looting any item that is equipable.
-  - A tier filter as been provided for this as well.
-    - All: All tiers of equipment.
-    - Normal Only: Only loot white tiered equipment.
-    - Blessed Only: Only loot blue tiered equipment.
-    - Godly Only: Only loot purple tiered equipment.
-    - Blessed And Up: Loot blue and purple tiered equipment
+  - A tier filter has been provided for this as well.
+    - `All`: All tiers of equipment.
+    - `Normal Only`: Only loot white tiered equipment.
+    - `Blessed Only`: Only loot blue tiered equipment.
+    - `Godly Only`: Only loot purple tiered equipment.
+    - `Blessed And Up`: Loot blue and purple tiered equipment
   - This will also follow any bank rules you have set.
 - Filterlist Groups are togglable sets of items you wish to loot.
   - A few pre-made groups are provided the first time you run Loot Manager. 
@@ -64,5 +65,9 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 ## Add Blacklist Items Directly From Inventory
 - Add items to the Blacklist just by placing them in the "Blacklist" inventory slot.
 
+## Send Items to Bank Directly From Inventory
+- Send items to the bank just by placing them in the "Bank" inventory slot.
+  - This will follow any banklist rules you have set.
+  - Able to toggle banklist addition on or off.
 
 

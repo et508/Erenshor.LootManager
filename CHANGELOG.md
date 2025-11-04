@@ -29,6 +29,7 @@
 - Manager Slot UI window added to the inventory.
   - Blacklist Slot
   - Bank Slot
+    - Add to Banklist by placing item in the slot. Able to toggle banklist addition on/off.
   - Button to toggle LootUI
   - Bank and Auction Buttons
 
