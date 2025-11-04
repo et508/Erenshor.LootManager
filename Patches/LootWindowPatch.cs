@@ -25,8 +25,7 @@ namespace LootManager
                     continue;
 
                 string name = item.ItemName;
-
-                // Apply loot method filtering
+                
                 if (lootMethod == "Blacklist" && Plugin.Blacklist.Contains(name))
                 {
                     UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
@@ -36,7 +35,15 @@ namespace LootManager
                     continue;
                 }
 
-                // Decide whether to send item to bank
+                if (lootMethod == "Whitelist" && !WhitelistLoot.ShouldLoot(item, qty))
+                {
+                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    slot.MyItem   = GameData.PlayerInv.Empty;
+                    slot.Quantity = 1;
+                    slot.UpdateSlotImage();
+                    continue;
+                }
+                
                 bool sendToBank = false;
                 if (bankLootEnabled)
                 {
@@ -72,14 +79,12 @@ namespace LootManager
                         continue;
                     }
                 }
-
-                // Always clear the loot slot
+                
                 slot.MyItem   = GameData.PlayerInv.Empty;
                 slot.Quantity = 1;
                 slot.UpdateSlotImage();
             }
-
-            // Deposit bank-queued items
+            
             if (lootedForBank.Count > 0)
             {
                 BankLoot.DepositLoot(lootedForBank);

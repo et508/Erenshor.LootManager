@@ -7,7 +7,6 @@ namespace LootManager
 {
     public static class BankLoot
     {
-        // Represents a single item to deposit
         public class LootEntry
         {
             public string Id { get; }
@@ -27,8 +26,7 @@ namespace LootManager
             string saveDir    = Path.Combine(Application.persistentDataPath, "ESSaveData");
             string newPath    = Path.Combine(saveDir, "GBDATA");
             string legacyPath = Application.persistentDataPath + "GBDATA";
-
-            // Load or initialize bank data
+            
             BankSaveData data;
             if (File.Exists(newPath))
             {
@@ -63,8 +61,7 @@ namespace LootManager
             foreach (var entry in entries)
             {
                 bool placed = false;
-
-                // 1) Stack into any existing matching stack (all pages)
+                
                 if (GameData.ItemDB.GetItemByID(entry.Id)?.Stackable == true)
                 {
                     for (int i = 0; i < totalSlots; i++)
@@ -77,8 +74,7 @@ namespace LootManager
                         }
                     }
                 }
-
-                // 2) If not stacked, find first empty slot based on method
+                
                 if (!placed)
                 {
                     int searchStart = 0;
@@ -109,7 +105,6 @@ namespace LootManager
                 }
                 else
                 {
-                    // No space found — fallback to inventory
                     UpdateSocialLog.LogAdd($"[Loot Manager] No bank space. Adding \"{entry.Name}\" to inventory instead.", "orange");
 
                     var item = GameData.ItemDB.GetItemByID(entry.Id);
@@ -118,8 +113,7 @@ namespace LootManager
 
                 }
             }
-
-            // Save if any deposits occurred
+            
             if (anyDeposited)
             {
                 Directory.CreateDirectory(saveDir);

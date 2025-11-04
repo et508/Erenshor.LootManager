@@ -16,7 +16,6 @@ namespace LootManager
             if (added)
             {
                 UpdateSocialLog.LogAdd($"[Loot Manager] Looted \"{name ?? item.ItemName}\" to inventory", "yellow");
-                // Optional: inform group if you're calling from a slot context
             }
             else
             {

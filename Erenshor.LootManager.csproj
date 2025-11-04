@@ -32,6 +32,10 @@
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
+    <PropertyGroup>
+      <PostBuildEvent>
+</PostBuildEvent>
+    </PropertyGroup>
     <ItemGroup>
       <Reference Include="0Harmony">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\0Harmony.dll</HintPath>
@@ -41,6 +45,9 @@
       </Reference>
       <Reference Include="BepInEx">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\BepInEx.dll</HintPath>
+      </Reference>
+      <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+        <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
       </Reference>
       <Reference Include="System">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\System.dll</HintPath>
@@ -66,6 +73,9 @@
       <Reference Include="UnityEngine.JSONSerializeModule">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.Physics2DModule">
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.TextRenderingModule">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       </Reference>
@@ -77,26 +87,54 @@
       </Reference>
     </ItemGroup>
     <ItemGroup>
-      <Compile Include="Controllers\LootManagerController.cs" />
-      <Compile Include="Controllers\LootUIController.cs" />
-      <Compile Include="LootCommands.cs" />
+      <Compile Include="AutoLootHotkeyListener.cs" />
+      <Compile Include="LootEnums.cs" />
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />
+      <Compile Include="LootLists\LootFilterlist.cs" />
+      <Compile Include="LootLists\LootFilterlistDefaults.cs" />
+      <Compile Include="LootLists\LootWhitelist.cs" />
+      <Compile Include="LootManagerController.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
       <Compile Include="LootMethods\StandardLoot.cs" />
+      <Compile Include="LootMethods\WhitelistLoot.cs" />
+      <Compile Include="LootUI.cs" />
+      <Compile Include="LootUI\BanklistPanelContoller.cs" />
+      <Compile Include="LootUI\BlacklistPanelController.cs" />
+      <Compile Include="LootUI\EditlistPanelController.cs" />
+      <Compile Include="LootUI\Helpers\DebounceInvoker.cs" />
+      <Compile Include="LootUI\Helpers\DragHandler.cs" />
+      <Compile Include="LootUI\Helpers\HotkeyBindControl.cs" />
+      <Compile Include="LootUI\Helpers\ItemLookup.cs" />
+      <Compile Include="LootUI\Helpers\RowHover.cs" />
+      <Compile Include="LootUI\Helpers\TypingInputMute.cs" />
+      <Compile Include="LootUI\Helpers\UICommon.cs" />
+      <Compile Include="LootUI\Helpers\UILayoutBatch.cs" />
+      <Compile Include="LootUI\Helpers\UIVirtualList.cs" />
+      <Compile Include="LootUI\LootUIController.cs" />
+      <Compile Include="LootUI\ManagerSlotController.cs" />
+      <Compile Include="LootUI\SettingsPanelController.cs" />
+      <Compile Include="LootUI\WhitelistPanelController.cs" />
       <Compile Include="Patches\CharacterPatch.cs" />
       <Compile Include="Patches\LootWindowPatch.cs" />
-      <Compile Include="Patches\TrashSlotPatch.cs" />
+      <Compile Include="PlayerInvUI.cs" />
       <Compile Include="Plugin.cs" />
-      <Compile Include="UserInterface\BlacklistSlot.cs" />
-      <Compile Include="UserInterface\LootManagerUI.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="App.config" />
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="CHANGELOG.md" />
+      <Content Include="README.md" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
-    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-         Other similar extension points exist, see Microsoft.Common.targets.
-    <Target Name="BeforeBuild">
+    
+    <Target Name="PostBuild_Debug" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
+        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\plugins\Erenshor.LootManager"' />
     </Target>
-    <Target Name="AfterBuild">
+
+    <Target Name="PostBuild_Release" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Erenshor Modding\Plugins\Erenshor.LootManager\build\Erenshor.LootManager"' />
     </Target>
-    -->
 </Project>

@@ -1,3 +1,64 @@
+## [2.1.0] - 11/4/2025
+### Added
+- The Whitelist loot method has been implemented. 
+- New Manager button added to the inventory window.
+- Blacklist slot and bank slot.
+- You can now open the bank and auction windows from the Manager inventory tab.
+- LootUI toggle hotkey can now be customized in the settings panel.
+- A hotkey to toggle autoloot on and off has been added. This can be customized in the settings panel.
+
+### Fixed
+- Flag check to prevent looting NPCs that should not normally be able to be looted.
+
+### Removed
+- Removed the Blacklist Slot from the inventory window.
+- Support for ctrl+click multiple selection was removed.
+
+### Loot UI
+- Menu buttons will now be active or disabled dependent on settings.
+- Moved the close button to the menu bar.
+- Item icons have been added to lists.
+- A hover effect and selection effect has been added in place of the green text color change.
+- Whitelist UI Menu
+    - Whitelist Transfer List
+    - Equipment Toggle
+    - Equipment Tier Dropdown
+    - Filterlist Group Toggles
+
+### Manager Slot UI
+- Manager Slot UI window added to the inventory.
+  - Blacklist Slot
+  - Bank Slot
+    - Add to Banklist by placing item in the slot. Able to toggle banklist addition on/off.
+  - Button to toggle LootUI
+  - Bank and Auction Buttons
+
+### Loot Method - Whitelist
+- Story Items - Story items will not be destroyed.
+- Equipment Toggle - Loot all equipable items.
+- Equipment Tier - Filter equipment looting by tier.
+- Filterlist Groups - Groups of items to loot. 
+  - Groups can be toggled on and off.
+  - New groups can be created by entering a name and clicking `New Group`.
+  - Groups can be edited using the edit button next to the group name.
+    - This will display a transfer list to allow for adding or removing items to the category.
+  - Groups can be deleted by clicking the `X` next to the group name.
+
+
+### Loot Lists
+- Changed how the loot list json files are handled. Now using Newtonsoft.Json to read/write. 
+- Changed the location of the files. They are now located in `Erenshor/BepInEx/Config/Loot Manager/`.
+  - Your current legacy loot lists should migrate over, so there should be no data loss.
+- Manual editing of the files is no longer supported. If you need to edit the file manually for whatever reason. You will need exit out of the game first.
+  - It is stongly recommended to use the in game UI to make changes. 
+
+### Performance Improvments
+- Fixed list loading in LootUI. Changing windows in LootUI should now be smoother and better load times for the item lists.
+
+### Known Issues
+- At times the Blacklist Slot will give the message "This item cannot go in this slot." Clicking again and/or moving item around the slot can resolve this.
+
+
 ## [2.0.2] - 6/23/2025
 ### Fixed
 - Rebuilt plugin using BepInEx 5.4.21.0. Miss matching version warning should not longer appear.
