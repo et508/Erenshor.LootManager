@@ -36,7 +36,7 @@ namespace LootManager
         public static ConfigEntry<string> BankLootPageMode;
         public static ConfigEntry<int>   BankPageFirst;
         public static ConfigEntry<int>   BankPageLast;
-        public static ConfigEntry<bool> BankslotAdd;
+        public static ConfigEntry<bool> BankslotAddToList;
         public static ConfigEntry<bool>  LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
 
@@ -44,23 +44,23 @@ namespace LootManager
         {
             Log = Logger;
             
-            ToggleLootUIHotkey = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
+            ToggleLootUIHotkey       = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
             ToggleAutoLootHotkey     = Config.Bind("Hotkeys", "Autoloot Toggle Hotkey", new KeyboardShortcut(KeyCode.F10), "Hotkey to toggle auto looting on and off.");
             
-            AutoLootEnabled   = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
-            AutoLootDistance  = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
+            AutoLootEnabled          = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
+            AutoLootDistance         = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
             
-            LootMethod        = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
+            LootMethod               = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
 
-            BankLootEnabled   = Config.Bind("Bankloot Settings", "Bankloot Enabled", false, "If enabled, looted items will be deposited to bank instead of inventory.");
-            BankLootMethod    = Config.Bind("Bankloot Settings", "Bankloot Method", "All", "Method for bank looting: All or Filtered");
-            BankLootPageMode  = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
-            BankPageFirst     = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
-            BankPageLast      = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
-            BankslotAdd       = Config.Bind("Bankloot Settings", "Bankslot Add", false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
+            BankLootEnabled          = Config.Bind("Bankloot Settings", "Bankloot Enabled", false, "If enabled, looted items will be deposited to bank instead of inventory.");
+            BankLootMethod           = Config.Bind("Bankloot Settings", "Bankloot Method", "All", "Method for bank looting: All or Filtered");
+            BankLootPageMode         = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
+            BankPageFirst            = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+            BankPageLast             = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+            BankslotAddToList        = Config.Bind("Bankloot Settings", "Bankslot Add", false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
-            LootEquipment     = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
-            LootEquipmentTier = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            LootEquipment            = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
+            LootEquipmentTier        = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
             
             LootBlacklist.Load();
             LootWhitelist.Load();

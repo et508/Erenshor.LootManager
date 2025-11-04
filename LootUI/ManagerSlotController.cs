@@ -24,6 +24,8 @@ namespace LootManager
         private static Button _lootuiBtn;
         private static Button _bankBtn;
         private static Button _auctionBtn;
+        
+        private static Toggle _addBanklistToggle;
 
         public static void Initialize(GameObject managerSlotPrefabRoot)
         {
@@ -47,7 +49,7 @@ namespace LootManager
             SetupLootUIButton();
             SetupBankButton();
             SetupAuctionButton();
-            
+            SetupAddBanklistToggle();
             SetupBlacklistSlot();
             SetupBanklistSlot();
         }
@@ -124,6 +126,40 @@ namespace LootManager
             {
                 Debug.LogWarning("[ManagerSlotController] auctionBtn not found in managerSlotPanel.");
             }
+        }
+        
+        private static void SetupAddBanklistToggle()
+        {
+            Transform t = UICommon.Find(_managerSlotPrefabRoot, "panelBG/managerPan/addBanklistToggle");
+            _addBanklistToggle = t != null ? t.GetComponent<Toggle>() : null;
+
+            if (_addBanklistToggle == null)
+            {
+                Debug.LogWarning("[ManagerSlotController] addBanklistToggle not found. Falling back to config only.");
+                return;
+            }
+            
+            try
+            {
+                _addBanklistToggle.SetIsOnWithoutNotify(Plugin.BankslotAddToList.Value);
+            }
+            catch
+            {
+                // just ignore
+            }
+
+            _addBanklistToggle.onValueChanged.RemoveAllListeners();
+            _addBanklistToggle.onValueChanged.AddListener(v =>
+            {
+                try
+                {
+                    Plugin.BankslotAddToList.Value = v;
+                }
+                catch (Exception ex)
+                {
+                    if (Plugin.Log != null) Plugin.Log.LogWarning($"[Loot Manager] Failed to update BankslotAddToList: {ex.Message}");
+                }
+            });
         }
         
         private static void SetupBlacklistSlot()
@@ -218,6 +254,13 @@ namespace LootManager
                 itemIconChild.AddComponent(wantMarker);
         }
         
+        private static bool ShouldAddToBanklist()
+        {
+            if (_addBanklistToggle != null) return _addBanklistToggle.isOn;
+            try { return Plugin.BankslotAddToList.Value; }
+            catch { return false; }
+        }
+        
 
         [HarmonyPatch(typeof(ItemIcon), nameof(ItemIcon.InteractItemSlot))]
         public static class ItemIcon_InteractItemSlot_DropZonesPrefix
@@ -263,7 +306,8 @@ namespace LootManager
 
                     if (isBanklist)
                     {
-                        HandleBanklistAndDeposit(draggedItem, draggedQty);
+                        bool addToList = ShouldAddToBanklist();
+                        HandleBanklistAndDeposit(draggedItem, draggedQty, addToList);
                         ClearCursorNoSnap();
                         GameData.PlayerInv.UpdatePlayerInventory();
                         return false;
@@ -302,20 +346,26 @@ namespace LootManager
                         GameData.PlayerAud.PlayOneShot(misc.DropItem, GameData.PlayerAud.volume / 2f * GameData.SFXVol);
                 }
             }
-
-            private static void HandleBanklistAndDeposit(Item item, int qty)
+            
+            private static void HandleBanklistAndDeposit(Item item, int qty, bool addToList)
             {
                 string key = item.ItemName;
                 bool added = false;
-                if (!Plugin.Banklist.Contains(key))
+
+                if (addToList && !Plugin.Banklist.Contains(key))
                 {
                     Plugin.Banklist.Add(key);
                     added = true;
                     LootBanklist.SaveBanklist();
                 }
 
-                if (added)
-                    UpdateSocialLog.LogAdd("[Loot Manager] Added \"" + key + "\" to banklist.", "lightblue");
+                if (addToList)
+                {
+                    if (added)
+                        UpdateSocialLog.LogAdd("[Loot Manager] Added \"" + key + "\" to banklist.", "lightblue");
+                    else
+                        UpdateSocialLog.LogAdd("[Loot Manager] \"" + key + "\" already on banklist.", "lightblue");
+                }
                 
                 string id = item.Id;
                 BankLoot.LootEntry entry = new BankLoot.LootEntry(id, qty, item.ItemName);
