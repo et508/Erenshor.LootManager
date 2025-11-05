@@ -1,4 +1,5 @@
-![GitHub Release](https://img.shields.io/github/v/release/et508/Erenshor.LootManager)
+![GitHub Release](https://img.shields.io/github/v/release/et508/Erenshor.LootManager) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/et508/Erenshor.LootManager/total)
+
 
 # Loot Manager
 Loot using Blacklist or Whitelist filtering. Send all your loot directly to your bank, or setup a bank filter and only send the loot you want to the bank.
