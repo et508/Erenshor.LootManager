@@ -1,3 +1,11 @@
+## [2.1.1] - TBD
+### Added
+- You can now turn on/off looting of rare item drops even if they are blacklisted.
+- Updated blacklist to use NoTradeNoDestroy flag, to ensure looting of important quest items.
+
+### Loot UI
+- Added a setting to toggle looting of rare item drops even if they are blacklisted.
+
 ## [2.1.0] - 11/4/2025
 ### Added
 - The Whitelist loot method has been implemented. 

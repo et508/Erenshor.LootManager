@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.1.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.1.1")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -37,6 +37,7 @@ namespace LootManager
         public static ConfigEntry<int>   BankPageFirst;
         public static ConfigEntry<int>   BankPageLast;
         public static ConfigEntry<bool> BankslotAddToList;
+        public static ConfigEntry<bool>  LootRare;
         public static ConfigEntry<bool>  LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
 
@@ -59,6 +60,7 @@ namespace LootManager
             BankPageLast             = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
             BankslotAddToList        = Config.Bind("Bankloot Settings", "Bankslot Add", false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
+            LootRare                 = Config.Bind("Filter Settings", "Loot Rare Equipment", false, "If true, always loot rare equipment in blacklist loot method.");    
             LootEquipment            = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
             LootEquipmentTier        = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
             

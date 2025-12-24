@@ -96,6 +96,7 @@
       <Compile Include="LootLists\LootWhitelist.cs" />
       <Compile Include="LootManagerController.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
+      <Compile Include="LootMethods\BlacklistLoot.cs" />
       <Compile Include="LootMethods\StandardLoot.cs" />
       <Compile Include="LootMethods\WhitelistLoot.cs" />
       <Compile Include="LootUI.cs" />
