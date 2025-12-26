@@ -26,7 +26,7 @@ namespace LootManager
 
                 string name = item.ItemName;
                 
-                if (lootMethod == "Blacklist" && Plugin.Blacklist.Contains(name))
+                if (lootMethod == "Blacklist" && BlacklistLoot.ShouldLoot(item, qty))
                 {
                     UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;

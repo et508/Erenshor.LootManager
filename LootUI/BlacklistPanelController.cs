@@ -17,6 +17,7 @@ namespace LootManager
         private TMP_InputField _blackfilterInput;
         private Button _blackaddBtn;
         private Button _blackremoveBtn;
+        private Toggle _lootRareToggle;
         private GameObject _dragHandle;
 
         private UIVirtualList _leftList;
@@ -53,6 +54,7 @@ namespace LootManager
             _blackfilterInput      = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
             _blackaddBtn           = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackaddBtn")?.GetComponent<Button>();
             _blackremoveBtn        = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
+            _lootRareToggle        = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blacklootrare")?.GetComponent<Toggle>();
             _dragHandle            = UICommon.Find(_root, "container/panelBGblacklist/lootUIDragHandle")?.gameObject;
 
             if (_dragHandle != null && _containerRect != null)
@@ -91,6 +93,7 @@ namespace LootManager
             _debounce = DebounceInvoker.Attach(_root);
 
             BuildVirtualLists();
+            SetupLootRareToggle();
         }
 
         private void BuildVirtualLists()
@@ -107,6 +110,14 @@ namespace LootManager
 
             _leftList.Enable(true);
             _rightList.Enable(true);
+        }
+        
+        private void SetupLootRareToggle()
+        {
+            if (_lootRareToggle == null) return;
+            _lootRareToggle.SetIsOnWithoutNotify(Plugin.LootRare.Value);
+            _lootRareToggle.onValueChanged.RemoveAllListeners();
+            _lootRareToggle.onValueChanged.AddListener(v => { Plugin.LootRare.Value = v; });
         }
 
         public void Show()
