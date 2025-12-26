@@ -1,4 +1,4 @@
-## [2.1.1] - TBD
+## [2.1.1] - 12/26/2025
 ### Added
 - You can now turn on/off looting of rare item drops even if they are blacklisted.
 - Updated blacklist to use NoTradeNoDestroy flag, to ensure looting of important quest items.
