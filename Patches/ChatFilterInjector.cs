@@ -131,7 +131,7 @@ namespace LootManager
             
             _toggleMap[instance] = newToggle;
 
-            Plugin.Log.LogInfo($"[ChatFilterInjector] Injected Loot Manager toggle into filter panel of window '{instance.MyWindow.WindowName}'.");
+            // Plugin.Log.LogInfo($"[ChatFilterInjector] Injected Loot Manager toggle into filter panel of window '{instance.MyWindow.WindowName}'.");
         }
     }
 }
