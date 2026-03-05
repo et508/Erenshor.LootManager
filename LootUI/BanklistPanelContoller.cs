@@ -243,13 +243,13 @@ namespace LootManager
                     {
                         Plugin.Banklist.Remove(itemName);
                         LootBanklist.SaveBanklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Removed from banklist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Removed from banklist: " + itemName, "yellow");
                     }
                     else
                     {
                         Plugin.Banklist.Add(itemName);
                         LootBanklist.SaveBanklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Added to banklist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Added to banklist: " + itemName, "yellow");
                     }
                     RefreshUI();
                     return;
@@ -275,11 +275,11 @@ namespace LootManager
             {
                 LootBanklist.SaveBanklist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Added selected items to banklist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to banklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
             }
         }
 
@@ -299,11 +299,11 @@ namespace LootManager
             {
                 LootBanklist.SaveBanklist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from banklist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from banklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
             }
         }
     }

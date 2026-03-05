@@ -1,3 +1,9 @@
+## [2.2.0] - TBD
+### Added
+- Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
+
+
+
 ## [2.1.1] - 12/26/2025
 ### Added
 - You can now turn on/off looting of rare item drops even if they are blacklisted.

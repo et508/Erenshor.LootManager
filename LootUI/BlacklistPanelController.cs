@@ -254,13 +254,13 @@ namespace LootManager
                     {
                         Plugin.Blacklist.Remove(itemName);
                         LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Removed from blacklist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Removed from blacklist: " + itemName, "yellow");
                     }
                     else
                     {
                         Plugin.Blacklist.Add(itemName);
                         LootBlacklist.SaveBlacklist();
-                        UpdateSocialLog.LogAdd("[LootUI] Added to blacklist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Added to blacklist: " + itemName, "yellow");
                     }
                     RefreshUI();
                     return;
@@ -286,11 +286,11 @@ namespace LootManager
             {
                 LootBlacklist.SaveBlacklist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Added selected items to blacklist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to blacklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
             }
         }
 
@@ -310,11 +310,11 @@ namespace LootManager
             {
                 LootBlacklist.SaveBlacklist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from blacklist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from blacklist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
             }
         }
     }

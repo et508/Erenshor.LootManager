@@ -20,7 +20,7 @@ namespace LootManager
             var npcComp = __instance.GetComponent<NPC>();
             if (__instance.DestroyOnDeath && npcComp != null)
             {
-                UpdateSocialLog.LogAdd("[Loot Manager] Skipping autoloot (DestroyOnDeath).", "yellow");
+                ChatFilterInjector.SendLootMessage("[Loot Manager] Skipping autoloot (DestroyOnDeath).", "yellow");
                 return;
             }
             
@@ -39,7 +39,7 @@ namespace LootManager
             LootTable lootTable = __instance.MyNPC.GetComponent<LootTable>();
             if (lootTable != null)
             {
-                UpdateSocialLog.LogAdd(
+                ChatFilterInjector.SendLootMessage(
                     "[Loot Manager] Looting NPC: " + __instance.MyNPC.name,
                     "yellow"
                 );

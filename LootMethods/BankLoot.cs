@@ -101,11 +101,11 @@ namespace LootManager
                 if (placed)
                 {
                     anyDeposited = true;
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Deposited \"{entry.Name}\" into bank.", "lightblue");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] Deposited \"{entry.Name}\" into bank.", "lightblue");
                 }
                 else
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] No bank space. Adding \"{entry.Name}\" to inventory instead.", "orange");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] No bank space. Adding \"{entry.Name}\" to inventory instead.", "orange");
 
                     var item = GameData.ItemDB.GetItemByID(entry.Id);
                     StandardLoot.LootToInv(item, entry.Quantity, entry.Name);

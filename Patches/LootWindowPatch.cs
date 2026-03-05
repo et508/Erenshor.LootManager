@@ -28,7 +28,7 @@ namespace LootManager
                 
                 if (lootMethod == "Blacklist" && BlacklistLoot.ShouldLoot(item, qty))
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;
                     slot.Quantity = 1;
                     slot.UpdateSlotImage();
@@ -37,7 +37,7 @@ namespace LootManager
 
                 if (lootMethod == "Whitelist" && !WhitelistLoot.ShouldLoot(item, qty))
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;
                     slot.Quantity = 1;
                     slot.UpdateSlotImage();
@@ -60,7 +60,7 @@ namespace LootManager
                 if (sendToBank)
                 {
                     lootedForBank.Add(new BankLoot.LootEntry(item.Id, qty, name));
-                    // UpdateSocialLog.LogAdd($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
+                    // ChatFilterInjector.SendLootMessage($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
                 }
                 else
                 {
@@ -70,12 +70,12 @@ namespace LootManager
 
                     if (added)
                     {
-                        UpdateSocialLog.LogAdd($"[Loot Manager] Looted \"{name}\" to inventory", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[Loot Manager] Looted \"{name}\" to inventory", "yellow");
                         slot.InformGroupOfLoot(item);
                     }
                     else
                     {
-                        UpdateSocialLog.LogAdd($"[Loot Manager] No room for \"{name}\"", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[Loot Manager] No room for \"{name}\"", "yellow");
                         continue;
                     }
                 }

@@ -290,13 +290,13 @@ namespace LootManager
                     {
                         Plugin.Editlist.Remove(itemName);
                         LootFilterlist.SaveSectionItems(_currentCategory, Plugin.Editlist);
-                        UpdateSocialLog.LogAdd($"[LootUI] Removed from {_currentCategory}: {itemName}", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[LootUI] Removed from {_currentCategory}: {itemName}", "yellow");
                     }
                     else
                     {
                         Plugin.Editlist.Add(itemName);
                         LootFilterlist.SaveSectionItems(_currentCategory, Plugin.Editlist);
-                        UpdateSocialLog.LogAdd($"[LootUI] Added to {_currentCategory}: {itemName}", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[LootUI] Added to {_currentCategory}: {itemName}", "yellow");
                     }
                     RefreshUI();
                     return;
@@ -318,11 +318,11 @@ namespace LootManager
             {
                 LootFilterlist.SaveSectionItems(_currentCategory, Plugin.Editlist);
                 RefreshUI();
-                UpdateSocialLog.LogAdd($"[LootUI] Added selected items to {_currentCategory}.", "yellow");
+                ChatFilterInjector.SendLootMessage($"[LootUI] Added selected items to {_currentCategory}.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
             }
         }
 
@@ -338,11 +338,11 @@ namespace LootManager
             {
                 LootFilterlist.SaveSectionItems(_currentCategory, Plugin.Editlist);
                 RefreshUI();
-                UpdateSocialLog.LogAdd($"[LootUI] Removed selected items from {_currentCategory}.", "yellow");
+                ChatFilterInjector.SendLootMessage($"[LootUI] Removed selected items from {_currentCategory}.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
             }
         }
         

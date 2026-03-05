@@ -91,7 +91,7 @@ namespace LootManager
                     }
                     else
                     {
-                        UpdateSocialLog.LogAdd("Remove item from cursor before interacting with a vendor.", "yellow");
+                        ChatFilterInjector.SendLootMessage("Remove item from cursor before interacting with a vendor.", "yellow");
                     }
                 });
             }
@@ -118,7 +118,7 @@ namespace LootManager
                     }
                     else
                     {
-                        UpdateSocialLog.LogAdd("Remove item from cursor before interacting with a vendor.", "yellow");
+                        ChatFilterInjector.SendLootMessage("Remove item from cursor before interacting with a vendor.", "yellow");
                     }
                 });
             }
@@ -335,9 +335,9 @@ namespace LootManager
                 }
 
                 if (added)
-                    UpdateSocialLog.LogAdd("[Loot Manager] Blacklisted \"" + key + "\" and destroyed it.", "grey");
+                    ChatFilterInjector.SendLootMessage("[Loot Manager] Blacklisted \"" + key + "\" and destroyed it.", "grey");
                 else
-                    UpdateSocialLog.LogAdd("[Loot Manager] \"" + key + "\" is already blacklisted. Destroyed it.", "grey");
+                    ChatFilterInjector.SendLootMessage("[Loot Manager] \"" + key + "\" is already blacklisted. Destroyed it.", "grey");
 
                 if (GameData.PlayerAud != null && GameData.GM != null)
                 {
@@ -362,9 +362,9 @@ namespace LootManager
                 if (addToList)
                 {
                     if (added)
-                        UpdateSocialLog.LogAdd("[Loot Manager] Added \"" + key + "\" to banklist.", "lightblue");
+                        ChatFilterInjector.SendLootMessage("[Loot Manager] Added \"" + key + "\" to banklist.", "lightblue");
                     else
-                        UpdateSocialLog.LogAdd("[Loot Manager] \"" + key + "\" already on banklist.", "lightblue");
+                        ChatFilterInjector.SendLootMessage("[Loot Manager] \"" + key + "\" already on banklist.", "lightblue");
                 }
                 
                 string id = item.Id;

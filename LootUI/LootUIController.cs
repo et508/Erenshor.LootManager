@@ -179,7 +179,7 @@ namespace LootManager
         {
             if (_editlist == null)
             {
-                UpdateSocialLog.LogAdd("[LootUI] Edit panel not ready.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] Edit panel not ready.", "red");
                 return;
             }
             _editlist.Show(categoryName);

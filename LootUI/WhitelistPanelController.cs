@@ -297,13 +297,13 @@ namespace LootManager
                     {
                         Plugin.Whitelist.Remove(itemName);
                         LootWhitelist.SaveWhitelist();
-                        UpdateSocialLog.LogAdd("[LootUI] Removed from whitelist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Removed from whitelist: " + itemName, "yellow");
                     }
                     else
                     {
                         Plugin.Whitelist.Add(itemName);
                         LootWhitelist.SaveWhitelist();
-                        UpdateSocialLog.LogAdd("[LootUI] Added to whitelist: " + itemName, "yellow");
+                        ChatFilterInjector.SendLootMessage("[LootUI] Added to whitelist: " + itemName, "yellow");
                     }
                     RefreshUI();
                     return;
@@ -329,11 +329,11 @@ namespace LootManager
             {
                 LootWhitelist.SaveWhitelist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Added selected items to whitelist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to whitelist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to add.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
             }
         }
 
@@ -353,11 +353,11 @@ namespace LootManager
             {
                 LootWhitelist.SaveWhitelist();
                 RefreshUI();
-                UpdateSocialLog.LogAdd("[LootUI] Removed selected items from whitelist.", "yellow");
+                ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from whitelist.", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd("[LootUI] No valid items selected to remove.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
             }
         }
 
@@ -454,13 +454,13 @@ namespace LootManager
             string name = raw?.Trim();
             if (string.IsNullOrEmpty(name))
             {
-                UpdateSocialLog.LogAdd("[LootUI] Group name is empty.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] Group name is empty.", "red");
                 return;
             }
             
             if (Plugin.FilterList.ContainsKey(name))
             {
-                UpdateSocialLog.LogAdd($"[LootUI] Group {name} already exists.", "red");
+                ChatFilterInjector.SendLootMessage($"[LootUI] Group {name} already exists.", "red");
                 return;
             }
             
@@ -469,7 +469,7 @@ namespace LootManager
                 Plugin.EnabledFilterCategories.Add(name);*/
 
             LootFilterlist.SaveFilterlist();
-            UpdateSocialLog.LogAdd($"[LootUI] Created new group {name}.", "yellow");
+            ChatFilterInjector.SendLootMessage($"[LootUI] Created new group {name}.", "yellow");
 
             if (_newCategoryInput != null) _newCategoryInput.text = string.Empty;
 
@@ -482,7 +482,7 @@ namespace LootManager
             
             if (!Plugin.FilterList.ContainsKey(name))
             {
-                UpdateSocialLog.LogAdd($"[LootUI] Group {name} not found.", "red");
+                ChatFilterInjector.SendLootMessage($"[LootUI] Group {name} not found.", "red");
                 return;
             }
 
@@ -490,7 +490,7 @@ namespace LootManager
             Plugin.EnabledFilterCategories.Remove(name);
 
             LootFilterlist.SaveFilterlist();
-            UpdateSocialLog.LogAdd($"[LootUI] Deleted group {name}.", "yellow");
+            ChatFilterInjector.SendLootMessage($"[LootUI] Deleted group {name}.", "yellow");
 
             RebuildFilterToggles();
         }

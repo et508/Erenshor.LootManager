@@ -290,7 +290,7 @@ namespace LootManager
             var labelTr = UICommon.Find(_root, labelPath);
             if (btnTr == null || labelTr == null)
             {
-                UpdateSocialLog.LogAdd($"[LootUI] Hotkey binder missing ui path(s): {buttonPath} / {labelPath}", "red");
+                ChatFilterInjector.SendLootMessage($"[LootUI] Hotkey binder missing ui path(s): {buttonPath} / {labelPath}", "red");
                 return;
             }
 
@@ -300,7 +300,7 @@ namespace LootManager
 
             if (btn == null || label == null)
             {
-                UpdateSocialLog.LogAdd("[LootUI] Hotkey binder missing Button or TMP label.", "red");
+                ChatFilterInjector.SendLootMessage("[LootUI] Hotkey binder missing Button or TMP label.", "red");
                 return;
             }
 
