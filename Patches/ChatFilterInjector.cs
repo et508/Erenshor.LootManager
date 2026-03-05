@@ -113,8 +113,7 @@ namespace LootManager
             RectTransform rt = newToggleGO.GetComponent<RectTransform>();
             if (rt != null)
                 rt.anchoredPosition = new Vector2(-15.8813f, -12.7876f);
-
-            // Grab the Toggle component from our new GO
+            
             Toggle newToggle = newToggleGO.GetComponent<Toggle>();
             if (newToggle == null)
             {
