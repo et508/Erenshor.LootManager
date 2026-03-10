@@ -117,17 +117,20 @@ namespace LootManager
         private static GameObject _blacklistPanelGO;
         private static GameObject _whitelistPanelGO;
         private static GameObject _banklistPanelGO;
+        private static GameObject _filterlistPanelGO;
 
         private static Button _menuSettingsBtn;
         private static Button _menuBlacklistBtn;
         private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
+        private static Button _menuFilterlistBtn;
 
         private static SettingsPanelController  _settings;
         private static BlacklistPanelController _blacklist;
         private static WhitelistPanelController _whitelist;
         private static BanklistPanelController  _banklist;
-        private static EditlistPanelController  _editlist;
+        private static EditlistPanelController    _editlist;
+        private static FilterlistPanelController  _filterlist;
 
         // ─────────────────────────────────────────────────────────────────────
         // Entry point called from LootUI.Awake
@@ -192,6 +195,7 @@ namespace LootManager
             _blacklistPanelGO.SetActive(true);
             _whitelistPanelGO.SetActive(true);
             _banklistPanelGO.SetActive(true);
+            _filterlistPanelGO.SetActive(true);
             _editView.SetActive(true);
 
             // Initialise panel controllers — pass them their root GOs directly
@@ -212,6 +216,9 @@ namespace LootManager
 
             _editlist = new EditlistPanelController(_editView, _container);
             _editlist.Init();
+
+            _filterlist = new FilterlistPanelController(_filterlistPanelGO, _container);
+            _filterlist.Init();
 
             // ShowPanel hides all panels except the active one
             ShowPanel(_settingsPanelGO);
@@ -289,7 +296,8 @@ namespace LootManager
             _menuSettingsBtn  = MakeTabButton(rt, "settingBtn",  "Settings");
             _menuBlacklistBtn = MakeTabButton(rt, "blacklistBtn", "Blacklist");
             _menuWhitelistBtn = MakeTabButton(rt, "whitelistBtn", "Whitelist");
-            _menuBanklistBtn  = MakeTabButton(rt, "banklistBtn",  "Banklist");
+            _menuBanklistBtn    = MakeTabButton(rt, "banklistBtn",    "Banklist");
+            _menuFilterlistBtn  = MakeTabButton(rt, "filterlistBtn",  "Filterlists");
 
             _menuSettingsBtn.onClick.AddListener(() =>
             {
@@ -310,6 +318,11 @@ namespace LootManager
             {
                 ShowPanel(_banklistPanelGO);
                 _banklist.Show();
+            });
+            _menuFilterlistBtn.onClick.AddListener(() =>
+            {
+                ShowPanel(_filterlistPanelGO);
+                _filterlist?.Show();
             });
 
             return go;
@@ -365,7 +378,8 @@ namespace LootManager
             _settingsPanelGO  = BuildPanelContainer(parent, "panelBGsettings",  topOffset, panelH);
             _blacklistPanelGO = BuildPanelContainer(parent, "panelBGblacklist", topOffset, panelH);
             _whitelistPanelGO = BuildPanelContainer(parent, "panelBGwhitelist", topOffset, panelH);
-            _banklistPanelGO  = BuildPanelContainer(parent, "panelBGbanklist",  topOffset, panelH);
+            _banklistPanelGO    = BuildPanelContainer(parent, "panelBGbanklist",    topOffset, panelH);
+            _filterlistPanelGO  = BuildPanelContainer(parent, "panelBGfilterlist",  topOffset, panelH);
         }
 
         private static GameObject BuildPanelContainer(Transform parent, string name, float topOffset, float panelH)
@@ -398,11 +412,13 @@ namespace LootManager
             _blacklistPanelGO?.SetActive(activePanel == _blacklistPanelGO);
             _whitelistPanelGO?.SetActive(activePanel == _whitelistPanelGO);
             _banklistPanelGO?.SetActive(activePanel == _banklistPanelGO);
+            _filterlistPanelGO?.SetActive(activePanel == _filterlistPanelGO);
 
             SetTabActive(_menuSettingsBtn,  activePanel == _settingsPanelGO);
             SetTabActive(_menuBlacklistBtn, activePanel == _blacklistPanelGO);
             SetTabActive(_menuWhitelistBtn, activePanel == _whitelistPanelGO);
-            SetTabActive(_menuBanklistBtn,  activePanel == _banklistPanelGO);
+            SetTabActive(_menuBanklistBtn,    activePanel == _banklistPanelGO);
+            SetTabActive(_menuFilterlistBtn,  activePanel == _filterlistPanelGO);
         }
 
         private static void SetTabActive(Button btn, bool active)
@@ -420,6 +436,9 @@ namespace LootManager
                 _menuWhitelistBtn.gameObject.SetActive(Plugin.LootMethod.Value == "Whitelist");
             if (_menuBanklistBtn != null)
                 _menuBanklistBtn.gameObject.SetActive(Plugin.BankLootEnabled.Value);
+            // Filter Categories tab is always visible
+            if (_menuFilterlistBtn != null)
+                _menuFilterlistBtn.gameObject.SetActive(true);
         }
 
         // ─────────────────────────────────────────────────────────────────────
