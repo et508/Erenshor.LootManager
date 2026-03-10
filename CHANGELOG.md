@@ -1,8 +1,9 @@
-## [2.2.0] - TBD
+## [3.0.0] - TBD
 ### Added
 - Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
 
-
+### Loot UI
+- Complete overhaul of the UI. All functionality is the same, but the UI has been redesigned to be more user friendly and visually appealing.
 
 ## [2.1.1] - 12/26/2025
 ### Added

@@ -71,15 +71,11 @@ namespace LootManager
                 }
 
                 var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
-                var slotPrefab = LootUI.Instance?.ManagerSlotPrefab;
-                if (managerPanelTr != null && slotPrefab != null && managerPanelTr.Find("managerSlotPanel") == null)
+                if (managerPanelTr != null && managerPanelTr.Find("managerSlotPanel") == null)
                 {
-                    var slot = Instantiate(slotPrefab, managerPanelTr, false);
-                    slot.name = "managerSlotPanel";
+                    var slot = ManagerSlotController.BuildAndInitialize(managerPanelTr);
 
-                    ManagerSlotController.Initialize(slot);
-
-                    if (slot.TryGetComponent<RectTransform>(out var rt))
+                    if (slot != null && slot.TryGetComponent<RectTransform>(out var rt))
                     {
                         rt.anchorMin = new Vector2(0f, 1f);
                         rt.anchorMax = new Vector2(0f, 1f);
@@ -388,11 +384,10 @@ namespace LootManager
             if (managerPanelTr != null)
             {
                 var slot = managerPanelTr.Find("managerSlotPanel")?.gameObject;
-                if (slot == null && LootUI.Instance?.ManagerSlotPrefab != null)
+                if (slot == null)
                 {
-                    slot = Instantiate(LootUI.Instance.ManagerSlotPrefab, managerPanelTr, false);
-                    slot.name = "managerSlotPanel";
-                    if (slot.TryGetComponent<RectTransform>(out var rt))
+                    slot = ManagerSlotController.BuildAndInitialize(managerPanelTr);
+                    if (slot != null && slot.TryGetComponent<RectTransform>(out var rt))
                     {
                         rt.anchorMin = new Vector2(0f, 1f);
                         rt.anchorMax = new Vector2(0f, 1f);

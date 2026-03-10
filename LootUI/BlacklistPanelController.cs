@@ -1,35 +1,38 @@
+// BlacklistPanelController.cs
+// All logic is identical to the original; the only change is that Init()
+// now calls DualListPanelBuilder.Build() instead of doing UICommon.Find() lookups.
+
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 namespace LootManager
 {
     public sealed class BlacklistPanelController
     {
-        private readonly GameObject _root;
+        private readonly GameObject    _panelRoot;
         private readonly RectTransform _containerRect;
 
-        private Transform _blackitemContent;
-        private Transform _blacklistContent;
-        private Button _blacklistItemTemplate;
-        private TMP_InputField _blackfilterInput;
-        private Button _blackaddBtn;
-        private Button _blackremoveBtn;
-        private Toggle _lootRareToggle;
-        private GameObject _dragHandle;
+        private Transform        _leftContent;
+        private Transform        _rightContent;
+        private GameObject       _rowTemplate;
+        private TMP_InputField   _filterInput;
+        private Button           _addBtn;
+        private Button           _removeBtn;
+        private Toggle           _lootRareToggle;
 
         private UIVirtualList _leftList;
         private UIVirtualList _rightList;
 
-        private List<string> _leftData = new List<string>();
+        private List<string> _leftData  = new List<string>();
         private List<string> _rightData = new List<string>();
-        
-        private readonly HashSet<string> _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
+
+        private readonly HashSet<string>          _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
         private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
-        
+
         private static Sprite _white1x1;
         private static Sprite GetWhite1x1()
         {
@@ -40,78 +43,68 @@ namespace LootManager
             return _white1x1;
         }
 
-        public BlacklistPanelController(GameObject root, RectTransform containerRect)
+        public BlacklistPanelController(GameObject panelRoot, RectTransform containerRect)
         {
-            _root = root;
+            _panelRoot     = panelRoot;
             _containerRect = containerRect;
         }
 
         public void Init()
         {
-            _blackitemContent      = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackitemView/Viewport/blackitemContent");
-            _blacklistContent      = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blacklistView/Viewport/blacklistContent");
-            _blacklistItemTemplate = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackitemView/Viewport/blackitemContent/blacklistItem")?.GetComponent<Button>();
-            _blackfilterInput      = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blacklistFilter")?.GetComponent<TMP_InputField>();
-            _blackaddBtn           = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackaddBtn")?.GetComponent<Button>();
-            _blackremoveBtn        = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blackremoveBtn")?.GetComponent<Button>();
-            _lootRareToggle        = UICommon.Find(_root, "container/panelBGblacklist/blacklistPanel/blacklootrare")?.GetComponent<Toggle>();
-            _dragHandle            = UICommon.Find(_root, "container/panelBGblacklist/lootUIDragHandle")?.gameObject;
+            // Build panel UI and grab references
+            var refs = DualListPanelBuilder.Build(
+                _panelRoot,
+                leftTitle:  "All Items",
+                rightTitle: "Blacklisted",
+                filterPlaceholder: "Filter items...",
+                extraBuilder: BuildExtraControls
+            );
 
-            if (_dragHandle != null && _containerRect != null)
+            _leftContent  = refs.LeftContent;
+            _rightContent = refs.RightContent;
+            _rowTemplate  = refs.RowTemplate;
+            _filterInput  = refs.FilterInput;
+            _addBtn       = refs.AddBtn;
+            _removeBtn    = refs.RemoveBtn;
+
+            if (_addBtn    != null) { _addBtn.onClick.RemoveAllListeners();    _addBtn.onClick.AddListener(AddSelected);    }
+            if (_removeBtn != null) { _removeBtn.onClick.RemoveAllListeners(); _removeBtn.onClick.AddListener(RemoveSelected); }
+
+            if (_filterInput != null)
             {
-                var dh = _dragHandle.GetComponent<DragHandler>() ?? _dragHandle.AddComponent<DragHandler>();
-                dh.PanelToMove = _containerRect;
-            }
-
-            if (_blackaddBtn != null)
-            {
-                _blackaddBtn.onClick.RemoveAllListeners();
-                _blackaddBtn.onClick.AddListener(AddSelected);
-            }
-
-            if (_blackremoveBtn != null)
-            {
-                _blackremoveBtn.onClick.RemoveAllListeners();
-                _blackremoveBtn.onClick.AddListener(RemoveSelected);
-            }
-
-            if (_blacklistItemTemplate != null)
-                _blacklistItemTemplate.gameObject.SetActive(false);
-            
-            if (_blackfilterInput != null)
-            {
-                var mute = _blackfilterInput.gameObject.GetComponent<TypingInputMute>()
-                           ?? _blackfilterInput.gameObject.AddComponent<TypingInputMute>();
-
-                mute.input      = _blackfilterInput;
-                mute.windowRoot = UICommon.Find(_root, "container/panelBGblacklist")?.gameObject;
-                mute.log        = true;
+                var mute = _filterInput.gameObject.GetComponent<TypingInputMute>()
+                           ?? _filterInput.gameObject.AddComponent<TypingInputMute>();
+                mute.input      = _filterInput;
+                mute.windowRoot = _panelRoot;
             }
 
             ItemLookup.EnsureBuilt();
 
-            _debounce = DebounceInvoker.Attach(_root);
+            // Find the MonoBehaviour host for coroutines
+            _debounce = DebounceInvoker.Attach(_panelRoot);
 
             BuildVirtualLists();
             SetupLootRareToggle();
         }
 
+        private void BuildExtraControls(Transform parent)
+        {
+            _lootRareToggle = LootUIController.MakeToggle("blacklootrare", parent, "Always Loot Rare");
+            _lootRareToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
+        }
+
         private void BuildVirtualLists()
         {
-            if (_blacklistItemTemplate == null) return;
+            if (_rowTemplate == null) return;
+            var leftSR  = _leftContent  ? _leftContent.GetComponentInParent<ScrollRect>()  : null;
+            var rightSR = _rightContent ? _rightContent.GetComponentInParent<ScrollRect>() : null;
 
-            var leftScroll  = _blackitemContent  ? _blackitemContent.GetComponentInParent<ScrollRect>()  : null;
-            var rightScroll = _blacklistContent ? _blacklistContent.GetComponentInParent<ScrollRect>() : null;
-
-            float rowHeight = (_blacklistItemTemplate.transform as RectTransform)?.sizeDelta.y ?? 24f;
-
-            _leftList  = new UIVirtualList(leftScroll,  (RectTransform)_blackitemContent,  _blacklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
-            _rightList = new UIVirtualList(rightScroll, (RectTransform)_blacklistContent, _blacklistItemTemplate.gameObject, rowHeight, bufferRows: 8);
-
+            _leftList  = new UIVirtualList(leftSR,  (RectTransform)_leftContent,  _rowTemplate, 24f, bufferRows: 8);
+            _rightList = new UIVirtualList(rightSR, (RectTransform)_rightContent, _rowTemplate, 24f, bufferRows: 8);
             _leftList.Enable(true);
             _rightList.Enable(true);
         }
-        
+
         private void SetupLootRareToggle()
         {
             if (_lootRareToggle == null) return;
@@ -122,47 +115,38 @@ namespace LootManager
 
         public void Show()
         {
-            if (_blackitemContent == null || _blacklistContent == null || _blacklistItemTemplate == null)
+            if (_leftContent == null || _rightContent == null || _rowTemplate == null)
             {
                 Debug.LogError("[LootUI] Blacklist content/template not found.");
                 return;
             }
 
-            if (_blackfilterInput != null)
+            if (_filterInput != null)
             {
-                _blackfilterInput.onValueChanged.RemoveAllListeners();
-                _blackfilterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
-                _blackfilterInput.text = string.Empty;
+                _filterInput.onValueChanged.RemoveAllListeners();
+                _filterInput.onValueChanged.AddListener(_ => _debounce.Schedule(RefreshUI, 0.15f));
+                _filterInput.text = string.Empty;
             }
 
             RefreshUI();
-
             _leftList?.RecalculateAndRefresh();
             _rightList?.RecalculateAndRefresh();
-            
-            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_blackitemContent));
-            _root.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_blacklistContent));
+            _panelRoot.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_leftContent));
+            _panelRoot.GetComponent<MonoBehaviour>().StartCoroutine(UIVirtualList.DeferredFinalize(_rightContent));
         }
 
         private void RefreshUI()
         {
             _selectedNames.Clear();
-
-            string filter = _blackfilterInput != null && _blackfilterInput.text != null
-                ? _blackfilterInput.text.ToLowerInvariant()
-                : string.Empty;
-
-            var source = ItemLookup.AllItems;
+            string filter = _filterInput?.text?.ToLowerInvariant() ?? string.Empty;
+            var source    = ItemLookup.AllItems;
 
             _rightData = Plugin.Blacklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
-                .Distinct() 
-                .OrderBy(i => i)
-                .ToList();
+                .Distinct().OrderBy(i => i).ToList();
 
-            
             _leftData = string.IsNullOrEmpty(filter)
-                ? new List<string>(source) 
+                ? new List<string>(source)
                 : source.Where(i => i.ToLowerInvariant().Contains(filter)).ToList();
 
             if (_rightData.Count > 0)
@@ -173,17 +157,17 @@ namespace LootManager
 
             _leftList?.SetData(_leftData.Count, BindLeftRow);
             _rightList?.SetData(_rightData.Count, BindRightRow);
-            
-            UIVirtualList.FinalizeListLayout(_blackitemContent);
-            UIVirtualList.FinalizeListLayout(_blacklistContent);
+
+            UIVirtualList.FinalizeListLayout(_leftContent);
+            UIVirtualList.FinalizeListLayout(_rightContent);
         }
 
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.sprite = GetWhite1x1();              
+            img.sprite = GetWhite1x1();
             img.type = Image.Type.Simple;
-            img.color = new Color(1f, 1f, 1f, 0f);   
+            img.color = new Color(1f, 1f, 1f, 0f);
             img.raycastTarget = true;
             return img;
         }
@@ -191,58 +175,43 @@ namespace LootManager
         private void BindLeftRow(GameObject row, int index)
         {
             if (index < 0 || index >= _leftData.Count) { row.SetActive(false); return; }
-            string itemName = _leftData[index];
-            BindRowCommon(row, itemName, isBlacklist: false);
+            BindRowCommon(row, _leftData[index], isBlacklist: false);
         }
 
         private void BindRightRow(GameObject row, int index)
         {
             if (index < 0 || index >= _rightData.Count) { row.SetActive(false); return; }
-            string itemName = _rightData[index];
-            BindRowCommon(row, itemName, isBlacklist: true);
+            BindRowCommon(row, _rightData[index], isBlacklist: true);
         }
 
         private void BindRowCommon(GameObject row, string itemName, bool isBlacklist)
         {
-            var btn = row.GetComponent<Button>() ?? row.AddComponent<Button>();
+            var btn     = row.GetComponent<Button>() ?? row.AddComponent<Button>();
             var rootImg = EnsureClickTargetGraphic(row);
             btn.targetGraphic = rootImg;
-            btn.transition = Selectable.Transition.None;
-            btn.interactable = true;
+            btn.transition    = Selectable.Transition.None;
+            btn.interactable  = true;
 
-            var iconTr  = row.transform.Find("Icon");
-            var labelTr = row.transform.Find("Label");
-
-            var icon  = iconTr  ? iconTr.GetComponent<Image>()     : null;
-            var label = labelTr ? labelTr.GetComponent<TMP_Text>() : null;
+            var icon  = row.transform.Find("Icon")?.GetComponent<Image>();
+            var label = row.transform.Find("Label")?.GetComponent<TMP_Text>();
 
             if (label != null)
             {
-                label.text = itemName;
+                label.text         = itemName;
                 label.raycastTarget = false;
-                label.color = isBlacklist ? Color.red : Color.white;
+                label.color        = isBlacklist ? Color.red : Color.white;
             }
-
             if (icon != null)
             {
-                var sprite = ItemLookup.GetIcon(itemName);
-                icon.sprite = sprite;
-                icon.preserveAspect = true;
-                icon.raycastTarget = false;
+                icon.sprite = ItemLookup.GetIcon(itemName);
+                icon.preserveAspect  = true;
+                icon.raycastTarget   = false;
             }
 
             var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
-            hover.Init(
-                rootImg,
-                // normal/hover/pressed
-                new Color(1f, 1f, 1f, 0f),
-                new Color(1f, 1f, 1f, 0.12f),
-                new Color(1f, 1f, 1f, 0.20f),
-                // selected normal/hover/pressed
-                new Color(1f, 1f, 1f, 0.10f),
-                new Color(1f, 1f, 1f, 0.18f),
-                new Color(1f, 1f, 1f, 0.26f)
-            );
+            hover.Init(rootImg,
+                new Color(1f,1f,1f,0f), new Color(1f,1f,1f,0.12f), new Color(1f,1f,1f,0.20f),
+                new Color(1f,1f,1f,0.10f), new Color(1f,1f,1f,0.18f), new Color(1f,1f,1f,0.26f));
             hover.SetSelected(_selectedNames.Contains(itemName));
 
             btn.onClick.RemoveAllListeners();
@@ -274,48 +243,18 @@ namespace LootManager
         {
             bool changed = false;
             foreach (var name in _selectedNames.ToArray())
-            {
-                if (!Plugin.Blacklist.Contains(name))
-                {
-                    Plugin.Blacklist.Add(name);
-                    changed = true;
-                }
-            }
-
-            if (changed)
-            {
-                LootBlacklist.SaveBlacklist();
-                RefreshUI();
-                ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to blacklist.", "yellow");
-            }
-            else
-            {
-                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
-            }
+                if (!Plugin.Blacklist.Contains(name)) { Plugin.Blacklist.Add(name); changed = true; }
+            if (changed) { LootBlacklist.SaveBlacklist(); RefreshUI(); ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to blacklist.", "yellow"); }
+            else ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
         }
 
         private void RemoveSelected()
         {
             bool changed = false;
             foreach (var name in _selectedNames.ToArray())
-            {
-                if (Plugin.Blacklist.Contains(name))
-                {
-                    Plugin.Blacklist.Remove(name);
-                    changed = true;
-                }
-            }
-
-            if (changed)
-            {
-                LootBlacklist.SaveBlacklist();
-                RefreshUI();
-                ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from blacklist.", "yellow");
-            }
-            else
-            {
-                ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
-            }
+                if (Plugin.Blacklist.Contains(name)) { Plugin.Blacklist.Remove(name); changed = true; }
+            if (changed) { LootBlacklist.SaveBlacklist(); RefreshUI(); ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from blacklist.", "yellow"); }
+            else ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
         }
     }
 }
