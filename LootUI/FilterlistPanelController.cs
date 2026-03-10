@@ -133,6 +133,11 @@ namespace LootManager
             editImg.color = LootUIController.C_BtnNormal;
             var editBtn = editBtnGO.AddComponent<Button>();
             editBtn.targetGraphic = editImg;
+            var editOL = editBtnGO.AddComponent<Outline>();
+            editOL.effectColor    = LootUIController.C_AccentBlue;
+            editOL.effectDistance = new Vector2(1, -1);
+            editOL.enabled        = false;
+            editBtnGO.AddComponent<ButtonHoverOutline>();
             var editBtnLE = editBtnGO.AddComponent<LayoutElement>();
             editBtnLE.preferredWidth  = 36;
             editBtnLE.preferredHeight = 18;
@@ -153,6 +158,11 @@ namespace LootManager
             delImg.color = LootUIController.C_BtnNormal;
             var delBtn = delBtnGO.AddComponent<Button>();
             delBtn.targetGraphic = delImg;
+            var delOL = delBtnGO.AddComponent<Outline>();
+            delOL.effectColor    = LootUIController.C_AccentBlue;
+            delOL.effectDistance = new Vector2(1, -1);
+            delOL.enabled        = false;
+            delBtnGO.AddComponent<ButtonHoverOutline>();
             var delBtnLE = delBtnGO.AddComponent<LayoutElement>();
             delBtnLE.preferredWidth  = 36;
             delBtnLE.preferredHeight = 18;

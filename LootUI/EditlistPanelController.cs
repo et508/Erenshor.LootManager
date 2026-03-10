@@ -76,7 +76,7 @@ namespace LootManager
             _groupNameTMP.alignment = TextAlignmentOptions.MidlineLeft;
             _groupNameTMP.color     = LootUIController.C_TextPri;
 
-            var closeBtn = LootUIController.MakeButton("closeBtn", tbRT, "✕",
+            var closeBtn = LootUIController.MakeButton("closeBtn", tbRT, "X",
                 LootUIController.C_Danger, LootUIController.C_TitleBg, 11);
             var closeBtnRT = closeBtn.GetComponent<RectTransform>();
             closeBtnRT.anchorMin = new Vector2(1, 0);

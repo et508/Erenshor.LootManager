@@ -255,7 +255,12 @@ namespace LootManager
             titleTxt.alignment = TextAlignmentOptions.MidlineLeft;
 
             // Close button
-            var closeBtn = MakeButton("closeBtn", rt, "✕", C_Danger, C_TitleBg, 11);
+            var closeBtn = MakeButton("closeBtn", rt, "X", C_Danger, C_TitleBg, 11);
+            // No hover outline on close button
+            var closeBtnOL = closeBtn.GetComponent<Outline>();
+            if (closeBtnOL != null) GameObject.Destroy(closeBtnOL);
+            var closeBtnBHO = closeBtn.GetComponent<ButtonHoverOutline>();
+            if (closeBtnBHO != null) GameObject.Destroy(closeBtnBHO);
             var closeBtnRT = closeBtn.GetComponent<RectTransform>();
             closeBtnRT.anchorMin = new Vector2(1, 0);
             closeBtnRT.anchorMax = new Vector2(1, 1);
@@ -339,19 +344,15 @@ namespace LootManager
             img.color = C_BtnNormal;
 
             var btn = go.AddComponent<Button>();
-            var cb  = btn.colors;
-            cb.normalColor      = C_BtnNormal;
-            cb.highlightedColor = C_BtnHover;
-            cb.pressedColor     = C_BtnActive;
-            cb.selectedColor    = C_BtnNormal;
-            cb.fadeDuration     = 0.1f;
-            btn.colors = cb;
+            btn.transition    = Selectable.Transition.None;
+            btn.targetGraphic = img;
 
-            // Outline acts as active-tab indicator (toggled in ShowPanel)
+            // Outline acts as active-tab indicator and hover indicator
             var ol = go.AddComponent<Outline>();
             ol.effectColor    = C_AccentBlue;
-            ol.effectDistance = new Vector2(0, -2);
+            ol.effectDistance = new Vector2(1, -1);
             ol.enabled        = false;
+            go.AddComponent<ButtonHoverOutline>();
 
             var lblGO = new GameObject("Label");
             var lblRT = lblGO.AddComponent<RectTransform>();
@@ -424,6 +425,9 @@ namespace LootManager
         private static void SetTabActive(Button btn, bool active)
         {
             if (btn == null) return;
+            var bho = btn.GetComponent<ButtonHoverOutline>();
+            if (bho != null) { bho.SetActive(active); return; }
+            // Fallback for buttons without ButtonHoverOutline
             var ol = btn.GetComponent<Outline>();
             if (ol != null) ol.enabled = active;
         }
@@ -504,8 +508,15 @@ namespace LootManager
             img.color = bgColour;
 
             var btn = go.AddComponent<Button>();
-            btn.transition   = Selectable.Transition.None;
-            btn.targetGraphic = null;  // prevent any state tint
+            btn.transition    = Selectable.Transition.None;
+            btn.targetGraphic = img;
+
+            // Hover outline — disabled by default, enabled on pointer enter
+            var btnOL = go.AddComponent<Outline>();
+            btnOL.effectColor    = C_AccentBlue;
+            btnOL.effectDistance = new Vector2(1, -1);
+            btnOL.enabled        = false;
+            go.AddComponent<ButtonHoverOutline>();
 
             var lblGO = new GameObject("Label");
             var lblRT = lblGO.AddComponent<RectTransform>();
