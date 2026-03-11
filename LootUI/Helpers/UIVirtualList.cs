@@ -190,6 +190,7 @@ namespace LootManager
                     rt.anchoredPosition = new Vector2(0f, y);
 
                     _bind(row, dataIndex);
+                    LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
                 }
                 else
                 {

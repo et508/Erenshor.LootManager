@@ -43,6 +43,14 @@ namespace LootManager
 
             bool focused = input.isFocused;
 
+            if (log && Time.frameCount % 60 == 0)
+            {
+                var sel = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+                Debug.Log($"[TypingInputMute] frame={Time.frameCount} isFocused={focused} " +
+                          $"selected={(sel != null ? sel.name : "NULL")} " +
+                          $"PlayerTyping={GameData.PlayerTyping}");
+            }
+
             if (focused)
             {
                 GameData.PlayerTyping = true;

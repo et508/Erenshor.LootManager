@@ -15,11 +15,11 @@ namespace LootManager
 
             if (added)
             {
-                UpdateSocialLog.LogAdd($"[Loot Manager] Looted \"{name ?? item.ItemName}\" to inventory", "yellow");
+                ChatFilterInjector.SendLootMessage($"[Loot Manager] Looted \"{name ?? item.ItemName}\" to inventory", "yellow");
             }
             else
             {
-                UpdateSocialLog.LogAdd($"[Loot Manager] No room for \"{name ?? item.ItemName}\"", "yellow");
+                ChatFilterInjector.SendLootMessage($"[Loot Manager] No room for \"{name ?? item.ItemName}\"", "yellow");
             }
         }
     }

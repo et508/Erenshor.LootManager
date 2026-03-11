@@ -10,7 +10,10 @@ namespace LootManager
     [Serializable]
     public class LootFilterCategory
     {
-        [JsonProperty] public bool IsEnabled = true;
+        [JsonProperty] public bool IsEnabled          = true;
+        [JsonProperty] public bool AppliedToBlacklist = false;
+        [JsonProperty] public bool AppliedToWhitelist = false;
+        [JsonProperty] public bool AppliedToBanklist  = false;
         [JsonProperty] public List<string> Items = new List<string>();
     }
 
@@ -43,7 +46,7 @@ namespace LootManager
                     File.WriteAllText(path, json);
 
                     ApplyToPluginState(defaults);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default LootFilterlist.json at {path}");
+                    Plugin.Log.LogInfo($"[Loot Manager] Created default LootFilterlist.json");
                     return;
                 }
 
@@ -81,15 +84,16 @@ namespace LootManager
 
                     data[sectionName] = new LootFilterCategory
                     {
-                        IsEnabled = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
+                        IsEnabled          = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
+                        AppliedToBlacklist = Plugin.FilterAppliedToBlacklist?.Contains(sectionName) == true,
+                        AppliedToWhitelist = Plugin.FilterAppliedToWhitelist?.Contains(sectionName) == true,
+                        AppliedToBanklist  = Plugin.FilterAppliedToBanklist?.Contains(sectionName)  == true,
                         Items = itemsSeq.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList()
                     };
                 }
 
                 var json = JsonConvert.SerializeObject(data, _jsonSettings);
                 File.WriteAllText(path, json);
-
-                Plugin.Log.LogInfo("[Loot Manager] Saved LootFilterlist.json.");
             }
             catch (Exception ex)
             {
@@ -130,6 +134,22 @@ namespace LootManager
                 return new HashSet<string>(items, StringComparer.OrdinalIgnoreCase);
 
             return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static void SetAppliedTo(string sectionName, string listKey, bool value)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName)) return;
+            HashSet<string> set = null;
+            switch (listKey)
+            {
+                case "Blacklist": set = Plugin.FilterAppliedToBlacklist; break;
+                case "Whitelist": set = Plugin.FilterAppliedToWhitelist; break;
+                case "Banklist":  set = Plugin.FilterAppliedToBanklist;  break;
+            }
+            if (set == null) return;
+            if (value) set.Add(sectionName);
+            else set.Remove(sectionName);
+            SaveFilterlist();
         }
 
         public static void SetSectionEnabled(string sectionName, bool isEnabled)
@@ -175,8 +195,11 @@ namespace LootManager
 
         private static void ApplyToPluginState(Dictionary<string, LootFilterCategory> input)
         {
-            var sections = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var enabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var sections  = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            var enabled   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var banklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (input != null)
             {
@@ -194,12 +217,18 @@ namespace LootManager
                         StringComparer.OrdinalIgnoreCase);
 
                     sections[name] = items;
-                    if (cat.IsEnabled) enabled.Add(name);
+                    if (cat.IsEnabled)          enabled.Add(name);
+                    if (cat.AppliedToBlacklist) blacklist.Add(name);
+                    if (cat.AppliedToWhitelist) whitelist.Add(name);
+                    if (cat.AppliedToBanklist)  banklist.Add(name);
                 }
             }
 
-            Plugin.FilterList = sections;
-            Plugin.EnabledFilterCategories = enabled;
+            Plugin.FilterList                = sections;
+            Plugin.EnabledFilterCategories   = enabled;
+            Plugin.FilterAppliedToBlacklist  = blacklist;
+            Plugin.FilterAppliedToWhitelist  = whitelist;
+            Plugin.FilterAppliedToBanklist   = banklist;
         }
     }
 }

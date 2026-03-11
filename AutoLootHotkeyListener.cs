@@ -15,7 +15,7 @@ namespace LootManager
                 bool newValue = !Plugin.AutoLootEnabled.Value;
                 SettingsPanelController.ApplyAutoLootFromExternal(newValue);
                 
-                UpdateSocialLog.LogAdd(
+                ChatFilterInjector.SendLootMessage(
                     newValue ? "[Loot Manager] Autoloot ON" : "[Loot Manager] Autoloot OFF",
                     newValue ? "green" : "red"
                 );

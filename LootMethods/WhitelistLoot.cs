@@ -32,17 +32,12 @@ namespace LootManager
             if (Plugin.Whitelist.Contains(itemName))
                 return true;
             
-            LootFilterlist.ReadAll(out var filterSections, out var enabledSet);
-
-            foreach (var kvp in filterSections)
+            foreach (var kvp in Plugin.FilterList)
             {
-                if (!enabledSet.Contains(kvp.Key))
-                    continue;
-                
-                if (kvp.Value.Contains(item.ItemName))
-                    return true;
+                if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;
+                if (!Plugin.FilterAppliedToWhitelist.Contains(kvp.Key)) continue;
+                if (kvp.Value.Contains(itemName)) return true;
             }
-
 
             return false;
         }

@@ -9,15 +9,18 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.1.1")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.0.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
         internal static ManualLogSource Log;
+        internal static Plugin Instance;
         
         internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Banklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Junklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Auctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Editlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         public static Dictionary<string, HashSet<string>> FilterList =
@@ -25,11 +28,17 @@ namespace LootManager
         
         public static HashSet<string> EnabledFilterCategories =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public static HashSet<string> FilterAppliedToBlacklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> FilterAppliedToWhitelist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> FilterAppliedToBanklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         public static ConfigEntry<KeyboardShortcut> ToggleLootUIHotkey;
         public static ConfigEntry<KeyboardShortcut> ToggleAutoLootHotkey;
         public static ConfigEntry<bool>  AutoLootEnabled;
         public static ConfigEntry<float> AutoLootDistance;
+        public static ConfigEntry<bool>  AutoLootDelayEnabled;
+        public static ConfigEntry<float> AutoLootDelay;
         public static ConfigEntry<string> LootMethod;
         public static ConfigEntry<bool>  BankLootEnabled;
         public static ConfigEntry<string> BankLootMethod;
@@ -40,16 +49,22 @@ namespace LootManager
         public static ConfigEntry<bool>  LootRare;
         public static ConfigEntry<bool>  LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
+        public static ConfigEntry<string> ChatOutputWindow;
+        public static ConfigEntry<int>    ChatOutputTab;
+        public static ConfigEntry<bool>   ChatOutputEnabled;
 
         private void Awake()
         {
-            Log = Logger;
+            Log      = Logger;
+            Instance = this;
             
             ToggleLootUIHotkey       = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
             ToggleAutoLootHotkey     = Config.Bind("Hotkeys", "Autoloot Toggle Hotkey", new KeyboardShortcut(KeyCode.F10), "Hotkey to toggle auto looting on and off.");
             
             AutoLootEnabled          = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance         = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
+            AutoLootDelayEnabled     = Config.Bind("Autoloot Settings", "Enable Autoloot Delay", false, "If true, autoloot waits until fully out of combat before looting queued kills.");
+            AutoLootDelay            = Config.Bind("Autoloot Settings", "Autoloot Delay Seconds", 3f, "Extra grace period in seconds to wait after combat ends before autolooting (0 - 10).");
             
             LootMethod               = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
 
@@ -63,10 +78,16 @@ namespace LootManager
             LootRare                 = Config.Bind("Filter Settings", "Loot Rare Equipment", false, "If true, always loot rare equipment in blacklist loot method.");    
             LootEquipment            = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
             LootEquipmentTier        = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+
+            ChatOutputWindow         = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
+            ChatOutputTab            = Config.Bind("Chat Settings", "Chat Output Tab",     0,           new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
+            ChatOutputEnabled        = Config.Bind("Chat Settings", "Chat Output Enabled", true,        "If false, Loot Manager will not send any messages to chat.");
             
             LootBlacklist.Load();
             LootWhitelist.Load();
             LootBanklist.Load();
+            LootJunklist.Load();
+            LootAuctionlist.Load();
             LootFilterlist.Load();
 
             Log.LogInfo("Loot Manager loaded.");

@@ -21,6 +21,13 @@ namespace LootManager
             if (Plugin.Blacklist.Contains(itemName))
                 return true;
             
+            foreach (var kvp in Plugin.FilterList)
+            {
+                if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))   continue;
+                if (!Plugin.FilterAppliedToBlacklist.Contains(kvp.Key))  continue;
+                if (kvp.Value.Contains(itemName)) return true;
+            }
+
             return false;
         }
     }

@@ -1,459 +1,269 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
-using TMPro;
+
+
+using HarmonyLib;
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace LootManager
 {
     public class PlayerInvUI : MonoBehaviour
     {
-        private const string PlayerInvName    = "PlayerInv";
-        private const string SourcePanelName  = "AAScreen";
-        private const string ManagerPanelName = "ManagerPanel";
+        private const string PlayerInvName = "PlayerInv";
+        private const string SidebarName   = "LootManagerSidebar";
 
-        private static readonly Color TabActiveColor   = new Color(1f, 1f, 1f, 1f);
-        private static readonly Color TabInactiveColor = new Color(1f, 0.9216f, 0.0157f, 1f);
+        private const float SidebarW = 110f;
+
+        private static readonly Color32 C_PanelBg = new Color32(10, 12, 16, 242);
+        private static readonly Color32 C_Border   = new Color32(45, 49, 57, 255);
+
+        private static GameObject _sidebar;
 
         private void Start()
         {
-            StartCoroutine(PlayerInvUICoroutine());
+            StartCoroutine(BuildWhenReady());
             SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        private IEnumerator PlayerInvUICoroutine()
-        {
-            while (GameObject.Find(PlayerInvName) == null)
-                yield return null;
-
-            GameObject playerInv = GameObject.Find(PlayerInvName);
-
-            yield return null;
-            Canvas.ForceUpdateCanvases();
-
-            MoveButtonRelative(playerInv, "Button (1)", "Button (1)", new Vector2(-65f, 0f));
-            MoveButtonRelative(playerInv, "Button",     "Button",     new Vector2(-55f, 0f));
-
-            EnsureFreshManagerButton(playerInv);
-
-            var btn0 = playerInv.transform.Find("Button")?.GetComponent<Button>();
-            if (btn0 != null) AttachOtherTabProxy(playerInv.transform, "Button");
-
-            var btn1 = playerInv.transform.Find("Button (1)")?.GetComponent<Button>();
-            if (btn1 != null) AttachOtherTabProxy(playerInv.transform, "Button (1)");
-
-            var managerPanel = ClonePanelStripChildren(
-                parent: playerInv,
-                sourceName: SourcePanelName,
-                cloneName: ManagerPanelName,
-                keepChildNames: new string[] { "Image", "Text (TMP)" }
-            );
-
-            if (managerPanel != null)
-            {
-                var textTr = managerPanel.transform.Find("Text (TMP)");
-                if (textTr != null && textTr.TryGetComponent<TextMeshProUGUI>(out var tmp))
-                {
-                    tmp.text = "Loot Manager";
-                    tmp.enableWordWrapping = false;
-                    tmp.overflowMode = TextOverflowModes.Overflow;
-                    tmp.enableAutoSizing = false;
-
-                    tmp.ForceMeshUpdate();
-                    float preferred = tmp.preferredWidth;
-                    if (textTr is RectTransform rtTitle)
-                    {
-                        float padding = 12f;
-                        rtTitle.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, preferred + padding);
-                    }
-                }
-
-                var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
-                var slotPrefab = LootUI.Instance?.ManagerSlotPrefab;
-                if (managerPanelTr != null && slotPrefab != null && managerPanelTr.Find("managerSlotPanel") == null)
-                {
-                    var slot = Instantiate(slotPrefab, managerPanelTr, false);
-                    slot.name = "managerSlotPanel";
-
-                    ManagerSlotController.Initialize(slot);
-
-                    if (slot.TryGetComponent<RectTransform>(out var rt))
-                    {
-                        rt.anchorMin = new Vector2(0f, 1f);
-                        rt.anchorMax = new Vector2(0f, 1f);
-                        rt.pivot     = new Vector2(0f, 1f);
-                        rt.anchoredPosition = new Vector2(-160f, 300f);
-                        slot.transform.localScale = Vector3.one;
-                    }
-                }
-
-                managerPanel.SetActive(false);
-            }
-        }
-
-        private GameObject EnsureFreshManagerButton(GameObject playerInv)
-        {
-            var existing = playerInv.transform.Find("Button (2)")?.gameObject;
-            if (existing != null)
-            {
-                Destroy(existing);
-            }
-
-            var sourceBtnTr = playerInv.transform.Find("Button");
-            TextMeshProUGUI sourceTMP = null;
-            Image sourceImg = null;
-            Button sourceBtn = null;
-            RectTransform srcRT = null;
-
-            if (sourceBtnTr != null)
-            {
-                sourceBtn = sourceBtnTr.GetComponent<Button>();
-                sourceImg = sourceBtnTr.GetComponent<Image>();
-                srcRT     = sourceBtnTr.GetComponent<RectTransform>();
-                var sourceTextTr = sourceBtnTr.Find("Text (TMP)");
-                if (sourceTextTr != null) sourceTextTr.TryGetComponent(out sourceTMP);
-            }
-
-            var go = new GameObject("Button (2)", typeof(RectTransform), typeof(Image), typeof(Button));
-            go.transform.SetParent(playerInv.transform, false);
-
-            var dstRT = go.GetComponent<RectTransform>();
-            if (srcRT != null)
-            {
-                dstRT.anchorMin = srcRT.anchorMin;
-                dstRT.anchorMax = srcRT.anchorMax;
-                dstRT.pivot     = srcRT.pivot;
-                dstRT.sizeDelta = srcRT.sizeDelta;
-                dstRT.anchoredPosition = srcRT.anchoredPosition;
-            }
-
-            var le = go.AddComponent<LayoutElement>();
-            le.ignoreLayout = true;
-
-            var img = go.GetComponent<Image>();
-            if (sourceImg != null)
-            {
-                img.sprite   = sourceImg.sprite;
-                img.type     = sourceImg.type;
-                img.color    = sourceImg.color;
-                img.material = sourceImg.material;
-                img.pixelsPerUnitMultiplier = sourceImg.pixelsPerUnitMultiplier;
-            }
-            img.raycastTarget = true;
-
-            var btn2 = go.GetComponent<Button>();
-            if (sourceBtn != null)
-            {
-                btn2.transition        = sourceBtn.transition;
-                btn2.colors            = sourceBtn.colors;
-                btn2.spriteState       = sourceBtn.spriteState;
-                btn2.animationTriggers = sourceBtn.animationTriggers;
-            }
-            var nav2 = btn2.navigation; nav2.mode = Navigation.Mode.None; btn2.navigation = nav2;
-            btn2.onClick = new Button.ButtonClickedEvent();
-            btn2.onClick.AddListener(OnManagerButtonClicked);
-
-            var textGO = new GameObject("Text (TMP)", typeof(RectTransform), typeof(TextMeshProUGUI));
-            textGO.transform.SetParent(go.transform, false);
-            var textRT = textGO.GetComponent<RectTransform>();
-            textRT.anchorMin = new Vector2(0, 0);
-            textRT.anchorMax = new Vector2(1, 1);
-            textRT.offsetMin = Vector2.zero;
-            textRT.offsetMax = Vector2.zero;
-
-            var tmp = textGO.GetComponent<TextMeshProUGUI>();
-            tmp.text = "Manager";
-            tmp.color = TabInactiveColor;
-            tmp.alignment = sourceTMP != null ? sourceTMP.alignment : TextAlignmentOptions.Center;
-            tmp.fontSize  = sourceTMP != null ? sourceTMP.fontSize  : 20f;
-            tmp.enableAutoSizing   = false;
-            tmp.enableWordWrapping = false;
-            tmp.overflowMode       = TextOverflowModes.Overflow;
-            if (sourceTMP != null)
-            {
-                tmp.font            = sourceTMP.font;
-                tmp.fontStyle       = sourceTMP.fontStyle;
-                tmp.lineSpacing     = sourceTMP.lineSpacing;
-                tmp.characterSpacing= sourceTMP.characterSpacing;
-                tmp.extraPadding    = sourceTMP.extraPadding;
-                tmp.richText        = sourceTMP.richText;
-            }
-            tmp.raycastTarget = false;
-
-            var proxy = go.AddComponent<ManagerButtonProxy>();
-            proxy.Bind(() => OnManagerButtonClicked());
-
-            EnsureInteractiveChain(go.transform);
-
-            MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
-
-            if (sourceBtnTr != null)
-                go.transform.SetSiblingIndex(sourceBtnTr.GetSiblingIndex() + 1);
-            else
-                go.transform.SetSiblingIndex(playerInv.transform.childCount - 1);
-
-            return go;
-        }
-
-        private void EnsureInteractiveChain(Transform leaf)
-        {
-            var t = leaf;
-            while (t != null)
-            {
-                var cg = t.GetComponent<CanvasGroup>();
-                if (cg != null)
-                {
-                    cg.interactable = true;
-                    cg.blocksRaycasts = true;
-                }
-                t = t.parent;
-            }
-        }
-
-        private void MoveButtonRelative(GameObject parent, string targetName, string templateName, Vector2 delta)
-        {
-            var targetRT   = parent.transform.Find(targetName)?.GetComponent<RectTransform>();
-            var templateRT = parent.transform.Find(templateName)?.GetComponent<RectTransform>();
-            if (targetRT == null || templateRT == null) return;
-
-            targetRT.anchorMin = templateRT.anchorMin;
-            targetRT.anchorMax = templateRT.anchorMax;
-            targetRT.pivot     = templateRT.pivot;
-            targetRT.sizeDelta = templateRT.sizeDelta;
-
-            var le = targetRT.GetComponent<LayoutElement>();
-            if (le != null) le.ignoreLayout = true;
-
-            targetRT.anchoredPosition = templateRT.anchoredPosition + delta;
-        }
-
-        private void UpdateButtonText(GameObject parent, string buttonName, string newText, Color newColor)
-        {
-            GameObject button = parent.transform.Find(buttonName)?.gameObject;
-            if (button == null) return;
-
-            var textTransform = button.transform.Find("Text (TMP)");
-            if (textTransform != null && textTransform.TryGetComponent(out TextMeshProUGUI tmp))
-            {
-                if (!string.IsNullOrEmpty(newText))
-                    tmp.text = newText;
-                tmp.color = newColor;
-            }
-        }
-
-        private void OnManagerButtonClicked()
-        {
-            var playerInv = GameObject.Find(PlayerInvName);
-            if (playerInv == null) return;
-
-            var panelTr = playerInv.transform.Find(ManagerPanelName);
-            if (panelTr == null) return;
-
-            var panel = panelTr.gameObject;
-
-            panel.SetActive(true);
-            panel.transform.SetSiblingIndex(27);
-
-            var cg = panel.GetComponent<CanvasGroup>();
-            if (cg == null) cg = panel.AddComponent<CanvasGroup>();
-            cg.interactable = true;
-            cg.blocksRaycasts = true;
-
-            UpdateButtonText(playerInv, "Button (2)", "Manager", TabActiveColor);
-            UpdateButtonText(playerInv, "Button",     "Ascension", TabInactiveColor);
-            UpdateButtonText(playerInv, "Button (1)", "Equipment", TabInactiveColor);
-        }
-
-        private void OnOtherTabClicked()
-        {
-            var playerInv = GameObject.Find(PlayerInvName);
-            if (playerInv == null) return;
-
-            var panel = playerInv.transform.Find(ManagerPanelName)?.gameObject;
-            if (panel != null) panel.SetActive(false);
-
-            UpdateButtonText(playerInv, "Button (2)", "Manager", TabInactiveColor);
-        }
-
-        private GameObject ClonePanelStripChildren(GameObject parent, string sourceName, string cloneName, string[] keepChildNames)
-        {
-            var existing = parent.transform.Find(cloneName)?.gameObject;
-            if (existing != null) return existing;
-
-            var source = parent.transform.Find(sourceName);
-            if (source == null) return null;
-
-            var clone = Instantiate(source.gameObject, parent.transform);
-            clone.name = cloneName;
-
-            RemoveAllChildrenExcept(clone.transform);
-            CleanRootComponents(clone);
-
-            return clone;
-        }
-
-        private void RemoveAllChildrenExcept(Transform root)
-        {
-            var toDelete = new List<GameObject>();
-
-            for (int i = 0; i < root.childCount; i++)
-            {
-                var child = root.GetChild(i);
-
-                if (child.name == "Text (TMP)") continue;
-                if (child.name == "Image" && child.childCount == 0) continue;
-
-                toDelete.Add(child.gameObject);
-            }
-
-            for (int i = 0; i < toDelete.Count; i++)
-                Destroy(toDelete[i]);
-        }
-
-        private void CleanRootComponents(GameObject go)
-        {
-            var evt = go.GetComponent<EventTrigger>();
-            if (evt) Destroy(evt);
-
-            System.Type[] keepTypes =
-            {
-                typeof(Image),
-                typeof(RawImage),
-                typeof(Mask),
-                typeof(RectMask2D),
-                typeof(LayoutElement),
-                typeof(ContentSizeFitter),
-                typeof(HorizontalLayoutGroup),
-                typeof(VerticalLayoutGroup),
-                typeof(GridLayoutGroup),
-                typeof(CanvasGroup)
-            };
-
-            foreach (var mb in go.GetComponents<MonoBehaviour>())
-            {
-                if (mb == null) continue;
-
-                var t = mb.GetType();
-                bool keep = false;
-                for (int i = 0; i < keepTypes.Length; i++)
-                {
-                    if (t == keepTypes[i]) { keep = true; break; }
-                }
-                if (!keep)
-                {
-                    Destroy(mb);
-                }
-            }
-        }
-
-        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            StartCoroutine(RewireAfterSceneLoad());
-        }
-
-        private IEnumerator RewireAfterSceneLoad()
-        {
-            while (GameObject.Find(PlayerInvName) == null)
-                yield return null;
-
-            var playerInv = GameObject.Find(PlayerInvName);
-
-            yield return null;
-            yield return new WaitForEndOfFrame();
-
-            EnsureFreshManagerButton(playerInv);
-            AttachOtherTabProxy(playerInv.transform, "Button");
-            AttachOtherTabProxy(playerInv.transform, "Button (1)");
-            UpdateButtonText(playerInv, "Button (2)", "Manager", TabInactiveColor);
-
-            var btn0 = playerInv.transform.Find("Button")?.GetComponent<Button>();
-            var btn1 = playerInv.transform.Find("Button (1)")?.GetComponent<Button>();
-            if (btn0 != null) btn0.onClick.AddListener(OnOtherTabClicked);
-            if (btn1 != null) btn1.onClick.AddListener(OnOtherTabClicked);
-
-            var managerPanelTr = playerInv.transform.Find(ManagerPanelName);
-            if (managerPanelTr == null)
-            {
-                var recreated = ClonePanelStripChildren(playerInv, SourcePanelName, ManagerPanelName, new string[] { "Image", "Text (TMP)" });
-                managerPanelTr = playerInv.transform.Find(ManagerPanelName);
-                if (recreated != null) recreated.SetActive(false);
-            }
-            else
-            {
-                managerPanelTr.gameObject.SetActive(false);
-            }
-
-            if (managerPanelTr != null)
-            {
-                var slot = managerPanelTr.Find("managerSlotPanel")?.gameObject;
-                if (slot == null && LootUI.Instance?.ManagerSlotPrefab != null)
-                {
-                    slot = Instantiate(LootUI.Instance.ManagerSlotPrefab, managerPanelTr, false);
-                    slot.name = "managerSlotPanel";
-                    if (slot.TryGetComponent<RectTransform>(out var rt))
-                    {
-                        rt.anchorMin = new Vector2(0f, 1f);
-                        rt.anchorMax = new Vector2(0f, 1f);
-                        rt.pivot     = new Vector2(0f, 1f);
-                        rt.anchoredPosition = new Vector2(-160f, 300f);
-                        slot.transform.localScale = Vector3.one;
-                    }
-                }
-                if (slot != null)
-                    ManagerSlotController.Initialize(slot);
-            }
-
-            MoveButtonRelative(playerInv, "Button (2)", "Button", new Vector2(115f, 0f));
-            Canvas.ForceUpdateCanvases();
-        }
-        
-        private void AttachOtherTabProxy(Transform parent, string childName)
-        {
-            var tr = parent.Find(childName);
-            if (tr == null) return;
-
-            var btn = tr.GetComponent<Button>();
-            if (btn != null)
-            {
-                btn.onClick.AddListener(OnOtherTabClicked);
-            }
-
-            var proxy = tr.GetComponent<OtherTabProxy>();
-            if (proxy == null) proxy = tr.gameObject.AddComponent<OtherTabProxy>();
-            proxy.OnClicked = OnOtherTabClicked;
         }
 
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
         }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            _sidebar = null;
+            StartCoroutine(BuildWhenReady());
+        }
+
+        private IEnumerator BuildWhenReady()
+        {
+            while (GameObject.Find(PlayerInvName) == null)
+                yield return null;
+
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+
+            BuildSidebar();
+        }
+
+        private static void BuildSidebar()
+        {
+            var playerInv = GameObject.Find(PlayerInvName);
+            if (playerInv == null) return;
+
+            if (playerInv.transform.Find(SidebarName) != null) return;
+
+            var invWindowGO = GameData.PlayerInv?.InvWindow;
+            if (invWindowGO == null) return;
+
+            var invRT = invWindowGO.GetComponent<RectTransform>();
+            if (invRT == null) return;
+
+            var sidebar   = new GameObject(SidebarName);
+            var sidebarRT = sidebar.AddComponent<RectTransform>();
+            sidebarRT.SetParent(invRT, false);
+
+            sidebarRT.anchorMin        = new Vector2(0f, 0f);
+            sidebarRT.anchorMax        = new Vector2(1f, 0f);
+            sidebarRT.pivot            = new Vector2(0.5f, 1f);
+            sidebarRT.anchoredPosition = new Vector2(0f, -4f);
+            sidebarRT.sizeDelta        = new Vector2(0f, 80f);
+
+            _sidebar = sidebar;
+
+            var bg = sidebar.AddComponent<Image>();
+            bg.color = C_PanelBg;
+
+            var ol = sidebar.AddComponent<Outline>();
+            ol.effectColor    = C_Border;
+            ol.effectDistance = new Vector2(1f, -1f);
+
+            var hl = sidebar.AddComponent<HorizontalLayoutGroup>();
+            hl.padding                = new RectOffset(8, 8, 6, 6);
+            hl.spacing                = 6;
+            hl.childForceExpandWidth  = true;
+            hl.childForceExpandHeight = true;
+            hl.childControlWidth      = true;
+            hl.childControlHeight     = true;
+            hl.childAlignment         = TextAnchor.MiddleCenter;
+
+            BuildDropZone(sidebarRT, "BlacklistSlot",   "BLACKLIST",   new Color32(120, 30,  30,  255), new Color32(80, 20, 20, 120));
+            BuildDropZone(sidebarRT, "BanklistSlot",    "BANKLIST",    new Color32(30,  60,  140, 255), new Color32(20, 30, 80, 120));
+            BuildDropZone(sidebarRT, "JunklistSlot",    "JUNKLIST",    new Color32(160, 100, 20,  255), new Color32(80, 50, 10, 120));
+            BuildDropZone(sidebarRT, "AuctionlistSlot", "AUCTIONLIST", new Color32(30,  120, 60,  255), new Color32(15, 60, 30, 120));
+
+            WireDropZone(sidebar, "BlacklistSlot",   typeof(BlacklistDropZoneMarker));
+            WireDropZone(sidebar, "BanklistSlot",    typeof(BanklistDropZoneMarker));
+            WireDropZone(sidebar, "JunklistSlot",    typeof(JunklistDropZoneMarker));
+            WireDropZone(sidebar, "AuctionlistSlot", typeof(AuctionlistDropZoneMarker));
+
+            sidebar.SetActive(invWindowGO.activeSelf);
+        }
+
+        private static void BuildDropZone(Transform parent, string name, string label,
+                                          Color32 borderColour, Color32 bgColour)
+        {
+
+            var container   = new GameObject(name);
+            var containerRT = container.AddComponent<RectTransform>();
+            containerRT.SetParent(parent, false);
+
+            var outerVL = container.AddComponent<VerticalLayoutGroup>();
+            outerVL.spacing                = 2;
+            outerVL.childForceExpandWidth  = true;
+            outerVL.childForceExpandHeight = false;
+            outerVL.childControlWidth      = true;
+            outerVL.childControlHeight     = true;
+            outerVL.childAlignment         = TextAnchor.UpperCenter;
+
+            var boxGO = new GameObject("DropBox");
+            boxGO.AddComponent<RectTransform>().SetParent(containerRT, false);
+            var boxLE = boxGO.AddComponent<LayoutElement>();
+            boxLE.flexibleHeight = 1f;
+
+            var boxBG = boxGO.AddComponent<Image>();
+            boxBG.color = new Color(bgColour.r / 255f, bgColour.g / 255f, bgColour.b / 255f, bgColour.a / 255f);
+
+            var boxOL = boxGO.AddComponent<Outline>();
+            boxOL.effectColor    = new Color(borderColour.r / 255f, borderColour.g / 255f, borderColour.b / 255f, 0.85f);
+            boxOL.effectDistance = new Vector2(1.5f, -1.5f);
+
+            var dashGO = new GameObject("DashBorder");
+            var dashRT = dashGO.AddComponent<RectTransform>();
+            dashRT.SetParent(boxGO.transform, false);
+            dashRT.anchorMin = new Vector2(0.05f, 0.05f);
+            dashRT.anchorMax = new Vector2(0.95f, 0.95f);
+            dashRT.offsetMin = Vector2.zero;
+            dashRT.offsetMax = Vector2.zero;
+            var dashImg = dashGO.AddComponent<Image>();
+            dashImg.color         = new Color(1f, 1f, 1f, 0f);
+            dashImg.raycastTarget = false;
+            var dashOL = dashGO.AddComponent<Outline>();
+            dashOL.effectColor    = new Color(borderColour.r / 255f, borderColour.g / 255f, borderColour.b / 255f, 0.3f);
+            dashOL.effectDistance = new Vector2(1f, -1f);
+
+            var iconGO = new GameObject("ItemIcon");
+            var iconRT = iconGO.AddComponent<RectTransform>();
+            iconRT.SetParent(boxGO.transform, false);
+            iconRT.anchorMin = new Vector2(0.2f, 0.2f);
+            iconRT.anchorMax = new Vector2(0.8f, 0.8f);
+            iconRT.offsetMin = Vector2.zero;
+            iconRT.offsetMax = Vector2.zero;
+            var iconImg = iconGO.AddComponent<Image>();
+            iconImg.raycastTarget = false;
+            iconImg.color         = new Color(1f, 1f, 1f, 0f);
+
+            var lblGO = new GameObject("Label");
+            lblGO.AddComponent<RectTransform>().SetParent(containerRT, false);
+            lblGO.AddComponent<LayoutElement>().preferredHeight = 12;
+            var lbl = lblGO.AddComponent<TextMeshProUGUI>();
+            lbl.text      = label;
+            lbl.fontSize  = 8;
+            lbl.fontStyle = FontStyles.Bold;
+            lbl.alignment = TextAlignmentOptions.Center;
+            lbl.color     = new Color(borderColour.r / 255f, borderColour.g / 255f, borderColour.b / 255f, 0.9f);
+        }
+
+        private static void WireDropZone(GameObject sidebar, string slotName, System.Type markerType)
+        {
+            var iconT = sidebar.transform.Find($"{slotName}/DropBox/ItemIcon");
+            if (iconT == null)
+            {
+                Debug.LogWarning($"[PlayerInvUI] Could not find ItemIcon for {slotName}");
+                return;
+            }
+
+            var iconGO = iconT.gameObject;
+            iconGO.tag = "ItemSlot";
+
+            var img = iconGO.GetComponent<Image>() ?? iconGO.AddComponent<Image>();
+            img.raycastTarget = false;
+            img.color         = new Color(1f, 1f, 1f, 0f);
+
+            var col = iconGO.GetComponent<BoxCollider2D>() ?? iconGO.AddComponent<BoxCollider2D>();
+            col.isTrigger = true;
+
+            var rb = iconGO.GetComponent<Rigidbody2D>() ?? iconGO.AddComponent<Rigidbody2D>();
+            rb.bodyType                = RigidbodyType2D.Kinematic;
+            rb.gravityScale            = 0f;
+            rb.useFullKinematicContacts = true;
+
+            var icon = iconGO.GetComponent<ItemIcon>() ?? iconGO.AddComponent<ItemIcon>();
+            icon.ThisSlotType       = Item.SlotType.General;
+            icon.VendorSlot         = false;
+            icon.LootSlot           = false;
+            icon.BankSlot           = false;
+            icon.TrashSlot          = false;
+            icon.PlayerOwned        = false;
+            icon.MouseSlot          = false;
+            icon.CanTakeBlessedItem = true;
+            icon.NotInInventory     = true;
+            icon.Quantity           = 1;
+            if (icon.MyItem == null) icon.MyItem = GameData.PlayerInv.Empty;
+            if (icon.QuantityBox != null) icon.QuantityBox.SetActive(false);
+            icon.UpdateSlotImage();
+
+            if (iconGO.GetComponent(markerType) == null)
+                iconGO.AddComponent(markerType);
+        }
+
+        private static void MakeDivider(Transform parent)
+        {
+            var go = new GameObject("Divider");
+            go.AddComponent<RectTransform>().SetParent(parent, false);
+            go.AddComponent<LayoutElement>().preferredHeight = 1;
+            var img = go.AddComponent<Image>();
+            img.color = new Color(45f/255f, 49f/255f, 57f/255f, 1f);
+        }
+
+        public static void SyncSidebarVisibility()
+        {
+            if (_sidebar == null)
+            {
+
+                var playerInv = GameObject.Find(PlayerInvName);
+                if (playerInv != null)
+                    _sidebar = playerInv.transform
+                        .Find($"InvWindow/{SidebarName}")?.gameObject
+                        ?? GameObject.Find(SidebarName);
+            }
+
+            if (_sidebar == null) return;
+
+            var invWindow = GameData.PlayerInv?.InvWindow;
+            if (invWindow == null) return;
+
+            _sidebar.SetActive(invWindow.activeSelf);
+        }
     }
 
-    public class ManagerButtonProxy : MonoBehaviour, IPointerClickHandler
+    [HarmonyPatch(typeof(Inventory), "Update")]
+    public static class Inventory_Update_Patch
     {
-        private System.Action _onClicked;
-
-        public void Bind(System.Action onClicked)
+        public static void Postfix(Inventory __instance)
         {
-            _onClicked = onClicked;
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            _onClicked?.Invoke();
-            eventData.Use();
+            if (!__instance.isPlayer) return;
+            PlayerInvUI.SyncSidebarVisibility();
         }
     }
-    
-    public sealed class OtherTabProxy : MonoBehaviour, IPointerClickHandler
+
+    [HarmonyPatch(typeof(Inventory), nameof(Inventory.ForceOpenInv))]
+    public static class Inventory_ForceOpenInv_Patch
     {
-        public System.Action OnClicked;
-
-        public void OnPointerClick(UnityEngine.EventSystems.PointerEventData eventData)
-        {
-            OnClicked?.Invoke();
-        }
+        public static void Postfix() => PlayerInvUI.SyncSidebarVisibility();
     }
+
+    [HarmonyPatch(typeof(Inventory), nameof(Inventory.ForceCloseInv))]
+    public static class Inventory_ForceCloseInv_Patch
+    {
+        public static void Postfix() => PlayerInvUI.SyncSidebarVisibility();
+    }
+
+    public class BlacklistDropZoneMarker   : MonoBehaviour { }
+    public class BanklistDropZoneMarker    : MonoBehaviour { }
+    public class JunklistDropZoneMarker    : MonoBehaviour { }
+    public class AuctionlistDropZoneMarker : MonoBehaviour { }
 }

@@ -1,3 +1,37 @@
+## [3.0.0] - 3/11/2026
+### Added
+- Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
+  - Chat output options can be found in the settings panel. Choose what window and tab you want Loot Manager messages to be sent to, or choose to hide them entirely.
+- A toggle to delay autolooting has been added. When enabled, autolooting will be delayed until after combat ends.
+  - This can be adjusted in the settings panel. The delay time can be set from 0 to 10 seconds.
+
+### Fixed
+- Fixed an issue where items were disappearing when they were deposited to the bank via the inventory bank slot.
+
+### Removed
+- Removed the open bank and open auction buttons from the inventory. With the addition of the Reliquary, these buttons were no longer necessary since its very easy to open the bank and auction house from the Reliquary. 
+
+### Junklist
+- Mark items as junk. When visiting a vendor, any junk items in your inventory will automatically be sold.
+
+### Auctionlist
+- Mark items to be automatically listed on the Auction House when looted. Items are listed at the recommended price (Item Value × 6 - 1) and are never added to your inventory.
+- Items on the blacklist or not on the whitelist will not be looted and therefore will not be listed on the Auction House, even if they are on the Auction list.
+- Auction list will take priority over the banklist. If an item is on both lists, it will be listed on the Auction House instead of being sent to the bank.
+- Loot Manager Auctionlist ignores the 18 item listing limit in the Auction House. You can have as many items on the Auctionlist as you want, and they will all be listed when looted.
+  - Note: The in-game Auction House UI displays a maximum of 18 player listings at a time. Items listed beyond this limit are still active and will sell normally — they simply won't appear in the listings panel until slots open up.
+
+### Loot UI
+- Complete overhaul of the UI. All functionality is the same, but the UI has been redesigned to be more user friendly and visually appealing.
+- The Filter Categories have been removed from the Whitelist panel and added to its own section in the menu bar.
+  - We have added the ability to assign each filter category to the blacklist, whitelist, or banklist.
+  - This allows for more flexibility in how you want to use the filter categories. For example, you could have a filter category for crafting materials that is assigned to the banklist, so that all crafting materials are sent to the bank when looted.
+  - Each category can be assigned to multiple lists.
+- We reworked the inventory drop zones. They are now attached to the bottom of the inventory and are more visually distinct. The drop zones also have text to indicate their function.
+
+### Known Issues
+- Scrolling in the loot UI can be a bit buggy at times. This is a known issue and I am looking for a fix.
+
 ## [2.1.1] - 12/26/2025
 ### Added
 - You can now turn on/off looting of rare item drops even if they are blacklisted.

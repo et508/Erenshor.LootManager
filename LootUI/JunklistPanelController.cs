@@ -6,25 +6,23 @@ using UnityEngine.UI;
 
 namespace LootManager
 {
-    public sealed class BlacklistPanelController
+    public sealed class JunklistPanelController
     {
         private readonly GameObject    _panelRoot;
         private readonly RectTransform _containerRect;
 
-        private Transform        _leftContent;
-        private Transform        _rightContent;
-        private GameObject       _rowTemplate;
-        private TMP_InputField   _filterInput;
-        private Toggle           _lootRareToggle;
-
+        private Transform      _leftContent;
+        private Transform      _rightContent;
+        private GameObject     _rowTemplate;
+        private TMP_InputField _filterInput;
         private UIVirtualList _leftList;
         private UIVirtualList _rightList;
 
         private List<string> _leftData  = new List<string>();
         private List<string> _rightData = new List<string>();
 
-        private readonly HashSet<string>          _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
-        private readonly UICommon.DoubleClickTracker _doubleClick = new UICommon.DoubleClickTracker(0.25f);
+        private readonly HashSet<string>             _selectedNames = new HashSet<string>(System.StringComparer.Ordinal);
+        private readonly UICommon.DoubleClickTracker _doubleClick   = new UICommon.DoubleClickTracker(0.25f);
         private DebounceInvoker _debounce;
 
         private static Sprite _white1x1;
@@ -37,7 +35,7 @@ namespace LootManager
             return _white1x1;
         }
 
-        public BlacklistPanelController(GameObject panelRoot, RectTransform containerRect)
+        public JunklistPanelController(GameObject panelRoot, RectTransform containerRect)
         {
             _panelRoot     = panelRoot;
             _containerRect = containerRect;
@@ -47,10 +45,10 @@ namespace LootManager
         {
             var refs = DualListPanelBuilder.Build(
                 _panelRoot,
-                leftTitle:  "All Items",
-                rightTitle: "Blacklisted",
+                leftTitle:         "All Items",
+                rightTitle:        "Junklisted",
                 filterPlaceholder: "Filter items...",
-                extraBuilder: BuildExtraControls
+                extraBuilder:      null
             );
 
             _leftContent  = refs.LeftContent;
@@ -67,17 +65,8 @@ namespace LootManager
             }
 
             ItemLookup.EnsureBuilt();
-            
             _debounce = DebounceInvoker.Attach(_panelRoot);
-
             BuildVirtualLists();
-            SetupLootRareToggle();
-        }
-
-        private void BuildExtraControls(Transform parent)
-        {
-            _lootRareToggle = LootUIController.MakeToggle("blacklootrare", parent, "Always Loot Rare");
-            _lootRareToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
         }
 
         private void BuildVirtualLists()
@@ -92,19 +81,11 @@ namespace LootManager
             _rightList.Enable(true);
         }
 
-        private void SetupLootRareToggle()
-        {
-            if (_lootRareToggle == null) return;
-            _lootRareToggle.SetIsOnWithoutNotify(Plugin.LootRare.Value);
-            _lootRareToggle.onValueChanged.RemoveAllListeners();
-            _lootRareToggle.onValueChanged.AddListener(v => { Plugin.LootRare.Value = v; });
-        }
-
         public void Show()
         {
             if (_leftContent == null || _rightContent == null || _rowTemplate == null)
             {
-                Debug.LogError("[LootUI] Blacklist content/template not found.");
+                Debug.LogError("[LootUI] Junklist content/template not found.");
                 return;
             }
 
@@ -128,7 +109,7 @@ namespace LootManager
             string filter = _filterInput?.text?.ToLowerInvariant() ?? string.Empty;
             var source    = ItemLookup.AllItems;
 
-            _rightData = Plugin.Blacklist
+            _rightData = Plugin.Junklist
                 .Where(i => string.IsNullOrEmpty(filter) || i.ToLowerInvariant().Contains(filter))
                 .Distinct().OrderBy(i => i).ToList();
 
@@ -152,9 +133,9 @@ namespace LootManager
         private static Image EnsureClickTargetGraphic(GameObject go)
         {
             var img = go.GetComponent<Image>() ?? go.AddComponent<Image>();
-            img.sprite = GetWhite1x1();
-            img.type = Image.Type.Simple;
-            img.color = new Color(1f, 1f, 1f, 0f);
+            img.sprite        = GetWhite1x1();
+            img.type          = Image.Type.Simple;
+            img.color         = new Color(1f, 1f, 1f, 0f);
             img.raycastTarget = true;
             return img;
         }
@@ -162,16 +143,16 @@ namespace LootManager
         private void BindLeftRow(GameObject row, int index)
         {
             if (index < 0 || index >= _leftData.Count) { row.SetActive(false); return; }
-            BindRowCommon(row, _leftData[index], isBlacklist: false);
+            BindRowCommon(row, _leftData[index], isJunklist: false);
         }
 
         private void BindRightRow(GameObject row, int index)
         {
             if (index < 0 || index >= _rightData.Count) { row.SetActive(false); return; }
-            BindRowCommon(row, _rightData[index], isBlacklist: true);
+            BindRowCommon(row, _rightData[index], isJunklist: true);
         }
 
-        private void BindRowCommon(GameObject row, string itemName, bool isBlacklist)
+        private void BindRowCommon(GameObject row, string itemName, bool isJunklist)
         {
             var btn     = row.GetComponent<Button>() ?? row.AddComponent<Button>();
             var rootImg = EnsureClickTargetGraphic(row);
@@ -184,20 +165,20 @@ namespace LootManager
 
             if (label != null)
             {
-                label.text         = itemName;
+                label.text          = itemName;
                 label.raycastTarget = false;
-                label.color        = isBlacklist ? Color.red : Color.white;
+                label.color         = isJunklist ? new Color(1f, 0.6f, 0f) : Color.white;
             }
             if (icon != null)
             {
-                icon.sprite = ItemLookup.GetIcon(itemName);
-                icon.preserveAspect  = true;
-                icon.raycastTarget   = false;
+                icon.sprite         = ItemLookup.GetIcon(itemName);
+                icon.preserveAspect = true;
+                icon.raycastTarget  = false;
             }
 
             var hover = row.GetComponent<CheatManager.RowHover>() ?? row.AddComponent<CheatManager.RowHover>();
             hover.Init(rootImg,
-                new Color(1f,1f,1f,0f), new Color(1f,1f,1f,0.12f), new Color(1f,1f,1f,0.20f),
+                new Color(1f,1f,1f,0f),   new Color(1f,1f,1f,0.12f), new Color(1f,1f,1f,0.20f),
                 new Color(1f,1f,1f,0.10f), new Color(1f,1f,1f,0.18f), new Color(1f,1f,1f,0.26f));
             hover.SetSelected(_selectedNames.Contains(itemName));
 
@@ -206,17 +187,17 @@ namespace LootManager
             {
                 if (_doubleClick.IsDoubleClick(itemName))
                 {
-                    if (isBlacklist)
+                    if (isJunklist)
                     {
-                        Plugin.Blacklist.Remove(itemName);
-                        LootBlacklist.SaveBlacklist();
-                        ChatFilterInjector.SendLootMessage("[LootUI] Removed from blacklist: " + itemName, "yellow");
+                        Plugin.Junklist.Remove(itemName);
+                        LootJunklist.SaveJunklist();
+                        ChatFilterInjector.SendLootMessage("[LootUI] Removed from junklist: " + itemName, "yellow");
                     }
                     else
                     {
-                        Plugin.Blacklist.Add(itemName);
-                        LootBlacklist.SaveBlacklist();
-                        ChatFilterInjector.SendLootMessage("[LootUI] Added to blacklist: " + itemName, "yellow");
+                        Plugin.Junklist.Add(itemName);
+                        LootJunklist.SaveJunklist();
+                        ChatFilterInjector.SendLootMessage("[LootUI] Added to junklist: " + itemName, "yellow");
                     }
                     RefreshUI();
                     return;
@@ -230,8 +211,13 @@ namespace LootManager
         {
             bool changed = false;
             foreach (var name in _selectedNames.ToArray())
-                if (!Plugin.Blacklist.Contains(name)) { Plugin.Blacklist.Add(name); changed = true; }
-            if (changed) { LootBlacklist.SaveBlacklist(); RefreshUI(); ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to blacklist.", "yellow"); }
+                if (!Plugin.Junklist.Contains(name)) { Plugin.Junklist.Add(name); changed = true; }
+            if (changed)
+            {
+                LootJunklist.SaveJunklist();
+                RefreshUI();
+                ChatFilterInjector.SendLootMessage("[LootUI] Added selected items to junklist.", "yellow");
+            }
             else ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to add.", "red");
         }
 
@@ -239,8 +225,13 @@ namespace LootManager
         {
             bool changed = false;
             foreach (var name in _selectedNames.ToArray())
-                if (Plugin.Blacklist.Contains(name)) { Plugin.Blacklist.Remove(name); changed = true; }
-            if (changed) { LootBlacklist.SaveBlacklist(); RefreshUI(); ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from blacklist.", "yellow"); }
+                if (Plugin.Junklist.Contains(name)) { Plugin.Junklist.Remove(name); changed = true; }
+            if (changed)
+            {
+                LootJunklist.SaveJunklist();
+                RefreshUI();
+                ChatFilterInjector.SendLootMessage("[LootUI] Removed selected items from junklist.", "yellow");
+            }
             else ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
         }
     }

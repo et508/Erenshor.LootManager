@@ -41,7 +41,7 @@
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\0Harmony.dll</HintPath>
       </Reference>
       <Reference Include="Assembly-CSharp">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\Assembly-CSharp.dll</HintPath>
+        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor Playtest\Erenshor_Data\Managed\Assembly-CSharp.dll</HintPath>
       </Reference>
       <Reference Include="BepInEx">
         <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\BepInEx.dll</HintPath>
@@ -89,35 +89,47 @@
     <ItemGroup>
       <Compile Include="AutoLootHotkeyListener.cs" />
       <Compile Include="LootEnums.cs" />
+      <Compile Include="LootLists\LootAuctionlist.cs" />
       <Compile Include="LootLists\LootBanklist.cs" />
       <Compile Include="LootLists\LootBlacklist.cs" />
       <Compile Include="LootLists\LootFilterlist.cs" />
       <Compile Include="LootLists\LootFilterlistDefaults.cs" />
+      <Compile Include="LootLists\LootJunklist.cs" />
       <Compile Include="LootLists\LootWhitelist.cs" />
       <Compile Include="LootManagerController.cs" />
+      <Compile Include="LootMethods\AuctionLoot.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
       <Compile Include="LootMethods\BlacklistLoot.cs" />
       <Compile Include="LootMethods\StandardLoot.cs" />
       <Compile Include="LootMethods\WhitelistLoot.cs" />
       <Compile Include="LootUI.cs" />
+      <Compile Include="LootUI\AuctiolistPanelController.cs" />
       <Compile Include="LootUI\BanklistPanelContoller.cs" />
       <Compile Include="LootUI\BlacklistPanelController.cs" />
       <Compile Include="LootUI\EditlistPanelController.cs" />
+      <Compile Include="LootUI\FilterlistPanelController.cs" />
+      <Compile Include="LootUI\Helpers\ButtonHoverOutline.cs" />
       <Compile Include="LootUI\Helpers\DebounceInvoker.cs" />
       <Compile Include="LootUI\Helpers\DragHandler.cs" />
+      <Compile Include="LootUI\Helpers\DualListPanelBuilder.cs" />
       <Compile Include="LootUI\Helpers\HotkeyBindControl.cs" />
       <Compile Include="LootUI\Helpers\ItemLookup.cs" />
       <Compile Include="LootUI\Helpers\RowHover.cs" />
+      <Compile Include="LootUI\Helpers\ScrollForwarder.cs" />
       <Compile Include="LootUI\Helpers\TypingInputMute.cs" />
       <Compile Include="LootUI\Helpers\UICommon.cs" />
       <Compile Include="LootUI\Helpers\UILayoutBatch.cs" />
       <Compile Include="LootUI\Helpers\UIVirtualList.cs" />
+      <Compile Include="LootUI\JunklistPanelController.cs" />
       <Compile Include="LootUI\LootUIController.cs" />
       <Compile Include="LootUI\ManagerSlotController.cs" />
       <Compile Include="LootUI\SettingsPanelController.cs" />
       <Compile Include="LootUI\WhitelistPanelController.cs" />
+      <Compile Include="Patches\AuctionHouseUIPatch.cs" />
       <Compile Include="Patches\CharacterPatch.cs" />
+      <Compile Include="Patches\ChatFilterInjector.cs" />
       <Compile Include="Patches\LootWindowPatch.cs" />
+      <Compile Include="Patches\VendorWindowPatch.cs" />
       <Compile Include="PlayerInvUI.cs" />
       <Compile Include="Plugin.cs" />
     </ItemGroup>

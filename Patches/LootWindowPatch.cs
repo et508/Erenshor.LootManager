@@ -28,7 +28,7 @@ namespace LootManager
                 
                 if (lootMethod == "Blacklist" && BlacklistLoot.ShouldLoot(item, qty))
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;
                     slot.Quantity = 1;
                     slot.UpdateSlotImage();
@@ -37,13 +37,27 @@ namespace LootManager
 
                 if (lootMethod == "Whitelist" && !WhitelistLoot.ShouldLoot(item, qty))
                 {
-                    UpdateSocialLog.LogAdd($"[Loot Manager] Destroyed \"{name}\"", "grey");
+                    ChatFilterInjector.SendLootMessage($"[Loot Manager] Destroyed \"{name}\"", "grey");
                     slot.MyItem   = GameData.PlayerInv.Empty;
                     slot.Quantity = 1;
                     slot.UpdateSlotImage();
                     continue;
                 }
                 
+
+                if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+                {
+                    if (AuctionLoot.TryListItem(item))
+                    {
+                        slot.InformGroupOfLoot(item);
+                        slot.MyItem   = GameData.PlayerInv.Empty;
+                        slot.Quantity = 1;
+                        slot.UpdateSlotImage();
+                        continue;
+                    }
+
+                }
+
                 bool sendToBank = false;
                 if (bankLootEnabled)
                 {
@@ -55,12 +69,21 @@ namespace LootManager
                     {
                         sendToBank = true;
                     }
+                    else if (bankLootMethod == "Filtered")
+                    {
+
+                        foreach (var kvp in Plugin.FilterList)
+                        {
+                            if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;
+                            if (!Plugin.FilterAppliedToBanklist.Contains(kvp.Key))  continue;
+                            if (kvp.Value.Contains(name)) { sendToBank = true; break; }
+                        }
+                    }
                 }
 
                 if (sendToBank)
                 {
                     lootedForBank.Add(new BankLoot.LootEntry(item.Id, qty, name));
-                    // UpdateSocialLog.LogAdd($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
                 }
                 else
                 {
@@ -70,12 +93,12 @@ namespace LootManager
 
                     if (added)
                     {
-                        UpdateSocialLog.LogAdd($"[Loot Manager] Looted \"{name}\" to inventory", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[Loot Manager] Looted \"{name}\" to inventory", "yellow");
                         slot.InformGroupOfLoot(item);
                     }
                     else
                     {
-                        UpdateSocialLog.LogAdd($"[Loot Manager] No room for \"{name}\"", "yellow");
+                        ChatFilterInjector.SendLootMessage($"[Loot Manager] No room for \"{name}\"", "yellow");
                         continue;
                     }
                 }
