@@ -93,6 +93,7 @@
       <Compile Include="LootLists\LootBlacklist.cs" />
       <Compile Include="LootLists\LootFilterlist.cs" />
       <Compile Include="LootLists\LootFilterlistDefaults.cs" />
+      <Compile Include="LootLists\LootJunklist.cs" />
       <Compile Include="LootLists\LootWhitelist.cs" />
       <Compile Include="LootManagerController.cs" />
       <Compile Include="LootMethods\BankLoot.cs" />
@@ -115,6 +116,7 @@
       <Compile Include="LootUI\Helpers\UICommon.cs" />
       <Compile Include="LootUI\Helpers\UILayoutBatch.cs" />
       <Compile Include="LootUI\Helpers\UIVirtualList.cs" />
+      <Compile Include="LootUI\JunklistPanelController.cs" />
       <Compile Include="LootUI\LootUIController.cs" />
       <Compile Include="LootUI\ManagerSlotController.cs" />
       <Compile Include="LootUI\SettingsPanelController.cs" />
@@ -122,6 +124,7 @@
       <Compile Include="Patches\CharacterPatch.cs" />
       <Compile Include="Patches\ChatFilterInjector.cs" />
       <Compile Include="Patches\LootWindowPatch.cs" />
+      <Compile Include="Patches\VendorWindowPatch.cs" />
       <Compile Include="PlayerInvUI.cs" />
       <Compile Include="Plugin.cs" />
     </ItemGroup>
