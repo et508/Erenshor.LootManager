@@ -32,7 +32,6 @@ namespace LootManager
             if (Plugin.Whitelist.Contains(itemName))
                 return true;
             
-            // Filter categories applied to Whitelist
             foreach (var kvp in Plugin.FilterList)
             {
                 if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;

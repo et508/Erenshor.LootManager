@@ -51,7 +51,6 @@ namespace LootManager
 
         public void Init()
         {
-            // Build panel UI and grab references
             var refs = DualListPanelBuilder.Build(
                 _panelRoot,
                 leftTitle:  "All Items",
@@ -79,8 +78,7 @@ namespace LootManager
             }
 
             ItemLookup.EnsureBuilt();
-
-            // Find the MonoBehaviour host for coroutines
+            
             _debounce = DebounceInvoker.Attach(_panelRoot);
 
             BuildVirtualLists();

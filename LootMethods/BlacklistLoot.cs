@@ -20,8 +20,7 @@ namespace LootManager
             
             if (Plugin.Blacklist.Contains(itemName))
                 return true;
-
-            // Filter categories applied to Blacklist
+            
             foreach (var kvp in Plugin.FilterList)
             {
                 if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))   continue;

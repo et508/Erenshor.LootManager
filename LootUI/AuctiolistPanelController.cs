@@ -1,7 +1,3 @@
-// AuctionlistPanelController.cs
-// Dual-list panel for marking items to be automatically listed on the Auction House when looted.
-// Follows the exact same pattern as BlacklistPanelController / JunklistPanelController.
-
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
