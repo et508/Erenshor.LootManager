@@ -55,6 +55,16 @@ namespace LootManager
                     {
                         sendToBank = true;
                     }
+                    else if (bankLootMethod == "Filtered")
+                    {
+                        // Filter categories applied to Banklist
+                        foreach (var kvp in Plugin.FilterList)
+                        {
+                            if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;
+                            if (!Plugin.FilterAppliedToBanklist.Contains(kvp.Key))  continue;
+                            if (kvp.Value.Contains(name)) { sendToBank = true; break; }
+                        }
+                    }
                 }
 
                 if (sendToBank)
