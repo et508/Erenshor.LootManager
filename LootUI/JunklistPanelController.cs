@@ -1,7 +1,3 @@
-// JunklistPanelController.cs
-// Dual-list panel for marking items as junk to be auto-sold at vendors.
-// Follows the exact same pattern as BlacklistPanelController.
-
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -171,7 +167,7 @@ namespace LootManager
             {
                 label.text          = itemName;
                 label.raycastTarget = false;
-                label.color         = isJunklist ? new Color(1f, 0.6f, 0f) : Color.white; // orange for junked items
+                label.color         = isJunklist ? new Color(1f, 0.6f, 0f) : Color.white;
             }
             if (icon != null)
             {

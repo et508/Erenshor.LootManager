@@ -1,6 +1,3 @@
-// BanklistPanelController.cs
-// All logic identical to original; Init() builds UI in code via DualListPanelBuilder.
-
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;

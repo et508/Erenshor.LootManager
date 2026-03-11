@@ -1,6 +1,3 @@
-// EditlistPanelController.cs
-// Builds the edit-category overlay in code. Logic is identical to original.
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +9,7 @@ namespace LootManager
 {
     public sealed class EditlistPanelController
     {
-        private readonly GameObject    _editViewRoot;   // the editView GO from LootUIController
+        private readonly GameObject    _editViewRoot;  
         private readonly RectTransform _containerRect;
 
         private TMP_Text       _groupNameTMP;
@@ -50,8 +47,7 @@ namespace LootManager
         public void Init()
         {
             if (_editViewRoot == null) return;
-
-            // Title bar
+            
             var titleBar = new GameObject("editTitleBar");
             var tbRT = titleBar.AddComponent<RectTransform>();
             tbRT.SetParent(_editViewRoot.transform, false);
@@ -75,7 +71,6 @@ namespace LootManager
 
             var closeBtn = LootUIController.MakeButton("closeBtn", tbRT, "X",
                 LootUIController.C_Danger, LootUIController.C_TitleBg, 11);
-            // Remove generic hover outline — use colour-swap hover instead
             var closeBtnOL = closeBtn.GetComponent<Outline>();
             if (closeBtnOL != null) UnityEngine.Object.Destroy(closeBtnOL);
             var closeBtnBHO = closeBtn.GetComponent<ButtonHoverOutline>();
@@ -92,8 +87,7 @@ namespace LootManager
             closeBtnRT.sizeDelta = new Vector2(28, 0);
             closeBtnRT.anchoredPosition = Vector2.zero;
             closeBtn.onClick.AddListener(Hide);
-
-            // Body (below title)
+            
             var body = new GameObject("editBody");
             var bodyRT = body.AddComponent<RectTransform>();
             bodyRT.SetParent(_editViewRoot.transform, false);
@@ -101,8 +95,7 @@ namespace LootManager
             bodyRT.anchorMax = Vector2.one;
             bodyRT.offsetMin = Vector2.zero;
             bodyRT.offsetMax = new Vector2(0, -28);
-
-            // Use DualListPanelBuilder for the item lists
+            
             var refs = DualListPanelBuilder.Build(
                 body,
                 leftTitle:  "All Items",

@@ -1,7 +1,3 @@
-// AuctionlistPanelController.cs
-// Dual-list panel for marking items to be automatically listed on the Auction House when looted.
-// Follows the exact same pattern as BlacklistPanelController / JunklistPanelController.
-
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -171,7 +167,6 @@ namespace LootManager
             {
                 label.text          = itemName;
                 label.raycastTarget = false;
-                // Gold colour for auctionlisted items — fits the gold/economy theme
                 label.color         = isAuctionlist ? new Color(1f, 0.84f, 0f) : Color.white;
             }
             if (icon != null)

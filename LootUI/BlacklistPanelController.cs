@@ -1,7 +1,3 @@
-// BlacklistPanelController.cs
-// All logic is identical to the original; the only change is that Init()
-// now calls DualListPanelBuilder.Build() instead of doing UICommon.Find() lookups.
-
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -49,7 +45,6 @@ namespace LootManager
 
         public void Init()
         {
-            // Build panel UI and grab references
             var refs = DualListPanelBuilder.Build(
                 _panelRoot,
                 leftTitle:  "All Items",
@@ -72,8 +67,7 @@ namespace LootManager
             }
 
             ItemLookup.EnsureBuilt();
-
-            // Find the MonoBehaviour host for coroutines
+            
             _debounce = DebounceInvoker.Attach(_panelRoot);
 
             BuildVirtualLists();
