@@ -33,8 +33,6 @@ namespace LootManager
         public static HashSet<string> FilterAppliedToBlacklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static HashSet<string> FilterAppliedToWhitelist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static HashSet<string> FilterAppliedToBanklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        public static HashSet<string> FilterAppliedToSelllist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        public static HashSet<string> FilterAppliedToAuctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         
         public static ConfigEntry<KeyboardShortcut> ToggleLootUIHotkey;
         public static ConfigEntry<KeyboardShortcut> ToggleAutoLootHotkey;

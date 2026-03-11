@@ -20,8 +20,6 @@ namespace LootManager
         private Transform      _rightContent;
         private GameObject     _rowTemplate;
         private TMP_InputField _filterInput;
-        private Button         _addBtn;
-        private Button         _removeBtn;
         private Toggle         _lootEquipToggle;
         private TMP_Dropdown   _equipmentTierDropdown;
 
@@ -65,11 +63,6 @@ namespace LootManager
             _rightContent = refs.RightContent;
             _rowTemplate  = refs.RowTemplate;
             _filterInput  = refs.FilterInput;
-            _addBtn       = refs.AddBtn;
-            _removeBtn    = refs.RemoveBtn;
-
-            if (_addBtn    != null) { _addBtn.onClick.RemoveAllListeners();    _addBtn.onClick.AddListener(AddSelected);    }
-            if (_removeBtn != null) { _removeBtn.onClick.RemoveAllListeners(); _removeBtn.onClick.AddListener(RemoveSelected); }
 
             if (_filterInput != null)
             {

@@ -8,25 +8,19 @@ namespace LootManager
     {
         public RectTransform LeftContent;
         public ScrollRect    LeftScroll;
-        public GameObject    RowTemplate;  
-        
+        public GameObject    RowTemplate;
+
         public RectTransform RightContent;
         public ScrollRect    RightScroll;
-        
-        public TMP_InputField FilterInput;
 
-        
-        public Button AddBtn;
-        public Button RemoveBtn;
+        public TMP_InputField FilterInput;
     }
 
     internal static class DualListPanelBuilder
     {
-        private const float RowH      = 24f;
-        private const float BtnW      = 70f;
-        private const float FilterH   = 26f;
-        private const float BtnAreaH  = 32f;
-        
+        private const float RowH    = 24f;
+        private const float FilterH = 26f;
+
         public static DualListRefs Build(
             GameObject panelRoot,
             string leftTitle, string rightTitle,
@@ -48,16 +42,16 @@ namespace LootManager
             vl.childForceExpandHeight = false;
             vl.childControlWidth      = true;
             vl.childControlHeight     = true;
-            
+
             if (extraBuilder != null)
                 extraBuilder(body.transform);
-            
+
             refs.FilterInput = LootUIController.MakeInputField("filterInput", body.transform, filterPlaceholder);
             refs.FilterInput.gameObject.AddComponent<LayoutElement>().preferredHeight = FilterH;
-            
+
+            // Column headers
             var headerRow = new GameObject("ColumnHeaders");
-            var hrRT = headerRow.AddComponent<RectTransform>();
-            hrRT.SetParent(body.transform, false);
+            headerRow.AddComponent<RectTransform>().SetParent(body.transform, false);
             var hrHL = headerRow.AddComponent<HorizontalLayoutGroup>();
             hrHL.spacing                = 8;
             hrHL.childForceExpandWidth  = false;
@@ -79,53 +73,38 @@ namespace LootManager
             rightHdr.fontSize  = 10;
             rightHdr.fontStyle = FontStyles.Bold;
             rightHdr.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-            
+
+            // Dual scroll lists
             var listsRow = new GameObject("ListsRow");
-            var lrRT = listsRow.AddComponent<RectTransform>();
-            lrRT.SetParent(body.transform, false);
+            listsRow.AddComponent<RectTransform>().SetParent(body.transform, false);
             var lrHL = listsRow.AddComponent<HorizontalLayoutGroup>();
             lrHL.spacing                = 8;
             lrHL.childForceExpandWidth  = false;
             lrHL.childForceExpandHeight = true;
             lrHL.childControlWidth      = true;
             lrHL.childControlHeight     = true;
-            var lrLE = listsRow.AddComponent<LayoutElement>();
-            lrLE.flexibleHeight = 1;
-            
+            listsRow.AddComponent<LayoutElement>().flexibleHeight = 1;
+
             RectTransform leftVP, leftContent;
-            refs.LeftScroll = LootUIController.MakeScrollView("leftScroll", listsRow.transform, out leftVP, out leftContent);
+            refs.LeftScroll  = LootUIController.MakeScrollView("leftScroll", listsRow.transform, out leftVP, out leftContent);
             refs.LeftContent = leftContent;
             refs.LeftScroll.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-            
+
             RectTransform rightVP, rightContent;
-            refs.RightScroll = LootUIController.MakeScrollView("rightScroll", listsRow.transform, out rightVP, out rightContent);
+            refs.RightScroll  = LootUIController.MakeScrollView("rightScroll", listsRow.transform, out rightVP, out rightContent);
             refs.RightContent = rightContent;
             refs.RightScroll.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-            
+
             refs.RowTemplate = LootUIController.MakeRowTemplate("rowTemplate", leftContent, RowH);
-            
-            var btnRow = new GameObject("BtnRow");
-            var brRT = btnRow.AddComponent<RectTransform>();
-            brRT.SetParent(body.transform, false);
-            var brHL = btnRow.AddComponent<HorizontalLayoutGroup>();
-            brHL.spacing                = 8;
-            brHL.childForceExpandWidth  = false;
-            brHL.childForceExpandHeight = false;
-            brHL.childControlWidth      = false;
-            brHL.childControlHeight     = true;
-            btnRow.AddComponent<LayoutElement>().preferredHeight = BtnAreaH;
-            
-            var spacer = new GameObject("Spacer");
-            spacer.AddComponent<RectTransform>().SetParent(brRT, false);
-            spacer.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            refs.AddBtn = LootUIController.MakeButton("addBtn", brRT, "Add ›",
-                LootUIController.C_TextPri, LootUIController.C_BtnNormal);
-            refs.AddBtn.gameObject.AddComponent<LayoutElement>().preferredWidth = BtnW;
-
-            refs.RemoveBtn = LootUIController.MakeButton("removeBtn", brRT, "‹ Remove",
-                LootUIController.C_TextPri, LootUIController.C_BtnNormal);
-            refs.RemoveBtn.gameObject.AddComponent<LayoutElement>().preferredWidth = BtnW;
+            // Hint row
+            var hint = LootUIController.MakeTMP("hintLabel", body.transform);
+            hint.text      = "Double-click an item to move it";
+            hint.color     = LootUIController.C_TextMuted;
+            hint.fontSize  = 9;
+            hint.fontStyle = FontStyles.Italic;
+            hint.alignment = TextAlignmentOptions.Center;
+            hint.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
 
             return refs;
         }

@@ -19,8 +19,6 @@ namespace LootManager
         private Transform        _rightContent;
         private GameObject       _rowTemplate;
         private TMP_InputField   _filterInput;
-        private Button           _addBtn;
-        private Button           _removeBtn;
         private Toggle           _lootRareToggle;
 
         private UIVirtualList _leftList;
@@ -51,6 +49,7 @@ namespace LootManager
 
         public void Init()
         {
+            // Build panel UI and grab references
             var refs = DualListPanelBuilder.Build(
                 _panelRoot,
                 leftTitle:  "All Items",
@@ -63,11 +62,6 @@ namespace LootManager
             _rightContent = refs.RightContent;
             _rowTemplate  = refs.RowTemplate;
             _filterInput  = refs.FilterInput;
-            _addBtn       = refs.AddBtn;
-            _removeBtn    = refs.RemoveBtn;
-
-            if (_addBtn    != null) { _addBtn.onClick.RemoveAllListeners();    _addBtn.onClick.AddListener(AddSelected);    }
-            if (_removeBtn != null) { _removeBtn.onClick.RemoveAllListeners(); _removeBtn.onClick.AddListener(RemoveSelected); }
 
             if (_filterInput != null)
             {
@@ -78,7 +72,8 @@ namespace LootManager
             }
 
             ItemLookup.EnsureBuilt();
-            
+
+            // Find the MonoBehaviour host for coroutines
             _debounce = DebounceInvoker.Attach(_panelRoot);
 
             BuildVirtualLists();

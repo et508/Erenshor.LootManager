@@ -14,8 +14,6 @@ namespace LootManager
         [JsonProperty] public bool AppliedToBlacklist = false;
         [JsonProperty] public bool AppliedToWhitelist = false;
         [JsonProperty] public bool AppliedToBanklist  = false;
-        [JsonProperty] public bool AppliedToSelllist  = false;
-        [JsonProperty] public bool AppliedToAuctionlist = false;
         [JsonProperty] public List<string> Items = new List<string>();
     }
 
@@ -86,12 +84,10 @@ namespace LootManager
 
                     data[sectionName] = new LootFilterCategory
                     {
-                        IsEnabled            = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
-                        AppliedToBlacklist   = Plugin.FilterAppliedToBlacklist?.Contains(sectionName)  == true,
-                        AppliedToWhitelist   = Plugin.FilterAppliedToWhitelist?.Contains(sectionName)  == true,
-                        AppliedToBanklist    = Plugin.FilterAppliedToBanklist?.Contains(sectionName)   == true,
-                        AppliedToSelllist    = Plugin.FilterAppliedToSelllist?.Contains(sectionName)   == true,
-                        AppliedToAuctionlist = Plugin.FilterAppliedToAuctionlist?.Contains(sectionName) == true,
+                        IsEnabled          = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
+                        AppliedToBlacklist = Plugin.FilterAppliedToBlacklist?.Contains(sectionName) == true,
+                        AppliedToWhitelist = Plugin.FilterAppliedToWhitelist?.Contains(sectionName) == true,
+                        AppliedToBanklist  = Plugin.FilterAppliedToBanklist?.Contains(sectionName)  == true,
                         Items = itemsSeq.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList()
                     };
                 }
@@ -148,11 +144,9 @@ namespace LootManager
             HashSet<string> set = null;
             switch (listKey)
             {
-                case "Blacklist":   set = Plugin.FilterAppliedToBlacklist;   break;
-                case "Whitelist":   set = Plugin.FilterAppliedToWhitelist;   break;
-                case "Banklist":    set = Plugin.FilterAppliedToBanklist;    break;
-                case "Selllist":    set = Plugin.FilterAppliedToSelllist;    break;
-                case "Auctionlist": set = Plugin.FilterAppliedToAuctionlist; break;
+                case "Blacklist": set = Plugin.FilterAppliedToBlacklist; break;
+                case "Whitelist": set = Plugin.FilterAppliedToWhitelist; break;
+                case "Banklist":  set = Plugin.FilterAppliedToBanklist;  break;
             }
             if (set == null) return;
             if (value) set.Add(sectionName);
@@ -203,8 +197,11 @@ namespace LootManager
 
         private static void ApplyToPluginState(Dictionary<string, LootFilterCategory> input)
         {
-            var sections = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-            var enabled = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var sections  = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            var enabled   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var banklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             if (input != null)
             {
@@ -222,23 +219,18 @@ namespace LootManager
                         StringComparer.OrdinalIgnoreCase);
 
                     sections[name] = items;
-                    if (cat.IsEnabled)            enabled.Add(name);
-                    if (cat.AppliedToBlacklist)   Plugin.FilterAppliedToBlacklist.Add(name);
-                    if (cat.AppliedToWhitelist)   Plugin.FilterAppliedToWhitelist.Add(name);
-                    if (cat.AppliedToBanklist)    Plugin.FilterAppliedToBanklist.Add(name);
-                    if (cat.AppliedToSelllist)    Plugin.FilterAppliedToSelllist.Add(name);
-                    if (cat.AppliedToAuctionlist) Plugin.FilterAppliedToAuctionlist.Add(name);
+                    if (cat.IsEnabled)          enabled.Add(name);
+                    if (cat.AppliedToBlacklist) blacklist.Add(name);
+                    if (cat.AppliedToWhitelist) whitelist.Add(name);
+                    if (cat.AppliedToBanklist)  banklist.Add(name);
                 }
             }
 
             Plugin.FilterList                = sections;
             Plugin.EnabledFilterCategories   = enabled;
-            // AppliedTo sets are rebuilt from scratch on each load
-            Plugin.FilterAppliedToBlacklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Plugin.FilterAppliedToWhitelist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Plugin.FilterAppliedToBanklist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Plugin.FilterAppliedToSelllist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Plugin.FilterAppliedToAuctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Plugin.FilterAppliedToBlacklist  = blacklist;
+            Plugin.FilterAppliedToWhitelist  = whitelist;
+            Plugin.FilterAppliedToBanklist   = banklist;
         }
     }
 }

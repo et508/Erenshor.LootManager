@@ -1,3 +1,8 @@
+// FilterlistPanelController.cs
+// Manages the Filter Categories panel.
+// Each category row has columns:
+//   Active | Name | Blacklist | Whitelist | Banklist | Edit | Del
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +23,13 @@ namespace LootManager
         private Button         _newCategoryAddBtn;
 
         private DebounceInvoker _debounce;
-        
+
+        // Column definitions — order matches header and row
         private static readonly (string Key, string Label, float Width)[] Cols = new[]
         {
-            ("Blacklist",   "Blacklist",   58f),
-            ("Whitelist",   "Whitelist",   58f),
-            ("Banklist",    "Banklist",    54f),
-            ("Selllist",    "Junklist",    58f),
-            ("Auctionlist", "Auctionlist", 68f),
+            ("Blacklist", "Blacklist", 68f),
+            ("Whitelist", "Whitelist", 68f),
+            ("Banklist",  "Banklist",  68f),
         };
 
         public FilterlistPanelController(GameObject panelRoot, RectTransform containerRect)
@@ -47,7 +51,7 @@ namespace LootManager
 
             var parent = _panelRoot.transform;
 
-            
+            // ── New category row (above everything) ─────────────────────────
             var newCatRow = new GameObject("NewCategoryRow");
             newCatRow.AddComponent<RectTransform>().SetParent(parent, false);
             var ncHL = newCatRow.AddComponent<HorizontalLayoutGroup>();
@@ -80,17 +84,17 @@ namespace LootManager
 
             LootUIController.MakeDivider(parent);
 
-            
+            // ── Header row (column labels) ───────────────────────────────────
             BuildHeaderRow(parent);
 
-            
+            // ── Category scroll list ─────────────────────────────────────────
             RectTransform flVP, flContent;
             var flScroll = LootUIController.MakeScrollView(
                 "filterlistView", parent, out flVP, out flContent);
             flScroll.gameObject.AddComponent<LayoutElement>().preferredHeight = 200;
             _filterlistContent = flContent;
 
-            
+            // ── Row template (inactive) ──────────────────────────────────────
             _rowTemplate = BuildRowTemplate(_filterlistContent);
             _rowTemplate.SetActive(false);
 
@@ -117,7 +121,10 @@ namespace LootManager
             if (_newCategoryInput  != null) _newCategoryInput.text  = string.Empty;
             if (_newCategoryAddBtn != null) _newCategoryAddBtn.interactable = false;
         }
-        
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Header row
+        // ─────────────────────────────────────────────────────────────────────
         private static void BuildHeaderRow(Transform parent)
         {
             var hdr = new GameObject("HeaderRow");
@@ -132,15 +139,15 @@ namespace LootManager
             hl.padding                = new RectOffset(4, 4, 0, 0);
             hdr.AddComponent<LayoutElement>().preferredHeight = 18;
 
-            
+            // Active col header (matches checkbox width)
             MakeHeaderCell(hdr.transform, "Active", 38);
-            
+            // Name col header — flexible
             MakeHeaderCell(hdr.transform, "Name", -1);
-            
+            // Per-list col headers
             foreach (var col in Cols)
                 MakeHeaderCell(hdr.transform, col.Label, col.Width);
-            
-            MakeHeaderCell(hdr.transform, "", 80);
+            // Edit/Del spacer — matches two 36px buttons + 4px spacing between them
+            MakeHeaderCell(hdr.transform, "", 76);
         }
 
         private static void MakeHeaderCell(Transform parent, string text, float width)
@@ -160,7 +167,10 @@ namespace LootManager
             tmp.enableWordWrapping  = false;
             tmp.overflowMode        = TextOverflowModes.Ellipsis;
         }
-        
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Row template
+        // ─────────────────────────────────────────────────────────────────────
         private static GameObject BuildRowTemplate(Transform parent)
         {
             var row = new GameObject("filterCategoryRow");
@@ -175,26 +185,31 @@ namespace LootManager
             hl.childControlHeight     = true;
             hl.childAlignment         = TextAnchor.MiddleLeft;
             hl.padding                = new RectOffset(4, 4, 2, 2);
-            
+
+            // Col 1 — Active toggle
             BuildCheckCell(row.transform, "activeToggle", 38);
-            
+
+            // Col 2 — Name label (flexible)
             var nameLbl = new GameObject("nameLabel");
             nameLbl.AddComponent<RectTransform>().SetParent(row.transform, false);
             var nameLE = nameLbl.AddComponent<LayoutElement>();
             nameLE.flexibleWidth   = 1;
             nameLE.preferredHeight = 18;
             var nameTMP = nameLbl.AddComponent<TextMeshProUGUI>();
-            nameTMP.color        = LootUIController.C_TextPri;
-            nameTMP.fontSize     = 11;
-            nameTMP.alignment    = TextAlignmentOptions.Center;
+            nameTMP.color         = LootUIController.C_TextPri;
+            nameTMP.fontSize      = 11;
+            nameTMP.alignment     = TextAlignmentOptions.Center;
             nameTMP.raycastTarget = false;
-            
+
+            // Cols 3-5 — per-list toggles (Blacklist, Whitelist, Banklist)
             foreach (var col in Cols)
                 BuildCheckCell(row.transform, col.Key + "Toggle", col.Width);
-            
+
+            // Col 6 — Edit button
             BuildActionButton(row.transform, "filterCategoryEditBtn", "Edit",
                 LootUIController.C_TextPri, 36);
-            
+
+            // Col 7 — Del button
             BuildActionButton(row.transform, "filterCategoryDeleteBtn", "Del",
                 LootUIController.C_Danger, 36);
 
@@ -217,7 +232,8 @@ namespace LootManager
             hl.childForceExpandHeight = false;
             hl.childControlWidth      = true;
             hl.childControlHeight     = true;
-            
+
+            // Background
             var bgGO  = new GameObject("Background");
             bgGO.AddComponent<RectTransform>().SetParent(cell.transform, false);
             var bgLE  = bgGO.AddComponent<LayoutElement>();
@@ -230,7 +246,7 @@ namespace LootManager
             bgOL.effectColor    = LootUIController.C_Border;
             bgOL.effectDistance = new Vector2(1, -1);
 
-            
+            // Checkmark
             var markGO  = new GameObject("Checkmark");
             var markRT  = markGO.AddComponent<RectTransform>();
             markRT.SetParent(bgGO.transform, false);
@@ -268,15 +284,18 @@ namespace LootManager
             lblGO.AddComponent<RectTransform>().SetParent(go.transform, false);
             LootUIController.StretchFull(lblGO.GetComponent<RectTransform>());
             var lbl = lblGO.AddComponent<TextMeshProUGUI>();
-            lbl.text         = label;
-            lbl.fontSize     = 9;
-            lbl.alignment    = TextAlignmentOptions.Center;
-            lbl.color        = textColor;
+            lbl.text          = label;
+            lbl.fontSize      = 9;
+            lbl.alignment     = TextAlignmentOptions.Center;
+            lbl.color         = textColor;
             lbl.raycastTarget = false;
 
             return btn;
         }
-        
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Rebuild rows
+        // ─────────────────────────────────────────────────────────────────────
         private void RebuildRows()
         {
             if (_filterlistContent == null || _rowTemplate == null) return;
@@ -298,7 +317,7 @@ namespace LootManager
                 row.SetActive(true);
                 string cat = category;
 
-                
+                // Active toggle
                 var activeToggle = row.transform.Find("activeToggle")?.GetComponent<Toggle>();
                 if (activeToggle != null)
                 {
@@ -308,11 +327,11 @@ namespace LootManager
                         LootFilterlist.SetSectionEnabled(cat, v));
                 }
 
-                
+                // Name label
                 var nameLbl = row.transform.Find("nameLabel")?.GetComponent<TextMeshProUGUI>();
                 if (nameLbl != null) nameLbl.text = cat;
 
-                
+                // Per-list toggles
                 foreach (var col in Cols)
                 {
                     var t = row.transform.Find(col.Key + "Toggle")?.GetComponent<Toggle>();
@@ -324,14 +343,16 @@ namespace LootManager
                     t.onValueChanged.AddListener(v =>
                         LootFilterlist.SetAppliedTo(cat, capturedKey, v));
                 }
-                
+
+                // Edit button
                 var editBtn = row.transform.Find("filterCategoryEditBtn")?.GetComponent<Button>();
                 if (editBtn != null)
                 {
                     editBtn.onClick.RemoveAllListeners();
                     editBtn.onClick.AddListener(() => LootUIController.ShowEditCategory(cat));
                 }
-                
+
+                // Del button
                 var delBtn = row.transform.Find("filterCategoryDeleteBtn")?.GetComponent<Button>();
                 if (delBtn != null)
                 {
@@ -349,12 +370,10 @@ namespace LootManager
         {
             switch (key)
             {
-                case "Blacklist":   return Plugin.FilterAppliedToBlacklist;
-                case "Whitelist":   return Plugin.FilterAppliedToWhitelist;
-                case "Banklist":    return Plugin.FilterAppliedToBanklist;
-                case "Selllist":    return Plugin.FilterAppliedToSelllist;
-                case "Auctionlist": return Plugin.FilterAppliedToAuctionlist;
-                default:            return null;
+                case "Blacklist": return Plugin.FilterAppliedToBlacklist;
+                case "Whitelist": return Plugin.FilterAppliedToWhitelist;
+                case "Banklist":  return Plugin.FilterAppliedToBanklist;
+                default:          return null;
             }
         }
 
@@ -391,8 +410,6 @@ namespace LootManager
             Plugin.FilterAppliedToBlacklist.Remove(name);
             Plugin.FilterAppliedToWhitelist.Remove(name);
             Plugin.FilterAppliedToBanklist.Remove(name);
-            Plugin.FilterAppliedToSelllist.Remove(name);
-            Plugin.FilterAppliedToAuctionlist.Remove(name);
             LootFilterlist.SaveFilterlist();
             ChatFilterInjector.SendLootMessage($"[LootUI] Deleted group '{name}'.", "yellow");
             RebuildRows();
