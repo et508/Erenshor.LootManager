@@ -44,6 +44,22 @@ namespace LootManager
                     continue;
                 }
                 
+                // Auctionlist check — takes priority over banklist.
+                // If listing succeeds the item goes straight to the AH and we move on.
+                // If it fails (no-trade, no value) we fall through to normal loot handling.
+                if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+                {
+                    if (AuctionLoot.TryListItem(item))
+                    {
+                        slot.InformGroupOfLoot(item);
+                        slot.MyItem   = GameData.PlayerInv.Empty;
+                        slot.Quantity = 1;
+                        slot.UpdateSlotImage();
+                        continue;
+                    }
+                    // Fall through to normal loot handling below
+                }
+
                 bool sendToBank = false;
                 if (bankLootEnabled)
                 {

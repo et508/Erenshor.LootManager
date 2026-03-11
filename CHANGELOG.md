@@ -4,6 +4,13 @@
 - A toggle to delay autolooting has been added. When enabled, autolooting will be delayed until after combat ends.
   - This can be adjusting in the settings panel. The delay time can be set from 0 to 10 seconds.
 
+### Junklist
+- Mark items as junk. When visiting a vendor, any junk items in your inventory will automatically be sold.
+
+### Auctionlist
+- Mark items to be automatically listed on the Auction House when looted. Items are listed at the recommended price (Item Value × 6 - 1) and are never added to your inventory.
+- Auction list will take priority over the banklist. If an item is on both lists, it will be listed on the Auction House instead of being sent to the bank.
+  - Note: The in-game Auction House UI displays a maximum of 18 player listings at a time. Items listed beyond this limit are still active and will sell normally — they simply won't appear in the listings panel until slots open up.
 
 ### Loot UI
 - Complete overhaul of the UI. All functionality is the same, but the UI has been redesigned to be more user friendly and visually appealing.

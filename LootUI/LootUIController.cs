@@ -144,6 +144,7 @@ namespace LootManager
         private static GameObject _whitelistPanelGO;
         private static GameObject _banklistPanelGO;
         private static GameObject _junklistPanelGO;
+        private static GameObject _auctionlistPanelGO;
         private static GameObject _filterlistPanelGO;
 
         private static Button _menuSettingsBtn;
@@ -151,6 +152,7 @@ namespace LootManager
         private static Button _menuWhitelistBtn;
         private static Button _menuBanklistBtn;
         private static Button _menuJunklistBtn;
+        private static Button _menuAuctionlistBtn;
         private static Button _menuFilterlistBtn;
 
         private static SettingsPanelController  _settings;
@@ -158,6 +160,7 @@ namespace LootManager
         private static WhitelistPanelController _whitelist;
         private static BanklistPanelController  _banklist;
         private static JunklistPanelController   _junklist;
+        private static AuctionlistPanelController _auctionlist;
         private static EditlistPanelController    _editlist;
         private static FilterlistPanelController  _filterlist;
 
@@ -244,6 +247,8 @@ namespace LootManager
             _banklist.Init();
             _junklist = new JunklistPanelController(_junklistPanelGO, _container);
             _junklist.Init();
+            _auctionlist = new AuctionlistPanelController(_auctionlistPanelGO, _container);
+            _auctionlist.Init();
 
             _editlist = new EditlistPanelController(_editView, _container);
             _editlist.Init();
@@ -341,6 +346,7 @@ namespace LootManager
             _menuWhitelistBtn = MakeTabButton(rt, "whitelistBtn", "Whitelist");
             _menuBanklistBtn    = MakeTabButton(rt, "banklistBtn",    "Banklist");
             _menuJunklistBtn    = MakeTabButton(rt, "junklistBtn",    "Junklist");
+            _menuAuctionlistBtn = MakeTabButton(rt, "auctionlistBtn", "Auctionlist");
             _menuFilterlistBtn  = MakeTabButton(rt, "filterlistBtn",  "Filterlists");
 
             _menuSettingsBtn.onClick.AddListener(() =>
@@ -367,6 +373,11 @@ namespace LootManager
             {
                 ShowPanel(_junklistPanelGO);
                 _junklist.Show();
+            });
+            _menuAuctionlistBtn.onClick.AddListener(() =>
+            {
+                ShowPanel(_auctionlistPanelGO);
+                _auctionlist.Show();
             });
             _menuFilterlistBtn.onClick.AddListener(() =>
             {
@@ -425,6 +436,7 @@ namespace LootManager
             _whitelistPanelGO = BuildPanelContainer(parent, "panelBGwhitelist", topOffset, panelH);
             _banklistPanelGO    = BuildPanelContainer(parent, "panelBGbanklist",    topOffset, panelH);
             _junklistPanelGO    = BuildPanelContainer(parent, "panelBGjunklist",    topOffset, panelH);
+            _auctionlistPanelGO = BuildPanelContainer(parent, "panelBGauctionlist", topOffset, panelH);
             _filterlistPanelGO  = BuildPanelContainer(parent, "panelBGfilterlist",  topOffset, panelH);
         }
 
@@ -459,6 +471,7 @@ namespace LootManager
             _whitelistPanelGO?.SetActive(activePanel == _whitelistPanelGO);
             _banklistPanelGO?.SetActive(activePanel == _banklistPanelGO);
             _junklistPanelGO?.SetActive(activePanel == _junklistPanelGO);
+            _auctionlistPanelGO?.SetActive(activePanel == _auctionlistPanelGO);
             _filterlistPanelGO?.SetActive(activePanel == _filterlistPanelGO);
 
             SetTabActive(_menuSettingsBtn,  activePanel == _settingsPanelGO);
@@ -466,6 +479,7 @@ namespace LootManager
             SetTabActive(_menuWhitelistBtn, activePanel == _whitelistPanelGO);
             SetTabActive(_menuBanklistBtn,    activePanel == _banklistPanelGO);
             SetTabActive(_menuJunklistBtn,    activePanel == _junklistPanelGO);
+            SetTabActive(_menuAuctionlistBtn, activePanel == _auctionlistPanelGO);
             SetTabActive(_menuFilterlistBtn,  activePanel == _filterlistPanelGO);
         }
 
