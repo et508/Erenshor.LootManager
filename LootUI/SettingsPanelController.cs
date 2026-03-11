@@ -37,6 +37,12 @@ namespace LootManager
         private Slider               _bankPageLastSlider;
         private TextMeshProUGUI      _pageLastText;
 
+        // Chat output
+        private TMP_Dropdown         _chatWindowDropdown;
+        private TMP_Dropdown         _chatTabDropdown;
+        private Toggle               _chatOutputToggle;
+        private readonly List<IDLog> _chatWindowList = new List<IDLog>();
+
         private static SettingsPanelController s_instance;
 
         private readonly List<string> _lootMethodOptions = new List<string> { "Blacklist", "Whitelist", "Standard" };
@@ -54,9 +60,15 @@ namespace LootManager
         {
             s_instance = this;
             BuildSettingsUI();
+            // Chat windows register during scene Start() so populate after build
+            PopulateChatWindowDropdown();
         }
 
-        public void Show() { /* nothing to reload */ }
+        public void Show()
+        {
+            // Repopulate every open so new windows/tabs created mid-session appear
+            PopulateChatWindowDropdown();
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         // Build
@@ -65,16 +77,82 @@ namespace LootManager
         {
             if (_panelRoot == null) return;
 
-            var rt = _panelRoot.GetComponent<RectTransform>();
+            // ── ScrollRect wrapper ────────────────────────────────────────────
+            // Lets content exceed the panel height without squishing.
+            var scrollGO = new GameObject("SettingsScroll");
+            var scrollRT = scrollGO.AddComponent<RectTransform>();
+            scrollRT.SetParent(_panelRoot.transform, false);
+            LootUIController.StretchFull(scrollRT);
 
-            // Vertical layout inside the panel
-            var body = new GameObject("settingsBody");
+            var scroll = scrollGO.AddComponent<ScrollRect>();
+            scroll.horizontal        = false;
+            scroll.vertical          = true;
+            scroll.scrollSensitivity = 60f;
+            scroll.movementType      = ScrollRect.MovementType.Elastic;
+            scroll.elasticity        = 0.05f;
+            scroll.inertia           = true;
+            scroll.decelerationRate  = 0.5f;
+
+            // Viewport
+            var vpGO = new GameObject("Viewport");
+            var vpRT = vpGO.AddComponent<RectTransform>();
+            vpRT.SetParent(scrollRT, false);
+            LootUIController.StretchFull(vpRT);
+            vpGO.AddComponent<RectMask2D>();
+            scroll.viewport = vpRT;
+
+            // Scrollbar
+            var sbGO = new GameObject("Scrollbar");
+            var sbRT = sbGO.AddComponent<RectTransform>();
+            sbRT.SetParent(scrollRT, false);
+            sbRT.anchorMin        = new Vector2(1, 0);
+            sbRT.anchorMax        = new Vector2(1, 1);
+            sbRT.pivot            = new Vector2(1, 0.5f);
+            sbRT.anchoredPosition = Vector2.zero;
+            sbRT.sizeDelta        = new Vector2(6, 0);
+            var sbImg = sbGO.AddComponent<Image>();
+            sbImg.color = new Color(0.15f, 0.17f, 0.22f, 1f);
+            var sb = sbGO.AddComponent<Scrollbar>();
+            sb.direction = Scrollbar.Direction.BottomToTop;
+
+            var sbHandleArea = new GameObject("SlidingArea");
+            sbHandleArea.AddComponent<RectTransform>().SetParent(sbRT, false);
+            LootUIController.StretchFull(sbHandleArea.GetComponent<RectTransform>());
+
+            var sbHandle = new GameObject("Handle");
+            var sbHandleRT = sbHandle.AddComponent<RectTransform>();
+            sbHandleRT.SetParent(sbHandleArea.transform, false);
+            LootUIController.StretchFull(sbHandleRT);
+            var sbHandleImg = sbHandle.AddComponent<Image>();
+            sbHandleImg.color = LootUIController.C_AccentBlue;
+            sb.handleRect     = sbHandleRT;
+            sb.targetGraphic  = sbHandleImg;
+            scroll.verticalScrollbar             = sb;
+            scroll.verticalScrollbarVisibility   = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+            scroll.verticalScrollbarSpacing      = -3f;
+
+            // Content — this is what the VLG goes on
+            var body   = new GameObject("settingsBody");
             var bodyRT = body.AddComponent<RectTransform>();
-            bodyRT.SetParent(_panelRoot.transform, false);
-            LootUIController.StretchFull(bodyRT);
+            bodyRT.SetParent(vpRT, false);
+            bodyRT.anchorMin = new Vector2(0, 1);
+            bodyRT.anchorMax = new Vector2(1, 1);
+            bodyRT.pivot     = new Vector2(0.5f, 1);
+            bodyRT.offsetMin = Vector2.zero;
+            bodyRT.offsetMax = Vector2.zero;
+            scroll.content   = bodyRT;
+
+            // ContentSizeFitter so the content grows to fit all rows
+            var csf = body.AddComponent<ContentSizeFitter>();
+            csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            // Forward scroll events from anywhere inside the content area up
+            // to the ScrollRect so the player doesn't need to hover the scrollbar
+            var fwd = body.AddComponent<ScrollForwarder>();
+            fwd.Target = scroll;
 
             var vl = body.AddComponent<VerticalLayoutGroup>();
-            vl.padding                = new RectOffset(12, 12, 10, 10);
+            vl.padding                = new RectOffset(12, 18, 10, 10); // extra right pad for scrollbar
             vl.spacing                = 6;
             vl.childForceExpandWidth  = true;
             vl.childForceExpandHeight = false;
@@ -256,9 +334,36 @@ namespace LootManager
 
             SetupHotkeyBinder(uiHkBtn, uiBindingTMP, uiHkOL, Plugin.ToggleLootUIHotkey, out _toggleUIBinder);
             SetupHotkeyBinder(autoHkBtn, autoBindingTMP, autoHkOL, Plugin.ToggleAutoLootHotkey, out _autoLootBinder);
+
+            LootUIController.MakeDivider(body.transform);
+
+            // ── Section: Chat Output ────────────────────────────────────────
+            AddSectionHeader(body.transform, "Chat Output");
+
+            var chatEnabledRow = MakeRow(body.transform);
+            _chatOutputToggle = LootUIController.MakeToggle("chatOutputToggle", chatEnabledRow.transform, "Enable Chat Output");
+            _chatOutputToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
+
+            var chatWinRow = MakeRow(body.transform);
+            var chatWinLbl = LootUIController.MakeTMP("chatWinLabel", chatWinRow.transform);
+            chatWinLbl.text  = "Window:";
+            chatWinLbl.color = LootUIController.C_TextMuted;
+            chatWinLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 70;
+            _chatWindowDropdown = LootUIController.MakeDropdown("chatWindowDrop", chatWinRow.transform);
+            _chatWindowDropdown.transform.parent.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
+            _chatWindowDropdown.transform.parent.gameObject.GetComponent<LayoutElement>().flexibleWidth   = 1;
+
+            var chatTabRow = MakeRow(body.transform);
+            var chatTabLbl = LootUIController.MakeTMP("chatTabLabel", chatTabRow.transform);
+            chatTabLbl.text  = "Tab:";
+            chatTabLbl.color = LootUIController.C_TextMuted;
+            chatTabLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 70;
+            _chatTabDropdown = LootUIController.MakeDropdown("chatTabDrop", chatTabRow.transform);
+            _chatTabDropdown.transform.parent.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
+            _chatTabDropdown.transform.parent.gameObject.GetComponent<LayoutElement>().flexibleWidth   = 1;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
+
         // Helper — labelled horizontal row
         // ─────────────────────────────────────────────────────────────────────
         private static GameObject MakeRow(Transform parent)
@@ -496,6 +601,110 @@ namespace LootManager
             bool on = Plugin.BankLootEnabled.Value && Plugin.BankLootPageMode.Value == "Page Range";
             if (_bankPageFirstSlider != null) _bankPageFirstSlider.interactable = on;
             if (_bankPageLastSlider  != null) _bankPageLastSlider.interactable  = on;
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Chat output
+        // ─────────────────────────────────────────────────────────────────────
+        private void PopulateChatWindowDropdown()
+        {
+            if (_chatWindowDropdown == null) return;
+
+            // Wire enabled toggle first
+            if (_chatOutputToggle != null)
+            {
+                _chatOutputToggle.SetIsOnWithoutNotify(Plugin.ChatOutputEnabled.Value);
+                _chatOutputToggle.onValueChanged.RemoveAllListeners();
+                _chatOutputToggle.onValueChanged.AddListener(v =>
+                {
+                    Plugin.ChatOutputEnabled.Value = v;
+                    Plugin.ChatOutputEnabled.ConfigFile.Save();
+                    UpdateChatControlsInteractable();
+                });
+            }
+
+            _chatWindowList.Clear();
+            var windowNames = new System.Collections.Generic.List<string>();
+
+            foreach (var win in UpdateSocialLog.ChatWindows)
+            {
+                _chatWindowList.Add(win);
+                windowNames.Add(string.IsNullOrEmpty(win.WindowName) ? "(unnamed)" : win.WindowName);
+            }
+
+            if (windowNames.Count == 0)
+            {
+                windowNames.Add("(none)");
+            }
+
+            _chatWindowDropdown.ClearOptions();
+            _chatWindowDropdown.AddOptions(windowNames);
+
+            // Restore saved selection
+            int savedIdx = 0;
+            for (int i = 0; i < _chatWindowList.Count; i++)
+            {
+                if (_chatWindowList[i].WindowName == Plugin.ChatOutputWindow.Value)
+                {
+                    savedIdx = i;
+                    break;
+                }
+            }
+            _chatWindowDropdown.SetValueWithoutNotify(savedIdx);
+
+            _chatWindowDropdown.onValueChanged.RemoveAllListeners();
+            _chatWindowDropdown.onValueChanged.AddListener(i =>
+            {
+                if (i < 0 || i >= _chatWindowList.Count) return;
+                Plugin.ChatOutputWindow.Value = _chatWindowList[i].WindowName;
+                PopulateChatTabDropdown(_chatWindowList[i]);
+                ApplyChatSelection();
+            });
+
+            // Populate tab dropdown for the current window selection
+            if (savedIdx < _chatWindowList.Count)
+                PopulateChatTabDropdown(_chatWindowList[savedIdx]);
+
+            UpdateChatControlsInteractable();
+        }
+
+        private void PopulateChatTabDropdown(IDLog win)
+        {
+            if (_chatTabDropdown == null || win == null) return;
+
+            var tabNames = new System.Collections.Generic.List<string>();
+            int count = Mathf.Clamp(win.activeTabs, 1, win.TabDisplayName.Length);
+            for (int i = 0; i < count; i++)
+            {
+                string name = win.TabDisplayName[i];
+                tabNames.Add(string.IsNullOrEmpty(name) ? $"Tab {i + 1}" : name);
+            }
+
+            _chatTabDropdown.ClearOptions();
+            _chatTabDropdown.AddOptions(tabNames);
+
+            int savedTab = Mathf.Clamp(Plugin.ChatOutputTab.Value, 0, count - 1);
+            _chatTabDropdown.SetValueWithoutNotify(savedTab);
+
+            _chatTabDropdown.onValueChanged.RemoveAllListeners();
+            _chatTabDropdown.onValueChanged.AddListener(i =>
+            {
+                Plugin.ChatOutputTab.Value = i;
+                ApplyChatSelection();
+            });
+        }
+
+        private static void ApplyChatSelection()
+        {
+            ChatFilterInjector.ApplyChatMask();
+            Plugin.ChatOutputWindow.ConfigFile.Save();
+        }
+
+        private void UpdateChatControlsInteractable()
+        {
+            bool on = Plugin.ChatOutputEnabled.Value;
+            SetDropdownInteractable(_chatWindowDropdown, on);
+            SetDropdownInteractable(_chatTabDropdown,    on);
         }
 
         private void SetupHotkeyBinder(Button btn, TextMeshProUGUI label, Outline outline,

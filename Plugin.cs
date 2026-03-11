@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.0.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "2.2.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -48,9 +48,13 @@ namespace LootManager
         public static ConfigEntry<string> BankLootPageMode;
         public static ConfigEntry<int>   BankPageFirst;
         public static ConfigEntry<int>   BankPageLast;
+        public static ConfigEntry<bool> BankslotAddToList;
         public static ConfigEntry<bool>  LootRare;
         public static ConfigEntry<bool>  LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
+        public static ConfigEntry<string> ChatOutputWindow;
+        public static ConfigEntry<int>    ChatOutputTab;
+        public static ConfigEntry<bool>   ChatOutputEnabled;
 
         private void Awake()
         {
@@ -72,10 +76,15 @@ namespace LootManager
             BankLootPageMode         = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
             BankPageFirst            = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
             BankPageLast             = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+            BankslotAddToList        = Config.Bind("Bankloot Settings", "Bankslot Add", false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
             LootRare                 = Config.Bind("Filter Settings", "Loot Rare Equipment", false, "If true, always loot rare equipment in blacklist loot method.");    
             LootEquipment            = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
             LootEquipmentTier        = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+
+            ChatOutputWindow         = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
+            ChatOutputTab            = Config.Bind("Chat Settings", "Chat Output Tab",     0,           new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
+            ChatOutputEnabled        = Config.Bind("Chat Settings", "Chat Output Enabled", true,        "If false, Loot Manager will not send any messages to chat.");
             
             LootBlacklist.Load();
             LootWhitelist.Load();

@@ -1,6 +1,7 @@
 ## [3.0.0] - TBD
 ### Added
 - Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
+  - Chat output options can be found in the settings panel. Choose what window and tab you want Loot Manager messages to be sent to, or choose to hide them entirely.
 - A toggle to delay autolooting has been added. When enabled, autolooting will be delayed until after combat ends.
   - This can be adjusting in the settings panel. The delay time can be set from 0 to 10 seconds.
 
@@ -24,7 +25,8 @@
 - We reworked the inventory drop zones. They are now attached to the bottom of the inventory and are more visually distinct. The drop zones also have text to indicate their function.
 - The loot method toggle has been moved to the settings panel. It can now be set to either "Blacklist" or "Whitelist". The loot method will determine how the blacklist and whitelist are used to determine what items to loot.
 
-
+### Known Issues
+- Scrolling in the loot UI can be a bit buggy at times. This is a known issue and I am looking for a fix.
 
 ## [2.1.1] - 12/26/2025
 ### Added
