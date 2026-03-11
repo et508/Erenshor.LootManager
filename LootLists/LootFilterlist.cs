@@ -10,7 +10,12 @@ namespace LootManager
     [Serializable]
     public class LootFilterCategory
     {
-        [JsonProperty] public bool IsEnabled = true;
+        [JsonProperty] public bool IsEnabled          = true;
+        [JsonProperty] public bool AppliedToBlacklist = false;
+        [JsonProperty] public bool AppliedToWhitelist = false;
+        [JsonProperty] public bool AppliedToBanklist  = false;
+        [JsonProperty] public bool AppliedToSelllist  = false;
+        [JsonProperty] public bool AppliedToAuctionlist = false;
         [JsonProperty] public List<string> Items = new List<string>();
     }
 
@@ -81,7 +86,12 @@ namespace LootManager
 
                     data[sectionName] = new LootFilterCategory
                     {
-                        IsEnabled = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
+                        IsEnabled            = Plugin.EnabledFilterCategories?.Contains(sectionName) == true,
+                        AppliedToBlacklist   = Plugin.FilterAppliedToBlacklist?.Contains(sectionName)  == true,
+                        AppliedToWhitelist   = Plugin.FilterAppliedToWhitelist?.Contains(sectionName)  == true,
+                        AppliedToBanklist    = Plugin.FilterAppliedToBanklist?.Contains(sectionName)   == true,
+                        AppliedToSelllist    = Plugin.FilterAppliedToSelllist?.Contains(sectionName)   == true,
+                        AppliedToAuctionlist = Plugin.FilterAppliedToAuctionlist?.Contains(sectionName) == true,
                         Items = itemsSeq.OrderBy(s => s, StringComparer.OrdinalIgnoreCase).ToList()
                     };
                 }
@@ -130,6 +140,24 @@ namespace LootManager
                 return new HashSet<string>(items, StringComparer.OrdinalIgnoreCase);
 
             return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static void SetAppliedTo(string sectionName, string listKey, bool value)
+        {
+            if (string.IsNullOrWhiteSpace(sectionName)) return;
+            HashSet<string> set = null;
+            switch (listKey)
+            {
+                case "Blacklist":   set = Plugin.FilterAppliedToBlacklist;   break;
+                case "Whitelist":   set = Plugin.FilterAppliedToWhitelist;   break;
+                case "Banklist":    set = Plugin.FilterAppliedToBanklist;    break;
+                case "Selllist":    set = Plugin.FilterAppliedToSelllist;    break;
+                case "Auctionlist": set = Plugin.FilterAppliedToAuctionlist; break;
+            }
+            if (set == null) return;
+            if (value) set.Add(sectionName);
+            else set.Remove(sectionName);
+            SaveFilterlist();
         }
 
         public static void SetSectionEnabled(string sectionName, bool isEnabled)
@@ -194,12 +222,23 @@ namespace LootManager
                         StringComparer.OrdinalIgnoreCase);
 
                     sections[name] = items;
-                    if (cat.IsEnabled) enabled.Add(name);
+                    if (cat.IsEnabled)            enabled.Add(name);
+                    if (cat.AppliedToBlacklist)   Plugin.FilterAppliedToBlacklist.Add(name);
+                    if (cat.AppliedToWhitelist)   Plugin.FilterAppliedToWhitelist.Add(name);
+                    if (cat.AppliedToBanklist)    Plugin.FilterAppliedToBanklist.Add(name);
+                    if (cat.AppliedToSelllist)    Plugin.FilterAppliedToSelllist.Add(name);
+                    if (cat.AppliedToAuctionlist) Plugin.FilterAppliedToAuctionlist.Add(name);
                 }
             }
 
-            Plugin.FilterList = sections;
-            Plugin.EnabledFilterCategories = enabled;
+            Plugin.FilterList                = sections;
+            Plugin.EnabledFilterCategories   = enabled;
+            // AppliedTo sets are rebuilt from scratch on each load
+            Plugin.FilterAppliedToBlacklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Plugin.FilterAppliedToWhitelist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Plugin.FilterAppliedToBanklist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Plugin.FilterAppliedToSelllist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            Plugin.FilterAppliedToAuctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }
