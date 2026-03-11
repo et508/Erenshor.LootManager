@@ -78,6 +78,16 @@ namespace LootManager
 
             var closeBtn = LootUIController.MakeButton("closeBtn", tbRT, "X",
                 LootUIController.C_Danger, LootUIController.C_TitleBg, 11);
+            // Remove generic hover outline — use colour-swap hover instead
+            var closeBtnOL = closeBtn.GetComponent<Outline>();
+            if (closeBtnOL != null) UnityEngine.Object.Destroy(closeBtnOL);
+            var closeBtnBHO = closeBtn.GetComponent<ButtonHoverOutline>();
+            if (closeBtnBHO != null) UnityEngine.Object.Destroy(closeBtnBHO);
+            var cbHover = closeBtn.gameObject.AddComponent<LootUIController.CloseButtonHover>();
+            cbHover.bg        = closeBtn.GetComponent<Image>();
+            cbHover.lbl       = closeBtn.GetComponentInChildren<TextMeshProUGUI>();
+            cbHover.normalBg   = LootUIController.C_TitleBg;
+            cbHover.normalText = LootUIController.C_Danger;
             var closeBtnRT = closeBtn.GetComponent<RectTransform>();
             closeBtnRT.anchorMin = new Vector2(1, 0);
             closeBtnRT.anchorMax = new Vector2(1, 1);

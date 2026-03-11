@@ -113,8 +113,12 @@ namespace LootManager
             tierLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 110;
 
             _equipmentTierDropdown = LootUIController.MakeDropdown("equipmenttierDropdown", tierRow.transform);
-            _equipmentTierDropdown.gameObject.AddComponent<LayoutElement>().flexibleWidth   = 1;
-            _equipmentTierDropdown.gameObject.GetComponent<LayoutElement>().preferredHeight = 22;
+            // LayoutElement must go on the wrapper GO (parent of the dropdown GO) —
+            // that is what the TierRow HorizontalLayoutGroup sees as its child.
+            var ddWrapper = _equipmentTierDropdown.transform.parent.gameObject;
+            var ddLE = ddWrapper.AddComponent<LayoutElement>();
+            ddLE.flexibleWidth   = 1;
+            ddLE.preferredHeight = 22;
         }
 
         private void BuildVirtualLists()
@@ -277,7 +281,30 @@ namespace LootManager
             if (_lootEquipToggle == null) return;
             _lootEquipToggle.SetIsOnWithoutNotify(Plugin.LootEquipment.Value);
             _lootEquipToggle.onValueChanged.RemoveAllListeners();
-            _lootEquipToggle.onValueChanged.AddListener(v => { Plugin.LootEquipment.Value = v; });
+            _lootEquipToggle.onValueChanged.AddListener(v =>
+            {
+                Plugin.LootEquipment.Value = v;
+                UpdateEquipTierInteractable();
+            });
+            UpdateEquipTierInteractable();
+        }
+
+        private void UpdateEquipTierInteractable()
+        {
+            bool on = Plugin.LootEquipment.Value;
+            SetDropdownInteractable(_equipmentTierDropdown, on);
+        }
+
+        private static void SetDropdownInteractable(TMP_Dropdown drop, bool on)
+        {
+            if (drop == null) return;
+            drop.interactable = on;
+            var wrapper = drop.transform.parent?.gameObject;
+            if (wrapper == null) return;
+            var cg = wrapper.GetComponent<CanvasGroup>() ?? wrapper.AddComponent<CanvasGroup>();
+            cg.alpha          = on ? 1f : 0.4f;
+            cg.interactable   = on;
+            cg.blocksRaycasts = on;
         }
 
         private void SetupEquipmentTierDropdown()

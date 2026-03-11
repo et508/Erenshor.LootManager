@@ -13,6 +13,32 @@ namespace LootManager
 {
     public static class LootUIController
     {
+        // Hover handler for the close button — turns bg red and text white on enter,
+        // restores on exit. No outline needed.
+        internal sealed class CloseButtonHover : MonoBehaviour,
+            IPointerEnterHandler, IPointerExitHandler
+        {
+            public Image             bg;
+            public TextMeshProUGUI   lbl;
+            public Color32           normalBg;
+            public Color32           normalText;
+
+            public void OnPointerEnter(PointerEventData _)
+            {
+                if (bg)  bg.color  = C_Danger;
+                if (lbl) lbl.color = Color.white;
+            }
+            public void OnPointerExit(PointerEventData _) => Reset();
+
+            private void OnDisable() => Reset();
+
+            private void Reset()
+            {
+                if (bg)  bg.color  = normalBg;
+                if (lbl) lbl.color = normalText;
+            }
+        }
+
         // Forces targetGraphic = null on Start, after Button.Awake() has run.
         // Prevents Button from tinting a child Image it found via GetComponentInChildren.
         private sealed class NullTargetGraphic : MonoBehaviour
@@ -256,11 +282,18 @@ namespace LootManager
 
             // Close button
             var closeBtn = MakeButton("closeBtn", rt, "X", C_Danger, C_TitleBg, 11);
-            // No hover outline on close button
+            // Remove generic hover outline — close button gets its own colour-swap hover
             var closeBtnOL = closeBtn.GetComponent<Outline>();
             if (closeBtnOL != null) GameObject.Destroy(closeBtnOL);
             var closeBtnBHO = closeBtn.GetComponent<ButtonHoverOutline>();
             if (closeBtnBHO != null) GameObject.Destroy(closeBtnBHO);
+            var closeBtnImg = closeBtn.GetComponent<Image>();
+            var closeBtnLbl = closeBtn.GetComponentInChildren<TextMeshProUGUI>();
+            var cbHover = closeBtn.gameObject.AddComponent<CloseButtonHover>();
+            cbHover.bg        = closeBtnImg;
+            cbHover.lbl       = closeBtnLbl;
+            cbHover.normalBg   = C_TitleBg;
+            cbHover.normalText = C_Danger;
             var closeBtnRT = closeBtn.GetComponent<RectTransform>();
             closeBtnRT.anchorMin = new Vector2(1, 0);
             closeBtnRT.anchorMax = new Vector2(1, 1);
@@ -808,21 +841,6 @@ namespace LootManager
             captionTMP.fontSize     = 11;
             captionTMP.alignment    = TextAlignmentOptions.MidlineLeft;
             captionTMP.overflowMode = TextOverflowModes.Ellipsis;
-
-            // ── Arrow glyph ───────────────────────────────────────────────────
-            var arrowGO  = new GameObject("Arrow");
-            var arrowRT  = arrowGO.AddComponent<RectTransform>();
-            arrowRT.SetParent(rt, false);
-            arrowRT.anchorMin        = new Vector2(1, 0.5f);
-            arrowRT.anchorMax        = new Vector2(1, 0.5f);
-            arrowRT.pivot            = new Vector2(1, 0.5f);
-            arrowRT.sizeDelta        = new Vector2(14, 14);
-            arrowRT.anchoredPosition = new Vector2(-4, 0);
-            var arrowTMP = arrowGO.AddComponent<TextMeshProUGUI>();
-            arrowTMP.text      = "\u25bc";
-            arrowTMP.color     = C_TextMuted;
-            arrowTMP.fontSize  = 8;
-            arrowTMP.alignment = TextAlignmentOptions.Center;
 
             // ── Template (inactive — opened by TMP_Dropdown at runtime) ───────
             var templateGO = new GameObject("Template");
