@@ -4,6 +4,11 @@
 - A toggle to delay autolooting has been added. When enabled, autolooting will be delayed until after combat ends.
   - This can be adjusting in the settings panel. The delay time can be set from 0 to 10 seconds.
 
+### Fixed
+- Fixed an issue where items were disappearing when they were deposited to the bank via the inventory bank slot.
+
+### Removed
+- Removed the open bank and open auction buttons from the inventory. With the addition of the Reliquary, these buttons were no longer necessary since its very easy to open the bank and auction house from the Reliquary. 
 ### Junklist
 - Mark items as junk. When visiting a vendor, any junk items in your inventory will automatically be sold.
 
@@ -16,6 +21,9 @@
 - Complete overhaul of the UI. All functionality is the same, but the UI has been redesigned to be more user friendly and visually appealing.
 - The Filter Categories have been removed from the Whitelist panel and added to its own section in the menu bar.
   - We have added the ability to assign each filter category to the whitelist, blacklist, or banklist.
+- We reworked the inventory drop zones. They are now attached to the bottom of the inventory and are more visually distinct. The drop zones also have text to indicate their function.
+- The loot method toggle has been moved to the settings panel. It can now be set to either "Blacklist" or "Whitelist". The loot method will determine how the blacklist and whitelist are used to determine what items to loot.
+
 
 
 ## [2.1.1] - 12/26/2025
