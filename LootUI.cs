@@ -1,6 +1,4 @@
-// LootUI.cs
-// uGUI implementation — no AssetBundle required.
-// Builds the entire UI hierarchy in code and delegates to LootUIController.
+
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,9 +26,8 @@ namespace LootManager
 
         private void BuildUI()
         {
-            Plugin.Log.LogInfo("[Loot Manager] Creating Loot UI (uGUI)...");
+            Plugin.Log.LogInfo("[Loot Manager] Creating Loot UI...");
 
-            // Ensure an EventSystem exists.
             if (Object.FindObjectOfType<UnityEngine.EventSystems.EventSystem>() == null)
             {
                 var es = new GameObject("LootManager_EventSystem");
@@ -39,7 +36,6 @@ namespace LootManager
                 Object.DontDestroyOnLoad(es);
             }
 
-            // Canvas — Screen Space Overlay, high sort order so it renders on top.
             var canvasGO = new GameObject("LootManager_Canvas");
             canvasGO.transform.SetParent(transform, false);
             DontDestroyOnLoad(canvasGO);
@@ -55,7 +51,6 @@ namespace LootManager
 
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            // Root window object that houses the entire UI.
             _uiRoot = new GameObject("LootManager_Root");
             _uiRoot.transform.SetParent(canvasGO.transform, false);
 
@@ -72,7 +67,7 @@ namespace LootManager
 
             _uiRoot.SetActive(false);
 
-            Plugin.Log.LogInfo("[Loot Manager] Loot UI initialized successfully (uGUI).");
+            Plugin.Log.LogInfo("[Loot Manager] Loot UI initialized successfully.");
         }
 
         private void Update()

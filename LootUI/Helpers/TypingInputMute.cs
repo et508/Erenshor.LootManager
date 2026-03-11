@@ -43,7 +43,6 @@ namespace LootManager
 
             bool focused = input.isFocused;
 
-            // DEBUG: log focus state and EventSystem selection every 60 frames
             if (log && Time.frameCount % 60 == 0)
             {
                 var sel = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;

@@ -19,7 +19,7 @@ namespace LootManager
                 return false;
             }
 
-            return true; // continue with default behavior
+            return true;
         }
 
         private static void ClearInput()

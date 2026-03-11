@@ -1,7 +1,4 @@
-// ButtonHoverOutline.cs
-// Adds a hover outline to a button. Attach alongside an Outline component.
-// Outline is enabled on pointer enter, disabled on exit.
-// Tab buttons use SetActive() to coordinate with the active-tab state.
+
 
 using UnityEngine;
 using UnityEngine.EventSystems;

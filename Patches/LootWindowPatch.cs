@@ -44,9 +44,7 @@ namespace LootManager
                     continue;
                 }
                 
-                // Auctionlist check — takes priority over banklist.
-                // If listing succeeds the item goes straight to the AH and we move on.
-                // If it fails (no-trade, no value) we fall through to normal loot handling.
+
                 if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
                 {
                     if (AuctionLoot.TryListItem(item))
@@ -57,7 +55,7 @@ namespace LootManager
                         slot.UpdateSlotImage();
                         continue;
                     }
-                    // Fall through to normal loot handling below
+
                 }
 
                 bool sendToBank = false;
@@ -73,7 +71,7 @@ namespace LootManager
                     }
                     else if (bankLootMethod == "Filtered")
                     {
-                        // Filter categories applied to Banklist
+
                         foreach (var kvp in Plugin.FilterList)
                         {
                             if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;
@@ -86,7 +84,6 @@ namespace LootManager
                 if (sendToBank)
                 {
                     lootedForBank.Add(new BankLoot.LootEntry(item.Id, qty, name));
-                    // ChatFilterInjector.SendLootMessage($"[Loot Manager] Queued \"{name}\" for bank deposit", "grey");
                 }
                 else
                 {

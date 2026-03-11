@@ -1,8 +1,4 @@
-// PlayerInvUI.cs
-// Builds a sidebar panel that attaches to the LEFT of the player inventory window.
-// Visible whenever the inventory is open. Contains four drop zones:
-// Blacklist, Banklist, Junklist, Auctionlist.
-// Replaces the old Manager tab approach entirely.
+
 
 using HarmonyLib;
 using System.Collections;
@@ -18,18 +14,13 @@ namespace LootManager
         private const string PlayerInvName = "PlayerInv";
         private const string SidebarName   = "LootManagerSidebar";
 
-        // Sidebar dimensions
         private const float SidebarW = 110f;
 
-        // Colours
         private static readonly Color32 C_PanelBg = new Color32(10, 12, 16, 242);
         private static readonly Color32 C_Border   = new Color32(45, 49, 57, 255);
 
         private static GameObject _sidebar;
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Lifecycle
-        // ─────────────────────────────────────────────────────────────────────
         private void Start()
         {
             StartCoroutine(BuildWhenReady());
@@ -58,15 +49,11 @@ namespace LootManager
             BuildSidebar();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Build
-        // ─────────────────────────────────────────────────────────────────────
         private static void BuildSidebar()
         {
             var playerInv = GameObject.Find(PlayerInvName);
             if (playerInv == null) return;
 
-            // Don't build twice
             if (playerInv.transform.Find(SidebarName) != null) return;
 
             var invWindowGO = GameData.PlayerInv?.InvWindow;
@@ -75,22 +62,18 @@ namespace LootManager
             var invRT = invWindowGO.GetComponent<RectTransform>();
             if (invRT == null) return;
 
-            // ── Sidebar root ─────────────────────────────────────────────
-            // Parent to InvWindow so it moves with it automatically
             var sidebar   = new GameObject(SidebarName);
             var sidebarRT = sidebar.AddComponent<RectTransform>();
             sidebarRT.SetParent(invRT, false);
 
-            // Anchor to the bottom edge of InvWindow, full width
             sidebarRT.anchorMin        = new Vector2(0f, 0f);
             sidebarRT.anchorMax        = new Vector2(1f, 0f);
-            sidebarRT.pivot            = new Vector2(0.5f, 1f); // top edge of sidebar touches bottom of inv
-            sidebarRT.anchoredPosition = new Vector2(0f, -4f);  // 4px gap
-            sidebarRT.sizeDelta        = new Vector2(0f, 80f);  // width = stretch, fixed height
+            sidebarRT.pivot            = new Vector2(0.5f, 1f);
+            sidebarRT.anchoredPosition = new Vector2(0f, -4f);
+            sidebarRT.sizeDelta        = new Vector2(0f, 80f);
 
             _sidebar = sidebar;
 
-            // ── Background ───────────────────────────────────────────────
             var bg = sidebar.AddComponent<Image>();
             bg.color = C_PanelBg;
 
@@ -98,7 +81,6 @@ namespace LootManager
             ol.effectColor    = C_Border;
             ol.effectDistance = new Vector2(1f, -1f);
 
-            // ── Horizontal layout — zones sit side by side along the bottom ──
             var hl = sidebar.AddComponent<HorizontalLayoutGroup>();
             hl.padding                = new RectOffset(8, 8, 6, 6);
             hl.spacing                = 6;
@@ -108,29 +90,23 @@ namespace LootManager
             hl.childControlHeight     = true;
             hl.childAlignment         = TextAnchor.MiddleCenter;
 
-            // ── Drop zones — side by side ────────────────────────────────
             BuildDropZone(sidebarRT, "BlacklistSlot",   "BLACKLIST",   new Color32(120, 30,  30,  255), new Color32(80, 20, 20, 120));
             BuildDropZone(sidebarRT, "BanklistSlot",    "BANKLIST",    new Color32(30,  60,  140, 255), new Color32(20, 30, 80, 120));
             BuildDropZone(sidebarRT, "JunklistSlot",    "JUNKLIST",    new Color32(160, 100, 20,  255), new Color32(80, 50, 10, 120));
             BuildDropZone(sidebarRT, "AuctionlistSlot", "AUCTIONLIST", new Color32(30,  120, 60,  255), new Color32(15, 60, 30, 120));
 
-            // ── Wire up drop targets ─────────────────────────────────────
             WireDropZone(sidebar, "BlacklistSlot",   typeof(BlacklistDropZoneMarker));
             WireDropZone(sidebar, "BanklistSlot",    typeof(BanklistDropZoneMarker));
             WireDropZone(sidebar, "JunklistSlot",    typeof(JunklistDropZoneMarker));
             WireDropZone(sidebar, "AuctionlistSlot", typeof(AuctionlistDropZoneMarker));
 
-            // Start hidden — sync to InvWindow state
             sidebar.SetActive(invWindowGO.activeSelf);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Drop zone builder
-        // ─────────────────────────────────────────────────────────────────────
         private static void BuildDropZone(Transform parent, string name, string label,
                                           Color32 borderColour, Color32 bgColour)
         {
-            // Container — label below box
+
             var container   = new GameObject(name);
             var containerRT = container.AddComponent<RectTransform>();
             containerRT.SetParent(parent, false);
@@ -143,22 +119,18 @@ namespace LootManager
             outerVL.childControlHeight     = true;
             outerVL.childAlignment         = TextAnchor.UpperCenter;
 
-            // Drop box
             var boxGO = new GameObject("DropBox");
             boxGO.AddComponent<RectTransform>().SetParent(containerRT, false);
             var boxLE = boxGO.AddComponent<LayoutElement>();
-            boxLE.flexibleHeight = 1f; // fill available height
+            boxLE.flexibleHeight = 1f;
 
-            // Background
             var boxBG = boxGO.AddComponent<Image>();
             boxBG.color = new Color(bgColour.r / 255f, bgColour.g / 255f, bgColour.b / 255f, bgColour.a / 255f);
 
-            // Outer border
             var boxOL = boxGO.AddComponent<Outline>();
             boxOL.effectColor    = new Color(borderColour.r / 255f, borderColour.g / 255f, borderColour.b / 255f, 0.85f);
             boxOL.effectDistance = new Vector2(1.5f, -1.5f);
 
-            // Inner dashed border
             var dashGO = new GameObject("DashBorder");
             var dashRT = dashGO.AddComponent<RectTransform>();
             dashRT.SetParent(boxGO.transform, false);
@@ -173,7 +145,6 @@ namespace LootManager
             dashOL.effectColor    = new Color(borderColour.r / 255f, borderColour.g / 255f, borderColour.b / 255f, 0.3f);
             dashOL.effectDistance = new Vector2(1f, -1f);
 
-            // Centered item icon
             var iconGO = new GameObject("ItemIcon");
             var iconRT = iconGO.AddComponent<RectTransform>();
             iconRT.SetParent(boxGO.transform, false);
@@ -185,7 +156,6 @@ namespace LootManager
             iconImg.raycastTarget = false;
             iconImg.color         = new Color(1f, 1f, 1f, 0f);
 
-            // Label below box
             var lblGO = new GameObject("Label");
             lblGO.AddComponent<RectTransform>().SetParent(containerRT, false);
             lblGO.AddComponent<LayoutElement>().preferredHeight = 12;
@@ -249,18 +219,15 @@ namespace LootManager
             img.color = new Color(45f/255f, 49f/255f, 57f/255f, 1f);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Public sync — called by Harmony patches
-        // ─────────────────────────────────────────────────────────────────────
         public static void SyncSidebarVisibility()
         {
             if (_sidebar == null)
             {
-                // Try to find it in case reference was lost after scene reload
+
                 var playerInv = GameObject.Find(PlayerInvName);
                 if (playerInv != null)
                     _sidebar = playerInv.transform
-                        .Find($"InvWindow/{SidebarName}")?.gameObject // via InvWindow child path
+                        .Find($"InvWindow/{SidebarName}")?.gameObject
                         ?? GameObject.Find(SidebarName);
             }
 
@@ -273,11 +240,6 @@ namespace LootManager
         }
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Harmony patches — sync sidebar to inventory visibility
-    // Patch Update so we catch the direct SetActive call from the keyboard shortcut,
-    // plus ForceOpenInv/ForceCloseInv for all other callers.
-    // ─────────────────────────────────────────────────────────────────────────
     [HarmonyPatch(typeof(Inventory), "Update")]
     public static class Inventory_Update_Patch
     {
@@ -300,9 +262,6 @@ namespace LootManager
         public static void Postfix() => PlayerInvUI.SyncSidebarVisibility();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Drop zone markers
-    // ─────────────────────────────────────────────────────────────────────────
     public class BlacklistDropZoneMarker   : MonoBehaviour { }
     public class BanklistDropZoneMarker    : MonoBehaviour { }
     public class JunklistDropZoneMarker    : MonoBehaviour { }

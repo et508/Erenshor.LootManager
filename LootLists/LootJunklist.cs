@@ -34,7 +34,7 @@ namespace LootManager
                     File.WriteAllText(path, json);
 
                     Plugin.Junklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName} at {path}");
+                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName}");
                     return;
                 }
 

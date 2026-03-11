@@ -1,6 +1,4 @@
-// VendorWindowPatch.cs
-// When the vendor window opens, auto-sell any inventory items on the Junklist.
-// Mirrors the sell logic from VendorWindow.ConfirmTransaction() exactly.
+
 
 using HarmonyLib;
 using UnityEngine;
@@ -21,7 +19,6 @@ namespace LootManager
             int totalGold = 0;
             int itemsSold = 0;
 
-            // Iterate a copy of StoredSlots — RemoveItemFromInv mutates the slot in place
             var slots = inv.StoredSlots.ToArray();
             foreach (var slot in slots)
             {
@@ -29,13 +26,11 @@ namespace LootManager
                 var item = slot.MyItem;
                 if (item == null || item == inv.Empty) continue;
                 if (!Plugin.Junklist.Contains(item.ItemName)) continue;
-                if (item.ItemValue <= 0) continue;            // unsellable
-                if (item.NoTradeNoDestroy) continue;          // no-trade items can't be sold
+                if (item.ItemValue <= 0) continue;
+                if (item.NoTradeNoDestroy) continue;
 
-                // Sell price matches vanilla: RoundToInt(ItemValue * 0.65f) + 1 per item/stack
                 int sellPrice = Mathf.RoundToInt(item.ItemValue * 0.65f) + 1;
 
-                // For stackable generals, sell the whole stack at once
                 if (item.RequiredSlot == Item.SlotType.General && slot.Quantity > 1)
                 {
                     int stackPrice = sellPrice * slot.Quantity;

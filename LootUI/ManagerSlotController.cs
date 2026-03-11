@@ -1,6 +1,4 @@
-// ManagerSlotController.cs
-// Handles drop-zone interactions for the inventory sidebar.
-// Supports four zones: Blacklist, Banklist, Junklist, Auctionlist.
+
 
 using System;
 using System.Reflection;
@@ -52,8 +50,6 @@ namespace LootManager
                     return true;
                 }
             }
-
-            // ── Handlers ─────────────────────────────────────────────────
 
             private static void HandleBlacklist(Item item)
             {
@@ -117,15 +113,13 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage(added
                     ? $"[Loot Manager] Added \"{key}\" to auctionlist."
                     : $"[Loot Manager] \"{key}\" already on auctionlist.", "yellow");
-                // Also immediately list the dragged item if it has a value
+
                 if (item.ItemValue > 0 && !item.NoTradeNoDestroy)
                 {
                     AuctionLoot.TryListItem(item);
                 }
                 PlayDropSound();
             }
-
-            // ── Helpers ───────────────────────────────────────────────────
 
             private static void PlayDropSound()
             {
@@ -146,10 +140,6 @@ namespace LootManager
                     System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 var homeSlot = homeField?.GetValue(GameData.MouseSlot) as ItemIcon;
 
-                // Only clear the home slot if it's an inventory slot.
-                // Bank slots are managed by StoredItems + DisplayBankPage inside
-                // DepositLive — clearing them here would wipe the visual after
-                // DisplayBankPage already correctly rendered the new state.
                 if (homeSlot != null && !homeSlot.BankSlot)
                 {
                     homeSlot.MyItem   = GameData.PlayerInv.Empty;

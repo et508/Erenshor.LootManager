@@ -1,6 +1,4 @@
-// WhitelistPanelController.cs
-// Dual list (All Items / Whitelisted) + Loot Equipment toggle + Equipment Tier dropdown.
-// Filter Categories have moved to FilterlistPanelController.
+
 
 using System;
 using System.Collections.Generic;
@@ -80,16 +78,12 @@ namespace LootManager
             BuildVirtualLists();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Extra controls: equipment toggle + tier dropdown only
-        // ─────────────────────────────────────────────────────────────────────
         private void BuildExtraControls(Transform parent)
         {
-            // Equipment loot toggle
+
             _lootEquipToggle = LootUIController.MakeToggle("lootequipToggle", parent, "Loot Equipment");
             _lootEquipToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
 
-            // Equipment tier dropdown row
             var tierRow = new GameObject("TierRow");
             tierRow.AddComponent<RectTransform>().SetParent(parent, false);
             var trHL = tierRow.AddComponent<HorizontalLayoutGroup>();
@@ -106,8 +100,7 @@ namespace LootManager
             tierLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 110;
 
             _equipmentTierDropdown = LootUIController.MakeDropdown("equipmenttierDropdown", tierRow.transform);
-            // LayoutElement must go on the wrapper GO (parent of the dropdown GO) —
-            // that is what the TierRow HorizontalLayoutGroup sees as its child.
+
             var ddWrapper = _equipmentTierDropdown.transform.parent.gameObject;
             var ddLE = ddWrapper.AddComponent<LayoutElement>();
             ddLE.flexibleWidth   = 1;
@@ -266,9 +259,6 @@ namespace LootManager
             else ChatFilterInjector.SendLootMessage("[LootUI] No valid items selected to remove.", "red");
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Equipment toggle + tier dropdown setup
-        // ─────────────────────────────────────────────────────────────────────
         private void SetupLootEquipToggle()
         {
             if (_lootEquipToggle == null) return;

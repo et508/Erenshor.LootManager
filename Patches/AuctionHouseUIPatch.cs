@@ -1,8 +1,4 @@
-// AuctionHouseUIPatch.cs
-// Patches AuctionHouseUI.UpdatePlayerSlots to guard against IndexOutOfRange when
-// the player has more AH listings than the UI has display slots (18).
-// We bypass the original method entirely and re-implement it with a bounds check,
-// so the UI safely shows the first 18 listings and silently ignores any beyond that.
+
 
 using HarmonyLib;
 
@@ -13,7 +9,7 @@ namespace LootManager
     {
         public static bool Prefix(AuctionHouseUI __instance)
         {
-            // Clear all slots first (same as original)
+
             foreach (var slot in __instance.Slots)
             {
                 slot.MyItem = GameData.PlayerInv.Empty;
@@ -22,18 +18,16 @@ namespace LootManager
                 slot.GetComponent<PriceOverride>().DispPrice.text = "";
             }
 
-            // Guard (same null check as original, though it has a bug — we preserve it)
             if (__instance.CurrentSellerData == null &&
                 __instance.CurrentSellerData.SellerName != GameData.PlayerStats.MyName)
                 return false;
 
-            int maxSlots = __instance.Slots.Count; // always 18 in vanilla
+            int maxSlots = __instance.Slots.Count;
             int num = 0;
 
             foreach (string id in __instance.CurrentSellerData.SellerItems)
             {
-                // Stop filling UI slots once we hit the display limit —
-                // overflow listings are still active and will sell normally.
+
                 if (num >= maxSlots) break;
 
                 __instance.Slots[num].MyItem = GameData.ItemDB.GetItemByID(id);
@@ -56,7 +50,7 @@ namespace LootManager
                 num++;
             }
 
-            return false; // skip original
+            return false;
         }
     }
 }

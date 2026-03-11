@@ -49,7 +49,6 @@ namespace LootManager
             refs.FilterInput = LootUIController.MakeInputField("filterInput", body.transform, filterPlaceholder);
             refs.FilterInput.gameObject.AddComponent<LayoutElement>().preferredHeight = FilterH;
 
-            // Column headers
             var headerRow = new GameObject("ColumnHeaders");
             headerRow.AddComponent<RectTransform>().SetParent(body.transform, false);
             var hrHL = headerRow.AddComponent<HorizontalLayoutGroup>();
@@ -74,7 +73,6 @@ namespace LootManager
             rightHdr.fontStyle = FontStyles.Bold;
             rightHdr.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
-            // Dual scroll lists
             var listsRow = new GameObject("ListsRow");
             listsRow.AddComponent<RectTransform>().SetParent(body.transform, false);
             var lrHL = listsRow.AddComponent<HorizontalLayoutGroup>();
@@ -97,7 +95,6 @@ namespace LootManager
 
             refs.RowTemplate = LootUIController.MakeRowTemplate("rowTemplate", leftContent, RowH);
 
-            // Hint row
             var hint = LootUIController.MakeTMP("hintLabel", body.transform);
             hint.text      = "Double-click an item to move it";
             hint.color     = LootUIController.C_TextMuted;

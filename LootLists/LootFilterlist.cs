@@ -46,7 +46,7 @@ namespace LootManager
                     File.WriteAllText(path, json);
 
                     ApplyToPluginState(defaults);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default LootFilterlist.json at {path}");
+                    Plugin.Log.LogInfo($"[Loot Manager] Created default LootFilterlist.json");
                     return;
                 }
 
@@ -94,8 +94,6 @@ namespace LootManager
 
                 var json = JsonConvert.SerializeObject(data, _jsonSettings);
                 File.WriteAllText(path, json);
-
-                Plugin.Log.LogInfo("[Loot Manager] Saved LootFilterlist.json.");
             }
             catch (Exception ex)
             {

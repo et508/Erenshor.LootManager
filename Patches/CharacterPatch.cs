@@ -8,7 +8,7 @@ namespace LootManager
     [HarmonyPatch(typeof(Character), "DoDeath")]
     public class Autoloot
     {
-        // Pending loot entries queued while waiting for out-of-combat
+
         private static readonly List<PendingLoot> _pending = new List<PendingLoot>();
         private static bool _pollRunning = false;
 
@@ -26,9 +26,6 @@ namespace LootManager
             if (__instance == null || !__instance.isNPC || __instance.MyNPC == null)
                 return;
 
-            // Respect vanilla: if the game would destroy/rot this NPC on death, don't loot it.
-            // (Vanilla: if (this.DestroyOnDeath && GetComponent<NPC>() != null) NPC.ExpediteRot(50f); )
-            // We mirror that check here to preserve the intended “no loot” behavior.
             var npcComp = __instance.GetComponent<NPC>();
             if (__instance.DestroyOnDeath && npcComp != null)
             {
@@ -53,7 +50,7 @@ namespace LootManager
 
             if (Plugin.AutoLootDelayEnabled.Value)
             {
-                // Queue this kill and start the out-of-combat poll if not already running
+
                 _pending.Add(new PendingLoot { Npc = __instance.MyNPC, Table = lootTable });
                 if (!_pollRunning)
                     Plugin.Instance.StartCoroutine(PollOutOfCombat());
@@ -67,7 +64,6 @@ namespace LootManager
             }
         }
 
-        // Returns true when the player and group are fully out of combat
         private static bool IsOutOfCombat()
         {
             if (GameData.AttackingPlayer != null && GameData.AttackingPlayer.Count > 0) return false;
@@ -79,16 +75,13 @@ namespace LootManager
         {
             _pollRunning = true;
 
-            // Wait until fully out of combat
             while (!IsOutOfCombat())
                 yield return new WaitForSeconds(0.25f);
 
-            // Apply grace period after combat ends
             float grace = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0f, 10f);
             if (grace > 0f)
                 yield return new WaitForSeconds(grace);
 
-            // Loot everything that was queued
             var toProcess = new List<PendingLoot>(_pending);
             _pending.Clear();
             _pollRunning = false;

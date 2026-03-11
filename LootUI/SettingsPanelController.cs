@@ -1,6 +1,4 @@
-// SettingsPanelController.cs
-// Builds the Settings panel UI entirely in code.
-// Constructor receives the empty panel root GameObject (built by LootUIController).
+
 
 using BepInEx.Configuration;
 using System.Collections.Generic;
@@ -16,11 +14,9 @@ namespace LootManager
         private readonly RectTransform   _containerRect;
         private readonly System.Action   _visibilityChanged;
 
-        // Hotkey binders
         private HotkeyBindControl _toggleUIBinder;
         private HotkeyBindControl _autoLootBinder;
 
-        // Cached widget refs
         private Toggle               _autoLootToggle;
         private Slider               _autoDistanceSlider;
         private TextMeshProUGUI      _autoDistanceText;
@@ -37,7 +33,6 @@ namespace LootManager
         private Slider               _bankPageLastSlider;
         private TextMeshProUGUI      _pageLastText;
 
-        // Chat output
         private TMP_Dropdown         _chatWindowDropdown;
         private TMP_Dropdown         _chatTabDropdown;
         private Toggle               _chatOutputToggle;
@@ -60,25 +55,20 @@ namespace LootManager
         {
             s_instance = this;
             BuildSettingsUI();
-            // Chat windows register during scene Start() so populate after build
+
             PopulateChatWindowDropdown();
         }
 
         public void Show()
         {
-            // Repopulate every open so new windows/tabs created mid-session appear
+
             PopulateChatWindowDropdown();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Build
-        // ─────────────────────────────────────────────────────────────────────
         private void BuildSettingsUI()
         {
             if (_panelRoot == null) return;
 
-            // ── ScrollRect wrapper ────────────────────────────────────────────
-            // Lets content exceed the panel height without squishing.
             var scrollGO = new GameObject("SettingsScroll");
             var scrollRT = scrollGO.AddComponent<RectTransform>();
             scrollRT.SetParent(_panelRoot.transform, false);
@@ -93,7 +83,6 @@ namespace LootManager
             scroll.inertia           = true;
             scroll.decelerationRate  = 0.5f;
 
-            // Viewport
             var vpGO = new GameObject("Viewport");
             var vpRT = vpGO.AddComponent<RectTransform>();
             vpRT.SetParent(scrollRT, false);
@@ -101,7 +90,6 @@ namespace LootManager
             vpGO.AddComponent<RectMask2D>();
             scroll.viewport = vpRT;
 
-            // Scrollbar
             var sbGO = new GameObject("Scrollbar");
             var sbRT = sbGO.AddComponent<RectTransform>();
             sbRT.SetParent(scrollRT, false);
@@ -131,7 +119,6 @@ namespace LootManager
             scroll.verticalScrollbarVisibility   = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
             scroll.verticalScrollbarSpacing      = -3f;
 
-            // Content — this is what the VLG goes on
             var body   = new GameObject("settingsBody");
             var bodyRT = body.AddComponent<RectTransform>();
             bodyRT.SetParent(vpRT, false);
@@ -142,24 +129,20 @@ namespace LootManager
             bodyRT.offsetMax = Vector2.zero;
             scroll.content   = bodyRT;
 
-            // ContentSizeFitter so the content grows to fit all rows
             var csf = body.AddComponent<ContentSizeFitter>();
             csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-            // Forward scroll events from anywhere inside the content area up
-            // to the ScrollRect so the player doesn't need to hover the scrollbar
             var fwd = body.AddComponent<ScrollForwarder>();
             fwd.Target = scroll;
 
             var vl = body.AddComponent<VerticalLayoutGroup>();
-            vl.padding                = new RectOffset(12, 18, 10, 10); // extra right pad for scrollbar
+            vl.padding                = new RectOffset(12, 18, 10, 10);
             vl.spacing                = 6;
             vl.childForceExpandWidth  = true;
             vl.childForceExpandHeight = false;
             vl.childControlWidth      = true;
             vl.childControlHeight     = true;
 
-            // ── Toggle UI Hotkey ────────────────────────────────────────────
             var uiHkRow = MakeRow(body.transform);
             var uiHkLbl = LootUIController.MakeTMP("uiHkLabel", uiHkRow.transform);
             uiHkLbl.text  = "Toggle UI Hotkey:";
@@ -172,7 +155,7 @@ namespace LootManager
                 LootUIController.C_BtnNormal, 11, out uiBindingTMP, out uiHkBgImg);
             uiHkBtn.gameObject.AddComponent<LayoutElement>().preferredWidth  = 120;
             uiHkBtn.gameObject.GetComponent<LayoutElement>().preferredHeight = 22;
-            // Outline must be on the BG child (same GO as the Image graphic)
+
             var uiHkOL = uiHkBgImg.gameObject.AddComponent<Outline>();
             uiHkOL.effectColor    = LootUIController.C_AccentBlue;
             uiHkOL.effectDistance = new Vector2(1, -1);
@@ -180,7 +163,6 @@ namespace LootManager
 
             LootUIController.MakeDivider(body.transform);
 
-            // ── Section: Autoloot ───────────────────────────────────────────
             AddSectionHeader(body.transform, "Autoloot");
 
             var autoRow = MakeRow(body.transform);
@@ -208,13 +190,11 @@ namespace LootManager
             distValLE.preferredWidth  = 32;
             distValLE.preferredHeight = 20;
 
-            // Autoloot delay toggle
             var autoDelayToggleRow = MakeRow(body.transform);
             _autoLootDelayToggle = LootUIController.MakeToggle(
                 "autoLootDelayToggle", autoDelayToggleRow.transform, "Out-of-Combat Autoloot Delay");
             _autoLootDelayToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
 
-            // Autoloot delay slider (only visible when delay is enabled)
             _autoLootDelayRow = MakeRow(body.transform);
             var delayLbl = LootUIController.MakeTMP("delayLabel", _autoLootDelayRow.transform);
             delayLbl.text  = "Grace Period (sec):";
@@ -235,7 +215,6 @@ namespace LootManager
             delayValLE.preferredWidth  = 32;
             delayValLE.preferredHeight = 20;
 
-            // Autoloot hotkey
             var autoHkRow = MakeRow(body.transform);
             var autoHkLbl = LootUIController.MakeTMP("autoHkLabel", autoHkRow.transform);
             autoHkLbl.text  = "Autoloot Hotkey:";
@@ -248,7 +227,7 @@ namespace LootManager
                 LootUIController.C_BtnNormal, 11, out autoBindingTMP, out autoHkBgImg);
             autoHkBtn.gameObject.AddComponent<LayoutElement>().preferredWidth  = 120;
             autoHkBtn.gameObject.GetComponent<LayoutElement>().preferredHeight = 22;
-            // Outline must be on the BG child (same GO as the Image graphic)
+
             var autoHkOL = autoHkBgImg.gameObject.AddComponent<Outline>();
             autoHkOL.effectColor    = LootUIController.C_AccentBlue;
             autoHkOL.effectDistance = new Vector2(1, -1);
@@ -256,7 +235,6 @@ namespace LootManager
 
             LootUIController.MakeDivider(body.transform);
 
-            // ── Section: Loot Method ────────────────────────────────────────
             AddSectionHeader(body.transform, "Loot Method");
 
             var methodRow = MakeRow(body.transform);
@@ -271,7 +249,6 @@ namespace LootManager
 
             LootUIController.MakeDivider(body.transform);
 
-            // ── Section: Bank Loot ──────────────────────────────────────────
             AddSectionHeader(body.transform, "Bank Loot");
 
             var bankToggleRow = MakeRow(body.transform);
@@ -296,7 +273,6 @@ namespace LootManager
             _bankPageDropdown.transform.parent.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
             _bankPageDropdown.transform.parent.gameObject.GetComponent<LayoutElement>().flexibleWidth = 1;
 
-            // Page range sliders
             var pageFirstRow = MakeRow(body.transform);
             var pfLbl = LootUIController.MakeTMP("pfLabel", pageFirstRow.transform);
             pfLbl.text  = "First Page:";
@@ -321,7 +297,6 @@ namespace LootManager
             _pageLastText.alignment = TextAlignmentOptions.MidlineRight;
             _pageLastText.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
 
-            // ── Wire up logic ───────────────────────────────────────────────
             SetupAutoLootToggle();
             SetupAutoLootDistance();
             SetupAutoLootDelay();
@@ -337,7 +312,6 @@ namespace LootManager
 
             LootUIController.MakeDivider(body.transform);
 
-            // ── Section: Chat Output ────────────────────────────────────────
             AddSectionHeader(body.transform, "Chat Output");
 
             var chatEnabledRow = MakeRow(body.transform);
@@ -363,9 +337,6 @@ namespace LootManager
             _chatTabDropdown.transform.parent.gameObject.GetComponent<LayoutElement>().flexibleWidth   = 1;
         }
 
-
-        // Helper — labelled horizontal row
-        // ─────────────────────────────────────────────────────────────────────
         private static GameObject MakeRow(Transform parent)
         {
             var go = new GameObject("Row");
@@ -391,9 +362,6 @@ namespace LootManager
             hdr.gameObject.AddComponent<LayoutElement>().preferredHeight = 16;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Logic (identical to original)
-        // ─────────────────────────────────────────────────────────────────────
         private void SetupAutoLootToggle()
         {
             if (_autoLootToggle == null) return;
@@ -572,13 +540,11 @@ namespace LootManager
             });
         }
 
-        // Sets interactable on a dropdown AND greys its wrapper visually.
-        // Transition.None means Unity won't do this automatically.
         private static void SetDropdownInteractable(TMP_Dropdown drop, bool on)
         {
             if (drop == null) return;
             drop.interactable = on;
-            // Wrapper is the direct parent — apply alpha via CanvasGroup
+
             var wrapper = drop.transform.parent?.gameObject;
             if (wrapper == null) return;
             var cg = wrapper.GetComponent<CanvasGroup>();
@@ -603,14 +569,10 @@ namespace LootManager
             if (_bankPageLastSlider  != null) _bankPageLastSlider.interactable  = on;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Chat output
-        // ─────────────────────────────────────────────────────────────────────
         private void PopulateChatWindowDropdown()
         {
             if (_chatWindowDropdown == null) return;
 
-            // Wire enabled toggle first
             if (_chatOutputToggle != null)
             {
                 _chatOutputToggle.SetIsOnWithoutNotify(Plugin.ChatOutputEnabled.Value);
@@ -640,7 +602,6 @@ namespace LootManager
             _chatWindowDropdown.ClearOptions();
             _chatWindowDropdown.AddOptions(windowNames);
 
-            // Restore saved selection
             int savedIdx = 0;
             for (int i = 0; i < _chatWindowList.Count; i++)
             {
@@ -661,7 +622,6 @@ namespace LootManager
                 ApplyChatSelection();
             });
 
-            // Populate tab dropdown for the current window selection
             if (savedIdx < _chatWindowList.Count)
                 PopulateChatTabDropdown(_chatWindowList[savedIdx]);
 
@@ -731,7 +691,6 @@ namespace LootManager
 
             btn.onClick.RemoveAllListeners();
             btn.onClick.AddListener(binder.BeginListening);
-
 
             binderOut = binder;
         }

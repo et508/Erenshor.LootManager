@@ -29,7 +29,6 @@ namespace LootManager
         public static HashSet<string> EnabledFilterCategories =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // Per-list application sets — category names that apply to each list
         public static HashSet<string> FilterAppliedToBlacklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static HashSet<string> FilterAppliedToWhitelist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         public static HashSet<string> FilterAppliedToBanklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

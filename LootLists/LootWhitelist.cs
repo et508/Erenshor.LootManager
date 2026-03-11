@@ -46,7 +46,7 @@ namespace LootManager
                     File.WriteAllText(newPath, json);
 
                     Plugin.Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName} at {newPath}");
+                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName}");
                     return;
                 }
                 

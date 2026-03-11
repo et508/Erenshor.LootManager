@@ -1,7 +1,4 @@
-// LootUIController.cs
-// Builds the main Loot Manager window hierarchy in code (uGUI).
-// No AssetBundle or path-based lookups — all GameObjects are created here
-// and references are passed directly to panel controllers.
+
 
 using System.Collections.Generic;
 using TMPro;
@@ -13,8 +10,7 @@ namespace LootManager
 {
     public static class LootUIController
     {
-        // Hover handler for the close button — turns bg red and text white on enter,
-        // restores on exit. No outline needed.
+
         internal sealed class CloseButtonHover : MonoBehaviour,
             IPointerEnterHandler, IPointerExitHandler
         {
@@ -39,8 +35,6 @@ namespace LootManager
             }
         }
 
-        // Forces targetGraphic = null on Start, after Button.Awake() has run.
-        // Prevents Button from tinting a child Image it found via GetComponentInChildren.
         private sealed class NullTargetGraphic : MonoBehaviour
         {
             private void Start()
@@ -51,10 +45,6 @@ namespace LootManager
             }
         }
 
-        // Attached to the dropdown Template. Runs every LateUpdate while the
-        // spawned list is alive, keeping CanvasGroup.alpha pinned to 1 so
-        // TMP_Dropdown's open AND close fade coroutines have no visible effect.
-        // The GO is destroyed by TMP when the list closes, taking this with it.
         private sealed class DropdownNoFade : MonoBehaviour
         {
             private CanvasGroup _cg;
@@ -68,12 +58,11 @@ namespace LootManager
 
             private void LateUpdate()
             {
-                // Pin alpha to 1 every frame — overrides whatever TMP set this frame
+
                 _cg.alpha          = 1f;
                 _cg.interactable   = true;
                 _cg.blocksRaycasts = true;
 
-                // On first frame, find and stop the open-tween coroutine
                 if (_owner == null)
                 {
                     _owner = FindObjectOfType<TMP_Dropdown>();
@@ -83,15 +72,11 @@ namespace LootManager
 
             private void OnDisable()
             {
-                // Fires just before TMP destroys the list — stop close coroutine
+
                 if (_owner != null) _owner.StopAllCoroutines();
             }
         }
 
-
-        // Small component added to each dropdown item template row.
-        // TMP_Dropdown clones the GO, so each clone gets its own instance
-        // which finds its OWN Image — no stale closure captures.
         private sealed class DropdownItemHover : MonoBehaviour,
             IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
         {
@@ -107,8 +92,6 @@ namespace LootManager
             public void OnPointerUp   (PointerEventData _) { if (_bg) _bg.color = CHover; }
         }
 
-
-        // ── Colours (shared palette) ──────────────────────────────────────────
         internal static readonly Color32 C_WindowBg   = Hex32("#0F1014", 245);
         internal static readonly Color32 C_TitleBg    = Hex32("#1A1D23", 255);
         internal static readonly Color32 C_PanelBg    = Hex32("#13161B", 255);
@@ -126,18 +109,16 @@ namespace LootManager
         internal static readonly Color32 C_Danger     = Hex32("#EF4444", 255);
         internal static readonly Color32 C_Success    = Hex32("#10B981", 255);
 
-        // Main window dimensions
         private const float WindowW = 620f;
         private const float WindowH = 460f;
         private const float TitleH  = 28f;
         private const float MenuH   = 30f;
 
-        // ── Live references ───────────────────────────────────────────────────
         private static GameObject _uiRoot;
-        private static RectTransform _container;   // draggable window
+        private static RectTransform _container;
 
-        private static GameObject _mainView;       // title + menubar + panels
-        private static GameObject _editView;       // edit-category overlay
+        private static GameObject _mainView;
+        private static GameObject _editView;
 
         private static GameObject _settingsPanelGO;
         private static GameObject _blacklistPanelGO;
@@ -164,21 +145,15 @@ namespace LootManager
         private static EditlistPanelController    _editlist;
         private static FilterlistPanelController  _filterlist;
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Entry point called from LootUI.Awake
-        // ─────────────────────────────────────────────────────────────────────
         public static void Initialize(GameObject uiRoot)
         {
             _uiRoot = uiRoot;
             BuildWindow();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Build the draggable window container
-        // ─────────────────────────────────────────────────────────────────────
         private static void BuildWindow()
         {
-            // Draggable container
+
             var containerGO = new GameObject("container");
             _container = containerGO.AddComponent<RectTransform>();
             _container.SetParent(_uiRoot.transform, false);
@@ -195,7 +170,6 @@ namespace LootManager
             outline.effectColor    = C_Border;
             outline.effectDistance = new Vector2(1f, -1f);
 
-            // Main view (everything except edit overlay)
             _mainView = new GameObject("mainView");
             var mainRT = _mainView.AddComponent<RectTransform>();
             mainRT.SetParent(_container, false);
@@ -205,14 +179,12 @@ namespace LootManager
             var menuBar = BuildMenuBar(_mainView.transform);
             BuildPanelArea(_mainView.transform);
 
-            // Edit view (full-size overlay, hidden by default)
             _editView = new GameObject("editView");
             var editRT = _editView.AddComponent<RectTransform>();
             editRT.SetParent(_container, false);
             StretchFull(editRT);
             _editView.SetActive(false);
 
-            // Wire up drag on the title bar
             var dragHandle = _mainView.transform.Find("titleBar")?.gameObject;
             if (dragHandle != null)
             {
@@ -220,9 +192,6 @@ namespace LootManager
                 dh.PanelToMove = _container;
             }
 
-            // Activate all panels so Unity runs Start()/Awake() on every component
-            // (including TMP_Dropdown) before we call Init() on the controllers.
-            // ShowPanel() will hide the non-active ones immediately after.
             _settingsPanelGO.SetActive(true);
             _blacklistPanelGO.SetActive(true);
             _whitelistPanelGO.SetActive(true);
@@ -230,7 +199,6 @@ namespace LootManager
             _filterlistPanelGO.SetActive(true);
             _editView.SetActive(true);
 
-            // Initialise panel controllers — pass them their root GOs directly
             _settings = new SettingsPanelController(
                 _settingsPanelGO,
                 _container,
@@ -256,14 +224,10 @@ namespace LootManager
             _filterlist = new FilterlistPanelController(_filterlistPanelGO, _container);
             _filterlist.Init();
 
-            // ShowPanel hides all panels except the active one
             ShowPanel(_settingsPanelGO);
             OnUIVisibilityPossiblyChanged();
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Title bar
-        // ─────────────────────────────────────────────────────────────────────
         private static void BuildTitleBar(Transform parent)
         {
             var go = new GameObject("titleBar");
@@ -278,7 +242,6 @@ namespace LootManager
             var bg = go.AddComponent<Image>();
             bg.color = C_TitleBg;
 
-            // Title text
             var titleTxt = MakeTMP("titleText", rt);
             var titleRT  = titleTxt.GetComponent<RectTransform>();
             titleRT.anchorMin = Vector2.zero;
@@ -290,9 +253,8 @@ namespace LootManager
             titleTxt.fontStyle = FontStyles.Bold;
             titleTxt.alignment = TextAlignmentOptions.MidlineLeft;
 
-            // Close button
             var closeBtn = MakeButton("closeBtn", rt, "X", C_Danger, C_TitleBg, 11);
-            // Remove generic hover outline — close button gets its own colour-swap hover
+
             var closeBtnOL = closeBtn.GetComponent<Outline>();
             if (closeBtnOL != null) GameObject.Destroy(closeBtnOL);
             var closeBtnBHO = closeBtn.GetComponent<ButtonHoverOutline>();
@@ -316,9 +278,6 @@ namespace LootManager
             });
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Menu / tab bar
-        // ─────────────────────────────────────────────────────────────────────
         private static GameObject BuildMenuBar(Transform parent)
         {
             var go = new GameObject("menuBar");
@@ -402,7 +361,6 @@ namespace LootManager
             btn.transition    = Selectable.Transition.None;
             btn.targetGraphic = img;
 
-            // Outline acts as active-tab indicator and hover indicator
             var ol = go.AddComponent<Outline>();
             ol.effectColor    = C_AccentBlue;
             ol.effectDistance = new Vector2(1, -1);
@@ -423,9 +381,6 @@ namespace LootManager
             return btn;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Panel area — builds all four panel containers
-        // ─────────────────────────────────────────────────────────────────────
         private static void BuildPanelArea(Transform parent)
         {
             float topOffset = TitleH + MenuH;
@@ -457,12 +412,9 @@ namespace LootManager
             return go;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Panel switching
-        // ─────────────────────────────────────────────────────────────────────
         private static void ShowPanel(GameObject activePanel)
         {
-            // Hide edit view, show main view
+
             if (_editView != null) _editView.SetActive(false);
             if (_mainView != null) _mainView.SetActive(true);
 
@@ -488,7 +440,7 @@ namespace LootManager
             if (btn == null) return;
             var bho = btn.GetComponent<ButtonHoverOutline>();
             if (bho != null) { bho.SetActive(active); return; }
-            // Fallback for buttons without ButtonHoverOutline
+
             var ol = btn.GetComponent<Outline>();
             if (ol != null) ol.enabled = active;
         }
@@ -501,14 +453,11 @@ namespace LootManager
                 _menuWhitelistBtn.gameObject.SetActive(Plugin.LootMethod.Value == "Whitelist");
             if (_menuBanklistBtn != null)
                 _menuBanklistBtn.gameObject.SetActive(Plugin.BankLootEnabled.Value);
-            // Filter Categories tab is always visible
+
             if (_menuFilterlistBtn != null)
                 _menuFilterlistBtn.gameObject.SetActive(true);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Public API used by WhitelistPanelController to open the edit overlay
-        // ─────────────────────────────────────────────────────────────────────
         public static void ShowEditCategory(string categoryName)
         {
             if (_editlist == null)
@@ -516,7 +465,7 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage("[LootUI] Edit panel not ready.", "red");
                 return;
             }
-            // Position edit view to match container then show it
+
             if (_mainView != null) _mainView.SetActive(false);
             if (_editView != null) _editView.SetActive(true);
             _editlist.Show(categoryName);
@@ -528,9 +477,6 @@ namespace LootManager
             if (_mainView != null) _mainView.SetActive(true);
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // Builder helpers (shared with panel controllers via internal access)
-        // ─────────────────────────────────────────────────────────────────────
         internal static RectTransform MakeRect(string name, Transform parent)
         {
             var go = new GameObject(name);
@@ -572,7 +518,6 @@ namespace LootManager
             btn.transition    = Selectable.Transition.None;
             btn.targetGraphic = img;
 
-            // Hover outline — disabled by default, enabled on pointer enter
             var btnOL = go.AddComponent<Outline>();
             btnOL.effectColor    = C_AccentBlue;
             btnOL.effectDistance = new Vector2(1, -1);
@@ -593,19 +538,10 @@ namespace LootManager
             return btn;
         }
 
-        /// <summary>
-        /// Creates a button whose single TMP label is returned for use with HotkeyBindControl.
-        /// Unlike MakeButton, there is no separate "Label" child — the TMP IS the display surface.
-        /// </summary>
         internal static Button MakeHotkeyButton(string name, Transform parent,
             Color32 bgColour, int fontSize, out TextMeshProUGUI labelOut, out Image bgImageOut)
         {
-            // Image lives on a child "BG" GO, NOT on the root GO.
-            // Button.Awake() searches GetComponent<Image>() on the root and
-            // finds nothing, so targetGraphic stays null and no state
-            // transition can ever tint the button.
-            // Callers receive bgImageOut so they can add Outline to the BG
-            // child (Outline needs a Graphic on the same GO to work).
+
             var go = new GameObject(name);
             var rt = go.AddComponent<RectTransform>();
             rt.SetParent(parent, false);
@@ -621,8 +557,7 @@ namespace LootManager
             var btn = go.AddComponent<Button>();
             btn.transition    = Selectable.Transition.None;
             btn.targetGraphic = null;
-            // Button.Awake() may re-assign targetGraphic via GetComponentInChildren.
-            // NullTargetGraphic clears it again on Start (after Awake).
+
             go.AddComponent<NullTargetGraphic>();
 
             var lblGO = new GameObject("Label");
@@ -656,7 +591,6 @@ namespace LootManager
             sr.vertical          = true;
             sr.scrollSensitivity = 30f;
 
-            // Viewport
             var vpGO = new GameObject("Viewport");
             viewport = vpGO.AddComponent<RectTransform>();
             viewport.SetParent(rt, false);
@@ -664,7 +598,6 @@ namespace LootManager
             vpGO.AddComponent<Image>().color = new Color(0, 0, 0, 1f);
             vpGO.AddComponent<Mask>().showMaskGraphic = false;
 
-            // Content
             var cGO = new GameObject("Content");
             content = cGO.AddComponent<RectTransform>();
             content.SetParent(viewport, false);
@@ -699,7 +632,6 @@ namespace LootManager
             var bg = go.AddComponent<Image>();
             bg.color = C_InputBg;
 
-            // Viewport
             var vpGO = new GameObject("Text Area");
             var vpRT = vpGO.AddComponent<RectTransform>();
             vpRT.SetParent(rt, false);
@@ -709,7 +641,6 @@ namespace LootManager
             vpRT.offsetMax = new Vector2(-4, -2);
             vpGO.AddComponent<RectMask2D>();
 
-            // Input text
             var textGO = new GameObject("Text");
             var textRT = textGO.AddComponent<RectTransform>();
             textRT.SetParent(vpRT, false);
@@ -721,7 +652,6 @@ namespace LootManager
             inputTMP.extraPadding        = true;
             inputTMP.raycastTarget       = false;
 
-            // Placeholder
             var phGO = new GameObject("Placeholder");
             var phRT = phGO.AddComponent<RectTransform>();
             phRT.SetParent(vpRT, false);
@@ -734,8 +664,6 @@ namespace LootManager
             phTMP.enableWordWrapping = false;
             phTMP.raycastTarget      = false;
 
-            // SetActive(false) defers TMP_InputField.Awake until after all
-            // child references are assigned — prevents stale internal refs.
             go.SetActive(false);
             var field = go.AddComponent<TMP_InputField>();
             field.textViewport     = vpRT;
@@ -756,9 +684,6 @@ namespace LootManager
             var rt = go.AddComponent<RectTransform>();
             rt.SetParent(parent, false);
 
-            // Layout group drives width; height is controlled per-child via LE.
-            // childForceExpandHeight=false + childControlHeight=true means the
-            // group respects each child's preferredHeight rather than stretching.
             var hl = go.AddComponent<HorizontalLayoutGroup>();
             hl.padding                = new RectOffset(4, 4, 0, 0);
             hl.spacing                = 6;
@@ -768,7 +693,6 @@ namespace LootManager
             hl.childControlHeight     = true;
             hl.childAlignment         = TextAnchor.MiddleLeft;
 
-            // Checkbox: fixed 14x14 via LayoutElement — both axes locked
             var checkGO = new GameObject("Background");
             var checkRT = checkGO.AddComponent<RectTransform>();
             checkRT.SetParent(rt, false);
@@ -785,7 +709,6 @@ namespace LootManager
             checkOL.effectColor    = C_Border;
             checkOL.effectDistance = new Vector2(1, -1);
 
-            // Checkmark — inset 3 px inside the checkbox
             var markGO = new GameObject("Checkmark");
             var markRT = markGO.AddComponent<RectTransform>();
             markRT.SetParent(checkRT, false);
@@ -794,11 +717,9 @@ namespace LootManager
             markRT.offsetMin = new Vector2(3, 3);
             markRT.offsetMax = new Vector2(-3, -3);
             var markImg = markGO.AddComponent<Image>();
-            // Start transparent — Toggle.graphic CrossFadeColor still fires
-            // but is invisible. Shown only when item is selected (isOn=true).
+
             markImg.color = C_AccentBlue;
 
-            // Label — flexible width, same preferred height as checkbox
             var lblGO = new GameObject("Label");
             var lblRT = lblGO.AddComponent<RectTransform>();
             lblRT.SetParent(rt, false);
@@ -822,17 +743,13 @@ namespace LootManager
 
         internal static TMP_Dropdown MakeDropdown(string name, Transform parent)
         {
-            // ── Wrapper: provides the visible border ──────────────────────────
-            // TMP_Dropdown resets targetGraphic on Awake to its own Image, so we
-            // can't use Outline on the dropdown GO itself. Instead a 1px-inset
-            // border wrapper sits behind and the dropdown GO floats on top.
+
             var wrapGO = new GameObject(name + "_wrap");
             var wrapRT = wrapGO.AddComponent<RectTransform>();
             wrapRT.SetParent(parent, false);
             var wrapImg = wrapGO.AddComponent<Image>();
-            wrapImg.color = C_Border;  // border colour shows as 1 px rim
+            wrapImg.color = C_Border;
 
-            // ── Dropdown GO — inset 1 px inside wrapper ───────────────────────
             var go = new GameObject(name);
             go.SetActive(false);
             var rt = go.AddComponent<RectTransform>();
@@ -842,8 +759,6 @@ namespace LootManager
             rt.offsetMin = new Vector2(1, 1);
             rt.offsetMax = new Vector2(-1, -1);
 
-            // "Background" is the name TMP_Dropdown.Awake() searches for first.
-            // Giving it this name ensures Awake picks it as targetGraphic.
             var bgGO = new GameObject("Background");
             var bgRT = bgGO.AddComponent<RectTransform>();
             bgRT.SetParent(rt, false);
@@ -856,7 +771,6 @@ namespace LootManager
 
             var drop = go.AddComponent<TMP_Dropdown>();
 
-            // ── Caption label ─────────────────────────────────────────────────
             var lblGO = new GameObject("Label");
             var lblRT = lblGO.AddComponent<RectTransform>();
             lblRT.SetParent(rt, false);
@@ -870,7 +784,6 @@ namespace LootManager
             captionTMP.alignment    = TextAlignmentOptions.MidlineLeft;
             captionTMP.overflowMode = TextOverflowModes.Ellipsis;
 
-            // ── Template (inactive — opened by TMP_Dropdown at runtime) ───────
             var templateGO = new GameObject("Template");
             var templateRT = templateGO.AddComponent<RectTransform>();
             templateRT.SetParent(rt, false);
@@ -883,8 +796,7 @@ namespace LootManager
             var templateOL = templateGO.AddComponent<Outline>();
             templateOL.effectColor    = C_Border;
             templateOL.effectDistance = new Vector2(1, -1);
-            // CanvasGroup + DropdownNoFade work together to kill
-            // TMP_Dropdown's alpha-fade coroutine on open.
+
             var templateCG = templateGO.AddComponent<CanvasGroup>();
             templateCG.alpha          = 1f;
             templateCG.blocksRaycasts = true;
@@ -895,7 +807,6 @@ namespace LootManager
             sr.horizontal = false;
             sr.vertical   = true;
 
-            // Viewport
             var vpGO = new GameObject("Viewport");
             var vpRT = vpGO.AddComponent<RectTransform>();
             vpRT.SetParent(templateRT, false);
@@ -904,12 +815,11 @@ namespace LootManager
             vpRT.offsetMin = Vector2.zero;
             vpRT.offsetMax = Vector2.zero;
             var vpImg = vpGO.AddComponent<Image>();
-            vpImg.color = new Color(0, 0, 0, 1f);   // alpha>0 required for Mask stencil
+            vpImg.color = new Color(0, 0, 0, 1f);
             var vpMask = vpGO.AddComponent<Mask>();
             vpMask.showMaskGraphic = false;
             sr.viewport = vpRT;
 
-            // Content
             var contentGO = new GameObject("Content");
             var contentRT = contentGO.AddComponent<RectTransform>();
             contentRT.SetParent(vpRT, false);
@@ -920,7 +830,6 @@ namespace LootManager
             contentRT.sizeDelta        = new Vector2(0, 28);
             sr.content = contentRT;
 
-            // ── Item template row ─────────────────────────────────────────────
             var itemGO = new GameObject("Item");
             var itemRT = itemGO.AddComponent<RectTransform>();
             itemRT.SetParent(contentRT, false);
@@ -961,23 +870,16 @@ namespace LootManager
             itemToggle.graphic       = markImg;
             itemToggle.transition    = Selectable.Transition.None;
 
-            // DropdownItemHover finds its OWN Image via Awake() —
-            // safe to clone because it never captures a stale reference.
             itemGO.AddComponent<DropdownItemHover>();
 
-            // ── Wire all refs — full hierarchy is built ───────────────────────
             drop.template    = templateRT;
             drop.captionText = captionTMP;
             drop.itemText    = itemLbl;
 
             go.SetActive(true);
 
-            // TMP_Dropdown's internal color management (RefreshShownValue,
-            // AddOptions etc.) keeps resetting the ColorBlock to Unity
-            // defaults. Switch to transition=None and drive hover via
-            // EventTrigger on the Background image directly.
             drop.transition   = Selectable.Transition.None;
-            drop.targetGraphic = null;  // nothing for Selectable to flash
+            drop.targetGraphic = null;
 
             var et = go.AddComponent<EventTrigger>();
 
@@ -1001,10 +903,6 @@ namespace LootManager
             upEntry.callback.AddListener(_ => dropBg.color = new Color32(28, 38, 56, 255));
             et.triggers.Add(upEntry);
 
-            // Return the wrapper so callers can size/position it normally
-            // and attach LayoutElements to it.
-            // The TMP_Dropdown component is still on the inner GO — callers
-            // get it via the return value which is the TMP_Dropdown itself.
             return drop;
         }
 
@@ -1015,7 +913,6 @@ namespace LootManager
             rt.SetParent(parent, false);
             rt.sizeDelta = new Vector2(0, 16);
 
-            // Background
             var bgGO = new GameObject("Background");
             var bgRT = bgGO.AddComponent<RectTransform>();
             bgRT.SetParent(rt, false);
@@ -1025,7 +922,6 @@ namespace LootManager
             var bgImg = bgGO.AddComponent<Image>();
             bgImg.color = C_Border;
 
-            // Fill area
             var fillAreaGO = new GameObject("Fill Area");
             var fillAreaRT = fillAreaGO.AddComponent<RectTransform>();
             fillAreaRT.SetParent(rt, false);
@@ -1041,7 +937,6 @@ namespace LootManager
             var fillImg = fillGO.AddComponent<Image>();
             fillImg.color = C_AccentBlue;
 
-            // Handle area
             var handleAreaGO = new GameObject("Handle Slide Area");
             var handleAreaRT = handleAreaGO.AddComponent<RectTransform>();
             handleAreaRT.SetParent(rt, false);
@@ -1067,7 +962,6 @@ namespace LootManager
             return slider;
         }
 
-        /// <summary>Creates a row template GameObject suitable for UIVirtualList.</summary>
         internal static GameObject MakeRowTemplate(string name, Transform parent, float rowHeight = 24f)
         {
             var go = new GameObject(name);
@@ -1086,7 +980,6 @@ namespace LootManager
             hl.childControlWidth      = true;
             hl.childControlHeight     = true;
 
-            // Icon
             var iconGO = new GameObject("Icon");
             var iconRT = iconGO.AddComponent<RectTransform>();
             iconRT.SetParent(rt, false);
@@ -1096,7 +989,6 @@ namespace LootManager
             iconImg.raycastTarget  = false;
             iconGO.AddComponent<LayoutElement>().preferredWidth = rowHeight - 4f;
 
-            // Label
             var lblGO = new GameObject("Label");
             var lblRT = lblGO.AddComponent<RectTransform>();
             lblRT.SetParent(rt, false);

@@ -100,6 +100,10 @@ namespace LootManager
             while (GameObject.Find(LegacyInvName) == null)
                 yield return null;
 
+            yield return null;
+
+            ChatFilterInjector.ApplyChatMask();
+
             var mover = GameObject.Find("PlayerInvUIAdjustment");
             if (mover == null)
             {
