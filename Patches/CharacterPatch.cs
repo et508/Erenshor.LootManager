@@ -1,4 +1,5 @@
 using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 namespace LootManager
@@ -37,15 +38,42 @@ namespace LootManager
                 return;
             
             LootTable lootTable = __instance.MyNPC.GetComponent<LootTable>();
-            if (lootTable != null)
+            if (lootTable == null) return;
+
+            if (Plugin.AutoLootDelayEnabled.Value && Plugin.AutoLootDelay.Value > 0f)
+            {
+                var npc = __instance.MyNPC;
+                Plugin.Instance.StartCoroutine(DelayedLoot(npc, lootTable));
+            }
+            else
             {
                 ChatFilterInjector.SendLootMessage(
-                    "[Loot Manager] Looting NPC: " + __instance.MyNPC.name,
-                    "yellow"
-                );
+                    "[Loot Manager] Looting NPC: " + __instance.MyNPC.name, "yellow");
                 lootTable.LoadLootTable();
                 GameData.LootWindow.LootAll();
             }
+        }
+
+        private static IEnumerator DelayedLoot(NPC npc, LootTable lootTable)
+        {
+            float delay = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0.5f, 10f);
+            yield return new WaitForSeconds(delay);
+
+            // Re-validate after delay — player or NPC may have moved/died
+            if (!Plugin.AutoLootEnabled.Value) yield break;
+            if (npc == null || GameData.PlayerControl?.Myself == null) yield break;
+            if (!GameData.PlayerControl.Myself.Alive) yield break;
+
+            float dist = Vector3.Distance(
+                GameData.PlayerControl.Myself.transform.position,
+                npc.transform.position
+            );
+            if (dist >= Plugin.AutoLootDistance.Value) yield break;
+
+            ChatFilterInjector.SendLootMessage(
+                "[Loot Manager] Looting NPC: " + npc.name, "yellow");
+            lootTable.LoadLootTable();
+            GameData.LootWindow.LootAll();
         }
     }
 }

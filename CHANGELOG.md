@@ -1,9 +1,15 @@
 ## [3.0.0] - TBD
 ### Added
 - Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
+- A toggle to delay autolooting has been added. When enabled, autolooting will be delayed until after combat ends.
+  - This can be adjusting in the settings panel. The delay time can be set from 0 to 10 seconds.
+
 
 ### Loot UI
 - Complete overhaul of the UI. All functionality is the same, but the UI has been redesigned to be more user friendly and visually appealing.
+- The Filter Categories have been removed from the Whitelist panel and added to its own section in the menu bar.
+  - We have added the ability to assign each filter category to the whitelist, blacklist, or banklist.
+
 
 ## [2.1.1] - 12/26/2025
 ### Added

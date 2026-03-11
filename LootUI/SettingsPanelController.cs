@@ -24,6 +24,10 @@ namespace LootManager
         private Toggle               _autoLootToggle;
         private Slider               _autoDistanceSlider;
         private TextMeshProUGUI      _autoDistanceText;
+        private Toggle               _autoLootDelayToggle;
+        private Slider               _autoLootDelaySlider;
+        private TextMeshProUGUI      _autoLootDelayText;
+        private GameObject           _autoLootDelayRow;
         private TMP_Dropdown         _lootMethodDropdown;
         private Toggle               _bankLootToggle;
         private TMP_Dropdown         _bankMethodDropdown;
@@ -126,6 +130,33 @@ namespace LootManager
             distValLE.preferredWidth  = 32;
             distValLE.preferredHeight = 20;
 
+            // Autoloot delay toggle
+            var autoDelayToggleRow = MakeRow(body.transform);
+            _autoLootDelayToggle = LootUIController.MakeToggle(
+                "autoLootDelayToggle", autoDelayToggleRow.transform, "Enable Autoloot Delay");
+            _autoLootDelayToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
+
+            // Autoloot delay slider (only visible when delay is enabled)
+            _autoLootDelayRow = MakeRow(body.transform);
+            var delayLbl = LootUIController.MakeTMP("delayLabel", _autoLootDelayRow.transform);
+            delayLbl.text  = "Delay (seconds):";
+            delayLbl.color = LootUIController.C_TextMuted;
+            var delayLblLE = delayLbl.gameObject.AddComponent<LayoutElement>();
+            delayLblLE.preferredWidth  = 130;
+            delayLblLE.preferredHeight = 20;
+
+            _autoLootDelaySlider = LootUIController.MakeSlider("autoDelay", _autoLootDelayRow.transform);
+            var delaySliderLE = _autoLootDelaySlider.gameObject.AddComponent<LayoutElement>();
+            delaySliderLE.flexibleWidth   = 1;
+            delaySliderLE.preferredHeight = 20;
+
+            _autoLootDelayText = LootUIController.MakeTMP("delayText", _autoLootDelayRow.transform);
+            _autoLootDelayText.text      = "0";
+            _autoLootDelayText.alignment = TextAlignmentOptions.MidlineRight;
+            var delayValLE = _autoLootDelayText.gameObject.AddComponent<LayoutElement>();
+            delayValLE.preferredWidth  = 32;
+            delayValLE.preferredHeight = 20;
+
             // Autoloot hotkey
             var autoHkRow = MakeRow(body.transform);
             var autoHkLbl = LootUIController.MakeTMP("autoHkLabel", autoHkRow.transform);
@@ -215,6 +246,7 @@ namespace LootManager
             // ── Wire up logic ───────────────────────────────────────────────
             SetupAutoLootToggle();
             SetupAutoLootDistance();
+            SetupAutoLootDelay();
             SetupLootMethod();
             SetupBankLootToggle();
             SetupBankMethod();
@@ -297,10 +329,46 @@ namespace LootManager
             });
         }
 
+        private void SetupAutoLootDelay()
+        {
+            if (_autoLootDelayToggle == null) return;
+            _autoLootDelayToggle.SetIsOnWithoutNotify(Plugin.AutoLootDelayEnabled.Value);
+            _autoLootDelayToggle.onValueChanged.RemoveAllListeners();
+            _autoLootDelayToggle.onValueChanged.AddListener(v =>
+            {
+                Plugin.AutoLootDelayEnabled.Value = v;
+                UpdateAutoDelayInteractable();
+            });
+
+            if (_autoLootDelaySlider == null || _autoLootDelayText == null) return;
+            _autoLootDelaySlider.minValue     = 0.5f;
+            _autoLootDelaySlider.maxValue     = 10f;
+            _autoLootDelaySlider.wholeNumbers = false;
+            float current = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0.5f, 10f);
+            _autoLootDelaySlider.SetValueWithoutNotify(current);
+            _autoLootDelayText.text = current.ToString("F1");
+            _autoLootDelaySlider.onValueChanged.RemoveAllListeners();
+            _autoLootDelaySlider.onValueChanged.AddListener(v =>
+            {
+                Plugin.AutoLootDelay.Value  = v;
+                _autoLootDelayText.text     = v.ToString("F1");
+            });
+
+            UpdateAutoDelayInteractable();
+        }
+
+        private void UpdateAutoDelayInteractable()
+        {
+            bool enabled = Plugin.AutoLootEnabled.Value && Plugin.AutoLootDelayEnabled.Value;
+            if (_autoLootDelaySlider != null) _autoLootDelaySlider.interactable = enabled;
+            if (_autoLootDelayRow    != null) _autoLootDelayRow.SetActive(Plugin.AutoLootDelayEnabled.Value);
+        }
+
         private void UpdateAutoDistanceInteractable()
         {
             if (_autoDistanceSlider != null)
                 _autoDistanceSlider.interactable = Plugin.AutoLootEnabled.Value;
+            UpdateAutoDelayInteractable();
         }
 
         private void SetupLootMethod()
