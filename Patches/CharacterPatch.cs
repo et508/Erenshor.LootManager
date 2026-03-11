@@ -1,5 +1,6 @@
 using HarmonyLib;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace LootManager
@@ -7,6 +8,16 @@ namespace LootManager
     [HarmonyPatch(typeof(Character), "DoDeath")]
     public class Autoloot
     {
+        // Pending loot entries queued while waiting for out-of-combat
+        private static readonly List<PendingLoot> _pending = new List<PendingLoot>();
+        private static bool _pollRunning = false;
+
+        private struct PendingLoot
+        {
+            public NPC     Npc;
+            public LootTable Table;
+        }
+
         private static void Postfix(Character __instance)
         {
             if (!Plugin.AutoLootEnabled.Value)
@@ -40,10 +51,12 @@ namespace LootManager
             LootTable lootTable = __instance.MyNPC.GetComponent<LootTable>();
             if (lootTable == null) return;
 
-            if (Plugin.AutoLootDelayEnabled.Value && Plugin.AutoLootDelay.Value > 0f)
+            if (Plugin.AutoLootDelayEnabled.Value)
             {
-                var npc = __instance.MyNPC;
-                Plugin.Instance.StartCoroutine(DelayedLoot(npc, lootTable));
+                // Queue this kill and start the out-of-combat poll if not already running
+                _pending.Add(new PendingLoot { Npc = __instance.MyNPC, Table = lootTable });
+                if (!_pollRunning)
+                    Plugin.Instance.StartCoroutine(PollOutOfCombat());
             }
             else
             {
@@ -54,26 +67,52 @@ namespace LootManager
             }
         }
 
-        private static IEnumerator DelayedLoot(NPC npc, LootTable lootTable)
+        // Returns true when the player and group are fully out of combat
+        private static bool IsOutOfCombat()
         {
-            float delay = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0.5f, 10f);
-            yield return new WaitForSeconds(delay);
+            if (GameData.AttackingPlayer != null && GameData.AttackingPlayer.Count > 0) return false;
+            if (GameData.GroupMatesInCombat != null && GameData.GroupMatesInCombat.Count > 0) return false;
+            return true;
+        }
 
-            // Re-validate after delay — player or NPC may have moved/died
+        private static IEnumerator PollOutOfCombat()
+        {
+            _pollRunning = true;
+
+            // Wait until fully out of combat
+            while (!IsOutOfCombat())
+                yield return new WaitForSeconds(0.25f);
+
+            // Apply grace period after combat ends
+            float grace = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0f, 10f);
+            if (grace > 0f)
+                yield return new WaitForSeconds(grace);
+
+            // Loot everything that was queued
+            var toProcess = new List<PendingLoot>(_pending);
+            _pending.Clear();
+            _pollRunning = false;
+
             if (!Plugin.AutoLootEnabled.Value) yield break;
-            if (npc == null || GameData.PlayerControl?.Myself == null) yield break;
-            if (!GameData.PlayerControl.Myself.Alive) yield break;
 
-            float dist = Vector3.Distance(
-                GameData.PlayerControl.Myself.transform.position,
-                npc.transform.position
-            );
-            if (dist >= Plugin.AutoLootDistance.Value) yield break;
+            var player = GameData.PlayerControl?.Myself;
+            if (player == null || !player.Alive) yield break;
 
-            ChatFilterInjector.SendLootMessage(
-                "[Loot Manager] Looting NPC: " + npc.name, "yellow");
-            lootTable.LoadLootTable();
-            GameData.LootWindow.LootAll();
+            foreach (var entry in toProcess)
+            {
+                if (entry.Npc == null || entry.Table == null) continue;
+
+                float dist = Vector3.Distance(
+                    player.transform.position,
+                    entry.Npc.transform.position
+                );
+                if (dist >= Plugin.AutoLootDistance.Value) continue;
+
+                ChatFilterInjector.SendLootMessage(
+                    "[Loot Manager] Looting NPC: " + entry.Npc.name, "yellow");
+                entry.Table.LoadLootTable();
+                GameData.LootWindow.LootAll();
+            }
         }
     }
 }

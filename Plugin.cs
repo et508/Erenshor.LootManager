@@ -61,8 +61,8 @@ namespace LootManager
             
             AutoLootEnabled          = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
             AutoLootDistance         = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
-            AutoLootDelayEnabled     = Config.Bind("Autoloot Settings", "Enable Autoloot Delay", false, "If true, autoloot waits a number of seconds after the kill before looting.");
-            AutoLootDelay            = Config.Bind("Autoloot Settings", "Autoloot Delay Seconds", 3f, "Seconds to wait after kill before autolooting (0.5 - 10).");
+            AutoLootDelayEnabled     = Config.Bind("Autoloot Settings", "Enable Autoloot Delay", false, "If true, autoloot waits until fully out of combat before looting queued kills.");
+            AutoLootDelay            = Config.Bind("Autoloot Settings", "Autoloot Delay Seconds", 3f, "Extra grace period in seconds to wait after combat ends before autolooting (0 - 10).");
             
             LootMethod               = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
 

@@ -133,13 +133,13 @@ namespace LootManager
             // Autoloot delay toggle
             var autoDelayToggleRow = MakeRow(body.transform);
             _autoLootDelayToggle = LootUIController.MakeToggle(
-                "autoLootDelayToggle", autoDelayToggleRow.transform, "Enable Autoloot Delay");
+                "autoLootDelayToggle", autoDelayToggleRow.transform, "Out-of-Combat Autoloot Delay");
             _autoLootDelayToggle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
 
             // Autoloot delay slider (only visible when delay is enabled)
             _autoLootDelayRow = MakeRow(body.transform);
             var delayLbl = LootUIController.MakeTMP("delayLabel", _autoLootDelayRow.transform);
-            delayLbl.text  = "Delay (seconds):";
+            delayLbl.text  = "Grace Period (sec):";
             delayLbl.color = LootUIController.C_TextMuted;
             var delayLblLE = delayLbl.gameObject.AddComponent<LayoutElement>();
             delayLblLE.preferredWidth  = 130;
