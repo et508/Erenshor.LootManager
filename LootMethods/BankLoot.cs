@@ -62,25 +62,21 @@ namespace LootManager
                 int currentPage = pageField != null ? (int)pageField.GetValue(bank) : 1;
                 int pageStart   = (currentPage - 1) * 32;
 
+                // Sync the current page's visible BankSlots into StoredItems before we read it.
+                // The game only does this sync in SaveBank() (page nav / close), so StoredItems
+                // for the current page can be stale if the player has dragged items in since
+                // the page was loaded. Without this sync we would see those slots as empty and
+                // overwrite items the player just deposited manually.
                 for (int i = pageStart; i < pageStart + 32 && i < totalSlots; i++)
                 {
-                    if (storedItems[i] == null ||
-                        storedItems[i] == GameData.PlayerInv.Empty ||
-                        string.IsNullOrEmpty(storedItems[i].Id)) continue;
-
                     int slotPos = i - pageStart;
-                    if (slotPos >= bank.BankSlots.Length) continue;
+                    if (slotPos >= bank.BankSlots.Length) break;
 
                     var visibleSlot = bank.BankSlots[slotPos];
-                    bool visibleIsEmpty = visibleSlot.MyItem == null ||
-                                         visibleSlot.MyItem == GameData.PlayerInv.Empty ||
-                                         string.IsNullOrEmpty(visibleSlot.MyItem.Id);
-
-                    if (visibleIsEmpty)
-                    {
-                        storedItems[i] = GameData.PlayerInv.Empty;
-                        quantities[i]  = 1;
-                    }
+                    storedItems[i] = (visibleSlot.MyItem == null || string.IsNullOrEmpty(visibleSlot.MyItem.Id))
+                        ? GameData.PlayerInv.Empty
+                        : visibleSlot.MyItem;
+                    quantities[i] = visibleSlot.Quantity;
                 }
             }
 
