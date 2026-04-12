@@ -3,6 +3,8 @@
 ### Loot UI
 - Complete overhaul of the UI (again). The UI framework has been switched to ImGui.NET, which allows for more customization and better performance.
   - This also fixes the scrolling issues that were present in the previous version of the UI.
+- Fixed some issues with the inventory drop zone window disappearing.
+
   
 ## [3.0.0] - 3/11/2026
 ### Added

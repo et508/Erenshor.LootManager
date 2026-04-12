@@ -1,5 +1,3 @@
-
-
 using HarmonyLib;
 using System.Collections;
 using TMPro;
@@ -34,8 +32,27 @@ namespace LootManager
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            _sidebar = null;
-            StartCoroutine(BuildWhenReady());
+            // PlayerInv and InvWindow are DontDestroyOnLoad — they persist across zones.
+            // The sidebar is a child of InvWindow so it persists too.
+            // We don't need to rebuild; just re-sync visibility once the scene settles.
+            StartCoroutine(ResyncAfterZone());
+        }
+
+        private IEnumerator ResyncAfterZone()
+        {
+            // Wait one frame for the scene to finish loading and InvWindow state to settle
+            yield return null;
+            yield return null;
+
+            // If _sidebar is somehow null (e.g. first load), do a full build
+            if (_sidebar == null)
+            {
+                StartCoroutine(BuildWhenReady());
+                yield break;
+            }
+
+            // Sidebar exists - just make sure it's still correctly parented and visible
+            SyncSidebarVisibility();
         }
 
         private IEnumerator BuildWhenReady()
