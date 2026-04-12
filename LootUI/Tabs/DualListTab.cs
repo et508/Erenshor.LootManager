@@ -100,15 +100,45 @@ namespace LootManager
             ImGui.BeginChild(id, new Vector2(width, height), false, ImGuiWindowFlags.None);
             ImGui.PopStyleColor();
 
+            float iconSize  = ImGui.GetTextLineHeight();
+            float rowHeight = iconSize + 2f;
+            var   iconVec   = new Vector2(iconSize, iconSize);
+
             uint textColor = isRight ? RightColor : LootManagerWindow.C_TextPri;
 
             for (int i = 0; i < data.Count; i++)
             {
                 string item = data[i];
 
+                // Full-width invisible selectable as the hit target
+                ImGui.PushStyleColor(ImGuiCol.Header,        new System.Numerics.Vector4(1,1,1,0.10f));
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, new System.Numerics.Vector4(1,1,1,0.15f));
+                bool selected = ImGui.Selectable("##row" + (isRight ? "r" : "l") + i,
+                    false, ImGuiSelectableFlags.None, new Vector2(0, rowHeight));
+                ImGui.PopStyleColor(2);
+
+                // Go back to start of the row
+                ImGui.SameLine(0f, 0f);
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX());
+
+                // Icon
+                var texPtr = ItemLookup.GetIconPtr(item);
+                if (texPtr != System.IntPtr.Zero)
+                {
+                    Vector2 uv0, uv1;
+                    ItemLookup.GetIconUVs(item, out uv0, out uv1);
+                    float curY = ImGui.GetCursorPosY();
+                    ImGui.SetCursorPosY(curY + 1f);
+                    ImGui.Image(texPtr, iconVec, uv0, uv1);
+                    ImGui.SetCursorPosY(curY);
+                    ImGui.SameLine(0f, 4f);
+                }
+
+                // Text, vertically centred in the row
+                float textOffY = (rowHeight - ImGui.GetTextLineHeight()) * 0.5f;
+                ImGui.SetCursorPosY(ImGui.GetCursorPosY() + textOffY);
                 ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertU32ToFloat4(textColor));
-                bool selected = ImGui.Selectable(item + "##" + (isRight ? "r" : "l") + i,
-                    false, ImGuiSelectableFlags.None);
+                ImGui.TextUnformatted(item);
                 ImGui.PopStyleColor();
 
                 if (selected)

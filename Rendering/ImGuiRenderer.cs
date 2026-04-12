@@ -36,6 +36,16 @@ namespace LootManager
         public void SetScale(float scale) { _pendingScale = scale; }
         public void ClearWindowState()    { ImGui.LoadIniSettingsFromMemory(""); }
 
+        /// <summary>
+        /// Register a Unity texture so ImGui.Image() calls using its native pointer
+        /// will render correctly. Call once per texture (e.g. during item DB build).
+        /// </summary>
+        public void RegisterTexture(System.IntPtr ptr, UnityEngine.Texture texture)
+        {
+            if (ptr != System.IntPtr.Zero && texture != null)
+                _textures[ptr] = texture;
+        }
+
         internal void ClearCaptureState()
         {
             WantCaptureMouse = false;

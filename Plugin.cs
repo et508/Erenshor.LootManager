@@ -56,7 +56,7 @@ namespace LootManager
         public static ConfigEntry<bool>   ChatOutputEnabled;
 
         // ImGui
-        private ImGuiRenderer     _imgui;
+        internal ImGuiRenderer     _imgui;
         private LootManagerWindow _window;
 
         [DllImport("kernel32.dll", SetLastError = true)]
