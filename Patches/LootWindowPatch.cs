@@ -47,7 +47,7 @@ namespace LootManager
 
                 if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
                 {
-                    if (AuctionLoot.TryListItem(item))
+                    if (AuctionLoot.TryListItem(item, qty))
                     {
                         slot.InformGroupOfLoot(item);
                         slot.MyItem   = GameData.PlayerInv.Empty;

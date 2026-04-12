@@ -38,7 +38,7 @@ namespace LootManager
                     if (isBlacklist)   { HandleBlacklist(item);        ClearCursor();  GameData.PlayerInv.UpdatePlayerInventory(); return false; }
                     if (isBanklist)    { HandleBanklist(item, qty);    ClearCursor();  GameData.PlayerInv.UpdatePlayerInventory(); return false; }
                     if (isJunklist)    { HandleJunklist(item);         ReturnCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
-                    if (isAuctionlist) { HandleAuctionlist(item);      ClearCursor();  GameData.PlayerInv.UpdatePlayerInventory(); return false; }
+                    if (isAuctionlist) { bool consumed = HandleAuctionlist(item); if (consumed) ClearCursor(); else ReturnCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
 
                     return true;
                 }
@@ -98,10 +98,12 @@ namespace LootManager
                 PlayDropSound();
             }
 
-            private static void HandleAuctionlist(Item item)
+            // Returns true if the item was consumed (listed on AH), false if it should be returned.
+            private static bool HandleAuctionlist(Item item)
             {
-                string key   = item.ItemName;
-                bool   added = false;
+                string key      = item.ItemName;
+                int    quantity = Mathf.Max(1, GameData.MouseSlot.Quantity);
+                bool   added    = false;
                 if (!Plugin.Auctionlist.Contains(key))
                 {
                     Plugin.Auctionlist.Add(key);
@@ -114,9 +116,13 @@ namespace LootManager
 
                 if (item.ItemValue > 0 && !item.NoTradeNoDestroy)
                 {
-                    AuctionLoot.TryListItem(item);
+                    bool listed = AuctionLoot.TryListItem(item, quantity);
+                    PlayDropSound();
+                    return listed; // only consume the item if it was actually listed
                 }
+
                 PlayDropSound();
+                return false; // no sell value or no-trade — return to inventory
             }
 
             private static void PlayDropSound()

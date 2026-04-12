@@ -8,6 +8,8 @@
 ### Drop Zone UI
 - Fixed the Junklist drop zone deleting items when they were dropped in the zone. Items will now return to their original position in the inventory.
 - Fixed a problem with the Banklist drop zone that would cause items to be deleted.
+- Fixed and issue with the Auctionlist drop zone that would allow blessed and god tier items to be listed on the Auction House, which is not allowed.
+  - This same rule has been applied to looted items that are on the Auctionlist.
   
 ## [3.0.0] - 3/11/2026
 ### Added
