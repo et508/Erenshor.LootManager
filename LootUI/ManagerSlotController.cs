@@ -62,6 +62,7 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage(added
                     ? $"[Loot Manager] Blacklisted \"{key}\" and destroyed it."
                     : $"[Loot Manager] \"{key}\" is already blacklisted. Destroyed it.", "grey");
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
@@ -79,6 +80,7 @@ namespace LootManager
                     ? $"[Loot Manager] Added \"{key}\" to banklist."
                     : $"[Loot Manager] \"{key}\" already on banklist.", "lightblue");
                 BankLoot.DepositLoot(new BankLoot.LootEntry[] { new BankLoot.LootEntry(item.Id, qty, item.ItemName) });
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
@@ -95,6 +97,7 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage(added
                     ? $"[Loot Manager] Added \"{key}\" to junklist."
                     : $"[Loot Manager] \"{key}\" already on junklist.", "yellow");
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
@@ -117,10 +120,12 @@ namespace LootManager
                 if (item.ItemValue > 0 && !item.NoTradeNoDestroy)
                 {
                     bool listed = AuctionLoot.TryListItem(item, quantity);
+                    DualListTab.MarkDirty();
                     PlayDropSound();
                     return listed; // only consume the item if it was actually listed
                 }
 
+                DualListTab.MarkDirty();
                 PlayDropSound();
                 return false; // no sell value or no-trade — return to inventory
             }

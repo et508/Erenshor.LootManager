@@ -36,6 +36,11 @@ namespace LootManager
         private float  _lastClickTime   = -1f;
         private const float DoubleClickInterval = 0.3f;
 
+        // Set by external code (e.g. drop zone handlers) to force a refresh
+        // on the next Draw() without requiring a tab switch.
+        private static bool _dirty;
+        public static void MarkDirty() { _dirty = true; }
+
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
         public void OnShow()
@@ -48,6 +53,11 @@ namespace LootManager
 
         public void Draw(float scale)
         {
+            if (_dirty)
+            {
+                _dirty = false;
+                Refresh();
+            }
             LootManagerWindow.PushWidgetStyle();
             ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(6f * scale, 4f * scale));
 
