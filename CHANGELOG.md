@@ -1,3 +1,9 @@
+## [3.1.0] - TBD
+
+### Loot UI
+- Complete overhaul of the UI (again). The UI framework has been switched to ImGui.NET, which allows for more customization and better performance.
+  - This also fixes the scrolling issues that were present in the previous version of the UI.
+  
 ## [3.0.0] - 3/11/2026
 ### Added
 - Hooked Loot Manager messages into the chat filter system. You can now filter out Loot Manager messages in the chat settings or send them to a specific chat tab.
