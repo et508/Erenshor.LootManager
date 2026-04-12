@@ -5,6 +5,9 @@
   - This also fixes the scrolling issues that were present in the previous version of the UI.
 - Fixed some issues with the inventory drop zone window disappearing.
 
+### Drop Zone UI
+- Fixed the Junklist drop zone deleting items when they were dropped in the zone. Items will now return to their original position in the inventory.
+
   
 ## [3.0.0] - 3/11/2026
 ### Added
