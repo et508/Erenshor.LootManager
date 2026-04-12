@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Reflection;
 using HarmonyLib;
@@ -37,10 +35,10 @@ namespace LootManager
 
                     if (item == null || item == GameData.PlayerInv.Empty) return true;
 
-                    if (isBlacklist)   { HandleBlacklist(item);        ClearCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
-                    if (isBanklist)    { HandleBanklist(item, qty);    ClearCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
-                    if (isJunklist)    { HandleJunklist(item);         ClearCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
-                    if (isAuctionlist) { HandleAuctionlist(item);      ClearCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
+                    if (isBlacklist)   { HandleBlacklist(item);        ClearCursor();  GameData.PlayerInv.UpdatePlayerInventory(); return false; }
+                    if (isBanklist)    { HandleBanklist(item, qty);    ClearCursor();  GameData.PlayerInv.UpdatePlayerInventory(); return false; }
+                    if (isJunklist)    { HandleJunklist(item);         ReturnCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
+                    if (isAuctionlist) { bool consumed = HandleAuctionlist(item); if (consumed) ClearCursor(); else ReturnCursor(); GameData.PlayerInv.UpdatePlayerInventory(); return false; }
 
                     return true;
                 }
@@ -64,6 +62,7 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage(added
                     ? $"[Loot Manager] Blacklisted \"{key}\" and destroyed it."
                     : $"[Loot Manager] \"{key}\" is already blacklisted. Destroyed it.", "grey");
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
@@ -81,6 +80,7 @@ namespace LootManager
                     ? $"[Loot Manager] Added \"{key}\" to banklist."
                     : $"[Loot Manager] \"{key}\" already on banklist.", "lightblue");
                 BankLoot.DepositLoot(new BankLoot.LootEntry[] { new BankLoot.LootEntry(item.Id, qty, item.ItemName) });
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
@@ -97,13 +97,16 @@ namespace LootManager
                 ChatFilterInjector.SendLootMessage(added
                     ? $"[Loot Manager] Added \"{key}\" to junklist."
                     : $"[Loot Manager] \"{key}\" already on junklist.", "yellow");
+                DualListTab.MarkDirty();
                 PlayDropSound();
             }
 
-            private static void HandleAuctionlist(Item item)
+            // Returns true if the item was consumed (listed on AH), false if it should be returned.
+            private static bool HandleAuctionlist(Item item)
             {
-                string key   = item.ItemName;
-                bool   added = false;
+                string key      = item.ItemName;
+                int    quantity = Mathf.Max(1, GameData.MouseSlot.Quantity);
+                bool   added    = false;
                 if (!Plugin.Auctionlist.Contains(key))
                 {
                     Plugin.Auctionlist.Add(key);
@@ -116,9 +119,15 @@ namespace LootManager
 
                 if (item.ItemValue > 0 && !item.NoTradeNoDestroy)
                 {
-                    AuctionLoot.TryListItem(item);
+                    bool listed = AuctionLoot.TryListItem(item, quantity);
+                    DualListTab.MarkDirty();
+                    PlayDropSound();
+                    return listed; // only consume the item if it was actually listed
                 }
+
+                DualListTab.MarkDirty();
                 PlayDropSound();
+                return false; // no sell value or no-trade — return to inventory
             }
 
             private static void PlayDropSound()
@@ -144,6 +153,35 @@ namespace LootManager
                 {
                     homeSlot.MyItem   = GameData.PlayerInv.Empty;
                     homeSlot.Quantity = 1;
+                    homeSlot.UpdateSlotImage();
+                }
+
+                homeField?.SetValue(GameData.MouseSlot, null);
+                GameData.MouseSlot.MyItem   = GameData.PlayerInv.Empty;
+                GameData.MouseSlot.Quantity = 1;
+                GameData.ItemOnCursor       = null;
+                GameData.MouseSlot.dragging = false;
+                GameData.MouseSlot.UpdateSlotImage();
+            }
+
+            /// <summary>
+            /// Returns the dragged item to its original inventory slot.
+            /// Used for drop zones that only register the item name (Junklist, Auctionlist)
+            /// without actually removing the item from the player's inventory.
+            /// </summary>
+            private static void ReturnCursor()
+            {
+                if (GameData.MouseSlot == null) return;
+
+                var homeField = typeof(ItemIcon).GetField("MouseHomeSlot",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                var homeSlot = homeField?.GetValue(GameData.MouseSlot) as ItemIcon;
+
+                // Put the item back in its home slot
+                if (homeSlot != null && !homeSlot.BankSlot)
+                {
+                    homeSlot.MyItem   = GameData.MouseSlot.MyItem;
+                    homeSlot.Quantity = GameData.MouseSlot.Quantity;
                     homeSlot.UpdateSlotImage();
                 }
 

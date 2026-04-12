@@ -14,7 +14,7 @@ namespace LootManager
 
             if (command.Equals("/lootui", StringComparison.OrdinalIgnoreCase))
             {
-                LootUI.Instance?.ToggleUI();
+                Plugin.ToggleWindow();
                 ClearInput();
                 return false;
             }

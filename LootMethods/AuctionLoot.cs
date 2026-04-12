@@ -4,11 +4,21 @@ namespace LootManager
 {
     public static class AuctionLoot
     {
-        public static bool TryListItem(Item item)
+        public static bool TryListItem(Item item, int quantity = 1)
         {
             if (item == null || item == GameData.PlayerInv.Empty)
                 return false;
-            
+
+            // Blessed (qty=2) and godly (qty=3) equipment cannot be listed on the AH,
+            // matching the game's own restriction in AuctionHouseUI.
+            if (item.RequiredSlot != Item.SlotType.General && quantity > 1)
+            {
+                string tier = quantity == 2 ? "Blessed" : "Godly";
+                ChatFilterInjector.SendLootMessage(
+                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH ({tier} items not supported).", "red");
+                return false;
+            }
+
             if (item.ItemValue <= 0)
             {
                 ChatFilterInjector.SendLootMessage(

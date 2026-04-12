@@ -12,6 +12,7 @@
         <AssemblyName>Erenshor.LootManager</AssemblyName>
         <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,121 +34,175 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup>
-      <PostBuildEvent>
-</PostBuildEvent>
+        <PostBuildEvent>
+        </PostBuildEvent>
     </PropertyGroup>
+
+    <!-- ── Game / BepInEx references ──────────────────────────────────────── -->
     <ItemGroup>
-      <Reference Include="0Harmony">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\0Harmony.dll</HintPath>
-      </Reference>
-      <Reference Include="Assembly-CSharp">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor Playtest\Erenshor_Data\Managed\Assembly-CSharp.dll</HintPath>
-      </Reference>
-      <Reference Include="BepInEx">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\BepInEx.dll</HintPath>
-      </Reference>
-      <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-        <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
-      </Reference>
-      <Reference Include="System">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\System.dll</HintPath>
-      </Reference>
-      <Reference Include="Unity.TextMeshPro">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\Unity.TextMeshPro.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.AssetBundleModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.AudioModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.CoreModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.InputLegacyModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.JSONSerializeModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.Physics2DModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.TextRenderingModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.UI">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UI.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityEngine.UIModule">
-        <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UIModule.dll</HintPath>
-      </Reference>
+        <Reference Include="0Harmony">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\0Harmony.dll</HintPath>
+        </Reference>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor Playtest\Erenshor_Data\Managed\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="BepInEx">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\core\BepInEx.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+            <HintPath>packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="System" />
+        <Reference Include="System.Numerics" />
+        <Reference Include="Unity.TextMeshPro">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AssetBundleModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AudioModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.IMGUIModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.InputLegacyModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.JSONSerializeModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.Physics2DModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.TextRenderingModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UIModule">
+            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Erenshor\Erenshor_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <!-- ── ImGui.NET and dependencies (ILRepacked into output DLL) ─────────── -->
+    <ItemGroup>
+        <Reference Include="ImGui.NET">
+            <HintPath>packages\ImGui.NET.1.89.7.1\lib\netstandard2.0\ImGui.NET.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+        <Reference Include="System.Runtime.CompilerServices.Unsafe">
+            <HintPath>packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+        <Reference Include="System.Numerics.Vectors">
+            <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+        <Reference Include="System.Buffers">
+            <HintPath>packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+            <Private>True</Private>
+        </Reference>
+    </ItemGroup>
+
+    <!-- ── Source files ────────────────────────────────────────────────────── -->
+    <ItemGroup>
+        <!-- Core -->
+        <Compile Include="AutoLootHotkeyListener.cs" />
+        <Compile Include="ImGuiInputMute.cs" />
+        <Compile Include="LootEnums.cs" />
+        <Compile Include="LootCommands.cs" />
+        <Compile Include="LootManagerController.cs" />
+        <Compile Include="Plugin.cs" />
+        <Compile Include="PlayerInvUI.cs" />
+
+        <!-- Loot lists -->
+        <Compile Include="LootLists\LootAuctionlist.cs" />
+        <Compile Include="LootLists\LootBanklist.cs" />
+        <Compile Include="LootLists\LootBlacklist.cs" />
+        <Compile Include="LootLists\LootFilterlist.cs" />
+        <Compile Include="LootLists\LootFilterlistDefaults.cs" />
+        <Compile Include="LootLists\LootJunklist.cs" />
+        <Compile Include="LootLists\LootWhitelist.cs" />
+
+        <!-- Loot methods -->
+        <Compile Include="LootMethods\AuctionLoot.cs" />
+        <Compile Include="LootMethods\BankLoot.cs" />
+        <Compile Include="LootMethods\BlacklistLoot.cs" />
+        <Compile Include="LootMethods\StandardLoot.cs" />
+        <Compile Include="LootMethods\WhitelistLoot.cs" />
+
+        <!-- Patches -->
+        <Compile Include="Patches\AuctionHouseUIPatch.cs" />
+        <Compile Include="Patches\CharacterPatch.cs" />
+        <Compile Include="Patches\ChatFilterInjector.cs" />
+        <Compile Include="Patches\LootWindowPatch.cs" />
+        <Compile Include="Patches\PointerOverUIPatch.cs" />
+        <Compile Include="Patches\VendorWindowPatch.cs" />
+
+        <!-- Rendering -->
+        <Compile Include="Rendering\CimguiNative.cs" />
+        <Compile Include="Rendering\ImGuiRenderer.cs" />
+
+        <!-- UI - helpers still used by PlayerInvUI (uGUI sidebar) -->
+        <Compile Include="LootUI\Helpers\DebounceInvoker.cs" />
+        <Compile Include="LootUI\Helpers\ItemLookup.cs" />
+
+        <!-- UI - ImGui windows -->
+        <Compile Include="LootUI\LootManagerWindow.cs" />
+        <Compile Include="LootUI\ManagerSlotController.cs" />
+        <Compile Include="LootUI\Tabs\SettingsTab.cs" />
+        <Compile Include="LootUI\Tabs\DualListTab.cs" />
+        <Compile Include="LootUI\Tabs\ListTabs.cs" />
+
+
+
+
+
+        <Compile Include="LootUI\Tabs\FilterlistTab.cs" />
+        <Compile Include="LootUI\Tabs\EditlistTab.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="App.config" />
+        <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
-      <Compile Include="AutoLootHotkeyListener.cs" />
-      <Compile Include="LootEnums.cs" />
-      <Compile Include="LootLists\LootAuctionlist.cs" />
-      <Compile Include="LootLists\LootBanklist.cs" />
-      <Compile Include="LootLists\LootBlacklist.cs" />
-      <Compile Include="LootLists\LootFilterlist.cs" />
-      <Compile Include="LootLists\LootFilterlistDefaults.cs" />
-      <Compile Include="LootLists\LootJunklist.cs" />
-      <Compile Include="LootLists\LootWhitelist.cs" />
-      <Compile Include="LootManagerController.cs" />
-      <Compile Include="LootMethods\AuctionLoot.cs" />
-      <Compile Include="LootMethods\BankLoot.cs" />
-      <Compile Include="LootMethods\BlacklistLoot.cs" />
-      <Compile Include="LootMethods\StandardLoot.cs" />
-      <Compile Include="LootMethods\WhitelistLoot.cs" />
-      <Compile Include="LootUI.cs" />
-      <Compile Include="LootUI\AuctiolistPanelController.cs" />
-      <Compile Include="LootUI\BanklistPanelContoller.cs" />
-      <Compile Include="LootUI\BlacklistPanelController.cs" />
-      <Compile Include="LootUI\EditlistPanelController.cs" />
-      <Compile Include="LootUI\FilterlistPanelController.cs" />
-      <Compile Include="LootUI\Helpers\ButtonHoverOutline.cs" />
-      <Compile Include="LootUI\Helpers\DebounceInvoker.cs" />
-      <Compile Include="LootUI\Helpers\DragHandler.cs" />
-      <Compile Include="LootUI\Helpers\DualListPanelBuilder.cs" />
-      <Compile Include="LootUI\Helpers\HotkeyBindControl.cs" />
-      <Compile Include="LootUI\Helpers\ItemLookup.cs" />
-      <Compile Include="LootUI\Helpers\RowHover.cs" />
-      <Compile Include="LootUI\Helpers\ScrollForwarder.cs" />
-      <Compile Include="LootUI\Helpers\TypingInputMute.cs" />
-      <Compile Include="LootUI\Helpers\UICommon.cs" />
-      <Compile Include="LootUI\Helpers\UILayoutBatch.cs" />
-      <Compile Include="LootUI\Helpers\UIVirtualList.cs" />
-      <Compile Include="LootUI\JunklistPanelController.cs" />
-      <Compile Include="LootUI\LootUIController.cs" />
-      <Compile Include="LootUI\ManagerSlotController.cs" />
-      <Compile Include="LootUI\SettingsPanelController.cs" />
-      <Compile Include="LootUI\WhitelistPanelController.cs" />
-      <Compile Include="Patches\AuctionHouseUIPatch.cs" />
-      <Compile Include="Patches\CharacterPatch.cs" />
-      <Compile Include="Patches\ChatFilterInjector.cs" />
-      <Compile Include="Patches\LootWindowPatch.cs" />
-      <Compile Include="Patches\VendorWindowPatch.cs" />
-      <Compile Include="PlayerInvUI.cs" />
-      <Compile Include="Plugin.cs" />
+        <Content Include="CHANGELOG.md" />
+        <Content Include="README.md" />
     </ItemGroup>
+
+    <!-- ── Embedded font ───────────────────────────────────────────────────── -->
     <ItemGroup>
-      <None Include="App.config" />
-      <None Include="packages.config" />
+        <EmbeddedResource Include="LootManager-Roboto.ttf" />
     </ItemGroup>
-    <ItemGroup>
-      <Content Include="CHANGELOG.md" />
-      <Content Include="README.md" />
-    </ItemGroup>
+
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
-    
-    <Target Name="PostBuild_Debug" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\plugins\Erenshor.LootManager"' />
+
+    <!-- ── ILRepack: merge ImGui.NET deps into output dll ─────────────────── -->
+    <Target Name="ILRepack" AfterTargets="Build">
+        <PropertyGroup>
+            <ILRepackExe>$(SolutionDir)packages\ILRepack.2.0.18\tools\ILRepack.exe</ILRepackExe>
+            <_OutDir>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(OutputPath)'))</_OutDir>
+            <_OutDirNoSlash>$(_OutDir.TrimEnd('\'))</_OutDirNoSlash>
+            <OutputAssembly>$(_OutDir)$(AssemblyName).dll</OutputAssembly>
+        </PropertyGroup>
+        <Exec Command="&quot;$(ILRepackExe)&quot; /ndebug /internalize /lib:&quot;$(_OutDirNoSlash)&quot; /out:&quot;$(OutputAssembly)&quot; &quot;$(OutputAssembly)&quot; &quot;$(_OutDir)ImGui.NET.dll&quot; &quot;$(_OutDir)System.Runtime.CompilerServices.Unsafe.dll&quot; &quot;$(_OutDir)System.Numerics.Vectors.dll&quot; &quot;$(_OutDir)System.Buffers.dll&quot;"
+              ContinueOnError="true" />
     </Target>
 
-    <Target Name="PostBuild_Release" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Target Name="PostBuild_Debug" AfterTargets="ILRepack" Condition="'$(Configuration)' == 'Debug'">
+        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\plugins\loot-manager"' />
+    </Target>
+
+    <Target Name="PostBuild_Release" AfterTargets="ILRepack" Condition="'$(Configuration)' == 'Release'">
         <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Erenshor Modding\Plugins\Erenshor.LootManager\build\Erenshor.LootManager"' />
     </Target>
 </Project>
