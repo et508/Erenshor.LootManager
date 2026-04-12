@@ -5,6 +5,8 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace LootManager
@@ -15,74 +17,81 @@ namespace LootManager
     {
         internal static ManualLogSource Log;
         internal static Plugin Instance;
-        
-        internal static HashSet<string> Blacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        internal static HashSet<string> Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        internal static HashSet<string> Banklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        internal static HashSet<string> Junklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        internal static HashSet<string> Blacklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Whitelist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Banklist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        internal static HashSet<string> Junklist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         internal static HashSet<string> Auctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        internal static HashSet<string> Editlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        
+        internal static HashSet<string> Editlist    = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         public static Dictionary<string, HashSet<string>> FilterList =
             new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-        
+
         public static HashSet<string> EnabledFilterCategories =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public static HashSet<string> FilterAppliedToBlacklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        public static HashSet<string> FilterAppliedToWhitelist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        public static HashSet<string> FilterAppliedToBanklist   = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        
+        public static HashSet<string> FilterAppliedToBlacklist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> FilterAppliedToWhitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static HashSet<string> FilterAppliedToBanklist  = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         public static ConfigEntry<KeyboardShortcut> ToggleLootUIHotkey;
         public static ConfigEntry<KeyboardShortcut> ToggleAutoLootHotkey;
-        public static ConfigEntry<bool>  AutoLootEnabled;
-        public static ConfigEntry<float> AutoLootDistance;
-        public static ConfigEntry<bool>  AutoLootDelayEnabled;
-        public static ConfigEntry<float> AutoLootDelay;
+        public static ConfigEntry<bool>   AutoLootEnabled;
+        public static ConfigEntry<float>  AutoLootDistance;
+        public static ConfigEntry<bool>   AutoLootDelayEnabled;
+        public static ConfigEntry<float>  AutoLootDelay;
         public static ConfigEntry<string> LootMethod;
-        public static ConfigEntry<bool>  BankLootEnabled;
+        public static ConfigEntry<bool>   BankLootEnabled;
         public static ConfigEntry<string> BankLootMethod;
         public static ConfigEntry<string> BankLootPageMode;
-        public static ConfigEntry<int>   BankPageFirst;
-        public static ConfigEntry<int>   BankPageLast;
-        public static ConfigEntry<bool> BankslotAddToList;
-        public static ConfigEntry<bool>  LootRare;
-        public static ConfigEntry<bool>  LootEquipment;
+        public static ConfigEntry<int>    BankPageFirst;
+        public static ConfigEntry<int>    BankPageLast;
+        public static ConfigEntry<bool>   BankslotAddToList;
+        public static ConfigEntry<bool>   LootRare;
+        public static ConfigEntry<bool>   LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
         public static ConfigEntry<string> ChatOutputWindow;
         public static ConfigEntry<int>    ChatOutputTab;
         public static ConfigEntry<bool>   ChatOutputEnabled;
 
+        // ImGui
+        private ImGuiRenderer     _imgui;
+        private LootManagerWindow _window;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr LoadLibrary(string path);
+
         private void Awake()
         {
             Log      = Logger;
             Instance = this;
-            
-            ToggleLootUIHotkey       = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",new KeyboardShortcut(KeyCode.F6), "Hotkey to toggle the Loot Manager UI window.");
-            ToggleAutoLootHotkey     = Config.Bind("Hotkeys", "Autoloot Toggle Hotkey", new KeyboardShortcut(KeyCode.F10), "Hotkey to toggle auto looting on and off.");
-            
-            AutoLootEnabled          = Config.Bind("Autoloot Settings", "Enable Autoloot", true, "Enable or disable auto looting.");
-            AutoLootDistance         = Config.Bind("Autoloot Settings", "Autoloot Distance", 20f, "Maximum distance for auto looting.");
-            AutoLootDelayEnabled     = Config.Bind("Autoloot Settings", "Enable Autoloot Delay", false, "If true, autoloot waits until fully out of combat before looting queued kills.");
-            AutoLootDelay            = Config.Bind("Autoloot Settings", "Autoloot Delay Seconds", 3f, "Extra grace period in seconds to wait after combat ends before autolooting (0 - 10).");
-            
-            LootMethod               = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
 
-            BankLootEnabled          = Config.Bind("Bankloot Settings", "Bankloot Enabled", false, "If enabled, looted items will be deposited to bank instead of inventory.");
-            BankLootMethod           = Config.Bind("Bankloot Settings", "Bankloot Method", "All", "Method for bank looting: All or Filtered");
-            BankLootPageMode         = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
-            BankPageFirst            = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
-            BankPageLast             = Config.Bind("Bankloot Settings", "Bank Page Last", 20, new ConfigDescription("Last bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
-            BankslotAddToList        = Config.Bind("Bankloot Settings", "Bankslot Add", false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
+            ToggleLootUIHotkey   = Config.Bind("Hotkeys", "Toggle LootUI Hotkey",   new KeyboardShortcut(KeyCode.F6),  "Hotkey to toggle the Loot Manager UI window.");
+            ToggleAutoLootHotkey = Config.Bind("Hotkeys", "Autoloot Toggle Hotkey", new KeyboardShortcut(KeyCode.F10), "Hotkey to toggle auto looting on and off.");
 
-            LootRare                 = Config.Bind("Filter Settings", "Loot Rare Equipment", false, "If true, always loot rare equipment in blacklist loot method.");    
-            LootEquipment            = Config.Bind("Filter Settings", "Loot Equipment", true, "If true, loot all equipment.");
-            LootEquipmentTier        = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            AutoLootEnabled      = Config.Bind("Autoloot Settings", "Enable Autoloot",       true,  "Enable or disable auto looting.");
+            AutoLootDistance     = Config.Bind("Autoloot Settings", "Autoloot Distance",      20f,   "Maximum distance for auto looting.");
+            AutoLootDelayEnabled = Config.Bind("Autoloot Settings", "Enable Autoloot Delay",  false, "If true, autoloot waits until fully out of combat before looting queued kills.");
+            AutoLootDelay        = Config.Bind("Autoloot Settings", "Autoloot Delay Seconds", 3f,    "Extra grace period in seconds to wait after combat ends before autolooting (0 - 10).");
 
-            ChatOutputWindow         = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
-            ChatOutputTab            = Config.Bind("Chat Settings", "Chat Output Tab",     0,           new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
-            ChatOutputEnabled        = Config.Bind("Chat Settings", "Chat Output Enabled", true,        "If false, Loot Manager will not send any messages to chat.");
-            
+            LootMethod           = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
+
+            BankLootEnabled      = Config.Bind("Bankloot Settings", "Bankloot Enabled",   false,         "If enabled, looted items will be deposited to bank instead of inventory.");
+            BankLootMethod       = Config.Bind("Bankloot Settings", "Bankloot Method",    "All",         "Method for bank looting: All or Filtered");
+            BankLootPageMode     = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
+            BankPageFirst        = Config.Bind("Bankloot Settings", "Bank Page First", 20, new ConfigDescription("First bank page to use when in Page Range mode.", new AcceptableValueRange<int>(1, 98)));
+            BankPageLast         = Config.Bind("Bankloot Settings", "Bank Page Last",  20, new ConfigDescription("Last bank page to use when in Page Range mode.",  new AcceptableValueRange<int>(1, 98)));
+            BankslotAddToList    = Config.Bind("Bankloot Settings", "Bankslot Add",    false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
+
+            LootRare          = Config.Bind("Filter Settings", "Loot Rare Equipment", false,                    "If true, always loot rare equipment in blacklist loot method.");
+            LootEquipment     = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
+            LootEquipmentTier = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+
+            ChatOutputWindow  = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
+            ChatOutputTab     = Config.Bind("Chat Settings", "Chat Output Tab",     0,          new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
+            ChatOutputEnabled = Config.Bind("Chat Settings", "Chat Output Enabled", true,       "If false, Loot Manager will not send any messages to chat.");
+
             LootBlacklist.Load();
             LootWhitelist.Load();
             LootBanklist.Load();
@@ -91,9 +100,9 @@ namespace LootManager
             LootFilterlist.Load();
 
             Log.LogInfo("Loot Manager loaded.");
-            
+
             var harmony = new Harmony("et508.erenshor.lootmanager");
-            
+
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (asm.GetName().Name == "ErenshorQoL")
@@ -107,33 +116,97 @@ namespace LootManager
                         harmony.Unpatch(lootAllMethod, HarmonyPatchType.Prefix, harmonyID);
                         Log.LogWarning("[Loot Manager] Unpatched ErenshorQoL LootAll prefix.");
                     }
-                    else
-                    {
-                        Log.LogError("[Loot Manager] Failed to find LootWindow.LootAll for unpatching.");
-                    }
-
                     if (doDeathMethod != null)
                     {
                         harmony.Unpatch(doDeathMethod, HarmonyPatchType.Postfix, harmonyID);
                         Log.LogWarning("[Loot Manager] Unpatched ErenshorQoL DoDeath postfix.");
                     }
-                    else
-                    {
-                        Log.LogError("[LootManager] Failed to find Character.DoDeath for unpatching.");
-                    }
-
                     break;
                 }
             }
 
             harmony.PatchAll();
-            
+
             LootManagerController.Initialize();
-            
+
             var hotkeyGO = new GameObject("LootManager_Hotkeys");
             DontDestroyOnLoad(hotkeyGO);
             hotkeyGO.hideFlags = HideFlags.HideAndDontSave;
             hotkeyGO.AddComponent<AutoLootHotkeyListener>();
+        }
+
+        private void Start()
+        {
+            string assemblyDir = System.IO.Path.GetDirectoryName(
+                Assembly.GetExecutingAssembly().Location) ?? BepInEx.Paths.PluginPath;
+            string cimguiPath = System.IO.Path.Combine(assemblyDir, "cimgui.dll");
+
+            if (!System.IO.File.Exists(cimguiPath))
+            {
+                Logger.LogError("[LootManager] cimgui.dll not found at: " + cimguiPath);
+                return;
+            }
+
+            var hLib = LoadLibrary(cimguiPath);
+            if (hLib == IntPtr.Zero)
+            {
+                Logger.LogError("[LootManager] Failed to pre-load cimgui.dll (Win32 error " +
+                    Marshal.GetLastWin32Error() + ")");
+                return;
+            }
+
+            Logger.LogInfo("[LootManager] cimgui.dll loaded at 0x" + hLib.ToString("X"));
+            InitImGuiTypes();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void InitImGuiTypes()
+        {
+            float detectedScale = Mathf.Clamp((float)Screen.height / 1080f, 0.5f, 4f);
+
+            _window = new LootManagerWindow();
+            _imgui  = new ImGuiRenderer(Logger);
+            _imgui.UiScale  = detectedScale;
+            _imgui.OnLayout = () => _window.Draw();
+
+            if (!_imgui.Init())
+            {
+                Logger.LogError("[LootManager] ImGui init failed — UI will not render.");
+            }
+            else
+            {
+                PointerOverUIPatch.Renderer = _imgui;
+                _window.Scale = detectedScale;
+
+                var mute = gameObject.GetComponent<ImGuiInputMute>()
+                           ?? gameObject.AddComponent<ImGuiInputMute>();
+                mute.Renderer = _imgui;
+
+                Logger.LogInfo("[LootManager] ImGui UI ready.");
+            }
+        }
+
+        public static void ToggleWindow()
+        {
+            Instance?._window?.Toggle();
+        }
+
+        private void Update()
+        {
+            if (_window == null) return;
+            if (GameData.PlayerTyping || (_imgui != null && _imgui.WantTextInput)) return;
+            if (ToggleLootUIHotkey != null && ToggleLootUIHotkey.Value.IsDown())
+                _window.Toggle();
+        }
+
+        private void OnGUI()
+        {
+            _imgui?.OnGUI();
+        }
+
+        private void OnDestroy()
+        {
+            _imgui?.Dispose();
         }
     }
 }

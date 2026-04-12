@@ -79,10 +79,6 @@ namespace LootManager
 
             _instance = host.GetComponent<LootManagerController>();
             if (_instance == null) _instance = host.AddComponent<LootManagerController>();
-
-            if (host.GetComponent<LootUI>() == null)
-                host.AddComponent<LootUI>();
-
         }
 
         private void OnEnable()

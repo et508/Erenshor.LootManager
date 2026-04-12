@@ -7,18 +7,16 @@ namespace LootManager
         private void Update()
         {
             if (Plugin.ToggleAutoLootHotkey == null) return;
-            
-            if (GameData.PlayerTyping || TypingInputMute.IsAnyActive) return;
+            if (GameData.PlayerTyping) return;
 
             if (Plugin.ToggleAutoLootHotkey.Value.IsDown())
             {
                 bool newValue = !Plugin.AutoLootEnabled.Value;
-                SettingsPanelController.ApplyAutoLootFromExternal(newValue);
-                
+                Plugin.AutoLootEnabled.Value = newValue;
+
                 ChatFilterInjector.SendLootMessage(
                     newValue ? "[Loot Manager] Autoloot ON" : "[Loot Manager] Autoloot OFF",
-                    newValue ? "green" : "red"
-                );
+                    newValue ? "green" : "red");
             }
         }
     }
