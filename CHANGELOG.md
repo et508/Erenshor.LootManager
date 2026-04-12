@@ -1,4 +1,4 @@
-## [3.1.0] - 3/12/2026
+## [3.1.0] - 4/12/2026
 
 ### Loot UI
 - Complete overhaul of the UI (again). The UI framework has been switched to ImGui.NET, which allows for more customization and better performance.
