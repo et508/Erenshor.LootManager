@@ -51,90 +51,111 @@ namespace LootManager
             ImGui.Separator();
 
             // ── Column headers ────────────────────────────────────────────────
-            float totalW  = ImGui.GetContentRegionAvail().X;
-            float actW    = 44f  * scale;
-            float nameW   = 0f;            // flexible
-            float checkW  = 64f  * scale;  // per toggle column
-            float editW   = 38f  * scale;
-            float delW    = 38f  * scale;
-            int   numCheckCols = 3;        // Blacklist, Whitelist, Banklist
-            float fixedW  = actW + (checkW * numCheckCols) + editW + delW + 20f * scale;
-            nameW = Math.Max(80f * scale, totalW - fixedW);
+            float actW   = 50f  * scale;
+            float checkW = 54f  * scale;
+            float editW  = 40f  * scale;
+            float delW   = 40f  * scale;
 
-            ImGui.PushStyleColor(ImGuiCol.Text, LootManagerWindow.V4TextMuted);
-            ImGui.TextUnformatted("Active"); ImGui.SameLine(actW);
-            ImGui.TextUnformatted("Name");   ImGui.SameLine(actW + nameW);
-            ImGui.TextUnformatted("BL");     ImGui.SameLine(actW + nameW + checkW * 1);
-            ImGui.TextUnformatted("WL");     ImGui.SameLine(actW + nameW + checkW * 2);
-            ImGui.TextUnformatted("Bank");
-            ImGui.PopStyleColor();
-            ImGui.Separator();
-
-            // ── Rows ──────────────────────────────────────────────────────────
+            // ── Table ─────────────────────────────────────────────────────────
             float listH = ImGui.GetContentRegionAvail().Y - 4f;
             ImGui.BeginChild("##fl_scroll", new Vector2(-1f, listH), false, ImGuiWindowFlags.None);
 
-            foreach (string cat in _sortedKeys)
+            var tableFlags = ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.BordersInnerV;
+            if (ImGui.BeginTable("##fl_table", 6, tableFlags))
             {
-                ImGui.PushID(cat);
+                // Col 0: Active checkbox  (fixed)
+                // Col 1: Name             (stretch)
+                // Col 2: BL toggle        (fixed)
+                // Col 3: WL toggle        (fixed)
+                // Col 4: Bank toggle      (fixed)
+                // Col 5: Edit / Del       (fixed)
+                ImGui.TableSetupColumn("Active", ImGuiTableColumnFlags.WidthFixed,  actW);
+                ImGui.TableSetupColumn("Name",   ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("BL",     ImGuiTableColumnFlags.WidthFixed,  checkW);
+                ImGui.TableSetupColumn("WL",     ImGuiTableColumnFlags.WidthFixed,  checkW);
+                ImGui.TableSetupColumn("Bank",   ImGuiTableColumnFlags.WidthFixed,  checkW);
+                ImGui.TableSetupColumn("##act",  ImGuiTableColumnFlags.WidthFixed,  editW + delW + 6f * scale);
 
-                // Active toggle
-                bool active = Plugin.EnabledFilterCategories.Contains(cat);
-                if (ImGui.Checkbox("##active", ref active))
-                    LootFilterlist.SetSectionEnabled(cat, active);
-                ImGui.SameLine(actW);
-
-                // Name
-                ImGui.TextUnformatted(cat);
-                ImGui.SameLine(actW + nameW);
-
-                // Blacklist toggle
-                bool applyBL = Plugin.FilterAppliedToBlacklist.Contains(cat);
-                if (ImGui.Checkbox("##bl", ref applyBL))
-                    LootFilterlist.SetAppliedTo(cat, "Blacklist", applyBL);
-                ImGui.SameLine(actW + nameW + checkW * 1);
-
-                // Whitelist toggle
-                bool applyWL = Plugin.FilterAppliedToWhitelist.Contains(cat);
-                if (ImGui.Checkbox("##wl", ref applyWL))
-                    LootFilterlist.SetAppliedTo(cat, "Whitelist", applyWL);
-                ImGui.SameLine(actW + nameW + checkW * 2);
-
-                // Banklist toggle
-                bool applyBK = Plugin.FilterAppliedToBanklist.Contains(cat);
-                if (ImGui.Checkbox("##bk", ref applyBK))
-                    LootFilterlist.SetAppliedTo(cat, "Banklist", applyBK);
-                ImGui.SameLine();
-
-                // Spacer to push edit/del to right side
-                ImGui.SetCursorPosX(totalW - editW - delW - 8f * scale);
-
-                if (ImGui.Button("Edit##edit", new Vector2(editW, 0f)))
-                    openEditlist?.Invoke(cat);
-
-                ImGui.SameLine();
-
-                // Delete — with inline confirmation
-                if (_deleteConfirm == cat)
+                // Header row
+                ImGui.TableNextRow(ImGuiTableRowFlags.Headers);
+                ImGui.PushStyleColor(ImGuiCol.Text, LootManagerWindow.V4TextMuted);
+                for (int col = 0; col < 6; col++)
                 {
-                    if (LootManagerWindow.DangerButton("Sure?##del", new Vector2(delW + 10f * scale, 0f)))
-                    {
-                        DeleteCategory(cat);
-                        _deleteConfirm = null;
-                        ImGui.PopID();
-                        break; // list changed, stop iterating
-                    }
+                    ImGui.TableSetColumnIndex(col);
+                    string hdr = col == 0 ? "Active"
+                               : col == 1 ? "Name"
+                               : col == 2 ? "BL"
+                               : col == 3 ? "WL"
+                               : col == 4 ? "Bank"
+                               : "";
+                    ImGui.TextUnformatted(hdr);
+                }
+                ImGui.PopStyleColor();
+
+                // Data rows
+                foreach (string cat in _sortedKeys)
+                {
+                    ImGui.TableNextRow();
+                    ImGui.PushID(cat);
+
+                    // Col 0: Active
+                    ImGui.TableSetColumnIndex(0);
+                    bool active = Plugin.EnabledFilterCategories.Contains(cat);
+                    if (ImGui.Checkbox("##active", ref active))
+                        LootFilterlist.SetSectionEnabled(cat, active);
+
+                    // Col 1: Name
+                    ImGui.TableSetColumnIndex(1);
+                    ImGui.TextUnformatted(cat);
+
+                    // Col 2: BL
+                    ImGui.TableSetColumnIndex(2);
+                    bool applyBL = Plugin.FilterAppliedToBlacklist.Contains(cat);
+                    if (ImGui.Checkbox("##bl", ref applyBL))
+                        LootFilterlist.SetAppliedTo(cat, "Blacklist", applyBL);
+
+                    // Col 3: WL
+                    ImGui.TableSetColumnIndex(3);
+                    bool applyWL = Plugin.FilterAppliedToWhitelist.Contains(cat);
+                    if (ImGui.Checkbox("##wl", ref applyWL))
+                        LootFilterlist.SetAppliedTo(cat, "Whitelist", applyWL);
+
+                    // Col 4: Bank
+                    ImGui.TableSetColumnIndex(4);
+                    bool applyBK = Plugin.FilterAppliedToBanklist.Contains(cat);
+                    if (ImGui.Checkbox("##bk", ref applyBK))
+                        LootFilterlist.SetAppliedTo(cat, "Banklist", applyBK);
+
+                    // Col 5: Edit / Del
+                    ImGui.TableSetColumnIndex(5);
+                    if (ImGui.Button("Edit##edit", new Vector2(editW, 0f)))
+                        openEditlist?.Invoke(cat);
+
                     ImGui.SameLine();
-                    if (ImGui.Button("No##delno"))
-                        _deleteConfirm = null;
-                }
-                else
-                {
-                    if (LootManagerWindow.DangerButton("Del##del", new Vector2(delW, 0f)))
-                        _deleteConfirm = cat;
+
+                    if (_deleteConfirm == cat)
+                    {
+                        if (LootManagerWindow.DangerButton("Sure?##del", new Vector2(delW + 10f * scale, 0f)))
+                        {
+                            DeleteCategory(cat);
+                            _deleteConfirm = null;
+                            ImGui.PopID();
+                            break;
+                        }
+                        ImGui.SameLine();
+                        if (ImGui.Button("No##delno"))
+                            _deleteConfirm = null;
+                    }
+                    else
+                    {
+                        if (LootManagerWindow.DangerButton("Del##del", new Vector2(delW, 0f)))
+                            _deleteConfirm = cat;
+                    }
+
+                    ImGui.PopID();
                 }
 
-                ImGui.PopID();
+                ImGui.EndTable();
             }
 
             ImGui.EndChild();

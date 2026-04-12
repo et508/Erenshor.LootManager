@@ -27,8 +27,9 @@ namespace LootManager
         // ── State ─────────────────────────────────────────────────────────────
 
         private bool _visible    = false;
-        private bool _editMode   = false;   // true = editlist is shown instead of tab bar
-        private int  _activeTab  = 0;       // index into the visible tab list
+        private bool _editMode      = false;   // true = editlist is shown instead of tab bar
+        private int  _activeTab     = 0;       // index into the visible tab list
+        private bool _initialized   = false;   // first-open OnShow fired
 
         // Tab IDs — kept stable so ImGui tab bar state doesn't flicker
         private const int TAB_SETTINGS    = 0;
@@ -129,6 +130,11 @@ namespace LootManager
 
             if (expanded)
             {
+                if (!_initialized)
+                {
+                    _initialized = true;
+                    OnTabChanged(_activeTab);
+                }
                 DrawColoredTitle();
                 DrawTabBar();
             }
