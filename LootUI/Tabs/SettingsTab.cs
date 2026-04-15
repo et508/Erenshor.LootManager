@@ -219,15 +219,6 @@ namespace LootManager
             bool fishOn = Plugin.FishingFilterEnabled.Value;
             if (ImGui.Checkbox("Apply Loot Filters to Fishing##fish_en", ref fishOn))
                 Plugin.FishingFilterEnabled.Value = fishOn;
-
-            if (!fishOn)
-            {
-                ImGui.PushStyleColor(ImGuiCol.Text, LootManagerWindow.V4TextMuted);
-                ImGui.TextUnformatted("When enabled, fish catches are filtered through the");
-                ImGui.TextUnformatted("active loot method (Blacklist/Whitelist/Standard),");
-                ImGui.TextUnformatted("Banklist, and Auctionlist.");
-                ImGui.PopStyleColor();
-            }
         }
 
         private void DrawBankLootSection(float s)
