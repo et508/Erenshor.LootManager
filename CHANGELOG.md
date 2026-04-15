@@ -1,4 +1,4 @@
-## [3.2.0] - TBD
+## [3.2.0] - 4/15/2026
 ### Added
 - Added a new option to apply loot filters to fishing. 
    - This option can be found in the settings panel and is disabled by default.
