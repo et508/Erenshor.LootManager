@@ -35,8 +35,9 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 - **Whitelist** — Destroy everything. Only loot what you have explicitly chosen to keep.
 - **Standard** — Default game looting behaviour. No filtering applied.
 
-### Fishing
+### Fishing & Mining
 - **Apply Loot Filters to Fishing** — When enabled, fish catches are processed through your active loot filters (Blacklist/Whitelist/Standard), Banklist, and Auctionlist. Useful for AFK fishing to discard junk catches automatically. Off by default.
+- **Apply Loot Filters to Mining** — When enabled, mining yields are processed through the same loot filters. Useful for discarding unwanted ore or automatically banking materials. Off by default.
 
 ### Bank Loot
 - **Enable Bank Loot** — Toggle bank looting on or off.
@@ -101,7 +102,7 @@ Items on the Auctionlist are **automatically listed on the Auction House** when 
 Filter Lists are togglable groups of items that work alongside the Whitelist loot method.
 
 - A few pre-made groups are provided the first time you run Loot Manager. These can be edited or removed.
-- Create a new group by entering a name and clicking `New Group`. New groups start empty and disabled.
+- Create a new group by entering a name and clicking `+ Add`. New groups start empty and disabled.
 - Click `Edit` next to a group to open a transfer list for that group. Works the same as the other list panels.
 - Click `Del` (then confirm) to permanently delete a group.
 - Each group has three toggles: **BL** (apply to Blacklist), **WL** (apply to Whitelist), **Bank** (apply to Banklist).

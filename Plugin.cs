@@ -52,6 +52,7 @@ namespace LootManager
         public static ConfigEntry<bool>   LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
         public static ConfigEntry<bool>   FishingFilterEnabled;
+        public static ConfigEntry<bool>   MiningFilterEnabled;
         public static ConfigEntry<string> ChatOutputWindow;
         public static ConfigEntry<int>    ChatOutputTab;
         public static ConfigEntry<bool>   ChatOutputEnabled;
@@ -89,6 +90,7 @@ namespace LootManager
             LootEquipment        = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
             LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
             FishingFilterEnabled = Config.Bind("Filter Settings", "Apply Filters to Fishing", false, "If true, loot filters (blacklist/whitelist/banklist/auctionlist) are applied to fishing catches.");
+            MiningFilterEnabled  = Config.Bind("Filter Settings", "Apply Filters to Mining",  false, "If true, loot filters are applied to mining yields.");
 
             ChatOutputWindow  = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
             ChatOutputTab     = Config.Bind("Chat Settings", "Chat Output Tab",     0,          new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
