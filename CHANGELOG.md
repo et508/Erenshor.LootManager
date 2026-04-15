@@ -1,3 +1,12 @@
+## [3.2.0] - TBD
+### Added
+- Added a new option to apply loot filters to fishing. 
+  - When enabled, the same loot filters that are applied to regular looting will also be applied to items caught while fishing. This means that if an item is blacklisted, it will not be caught while fishing. If an item is on the banklist, it will be sent directly to the bank when caught while fishing. If an item is on the Auctionlist, it will be listed on the Auction House when caught while fishing.
+  - This option can be found in the settings panel and is disabled by default.
+
+
+
+
 ## [3.1.0] - 4/12/2026
 
 ### Loot UI

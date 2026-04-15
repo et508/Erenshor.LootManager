@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.1.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.0.0")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -51,6 +51,7 @@ namespace LootManager
         public static ConfigEntry<bool>   LootRare;
         public static ConfigEntry<bool>   LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
+        public static ConfigEntry<bool>   FishingFilterEnabled;
         public static ConfigEntry<string> ChatOutputWindow;
         public static ConfigEntry<int>    ChatOutputTab;
         public static ConfigEntry<bool>   ChatOutputEnabled;
@@ -84,9 +85,10 @@ namespace LootManager
             BankPageLast         = Config.Bind("Bankloot Settings", "Bank Page Last",  20, new ConfigDescription("Last bank page to use when in Page Range mode.",  new AcceptableValueRange<int>(1, 98)));
             BankslotAddToList    = Config.Bind("Bankloot Settings", "Bankslot Add",    false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
-            LootRare          = Config.Bind("Filter Settings", "Loot Rare Equipment", false,                    "If true, always loot rare equipment in blacklist loot method.");
-            LootEquipment     = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
-            LootEquipmentTier = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            LootRare             = Config.Bind("Filter Settings", "Loot Rare Equipment", false,                    "If true, always loot rare equipment in blacklist loot method.");
+            LootEquipment        = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
+            LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            FishingFilterEnabled = Config.Bind("Filter Settings", "Apply Filters to Fishing", false, "If true, loot filters (blacklist/whitelist/banklist/auctionlist) are applied to fishing catches.");
 
             ChatOutputWindow  = Config.Bind("Chat Settings", "Chat Output Window",  "MAINCHAT", "WindowName of the IDLog window to send Loot Manager messages to.");
             ChatOutputTab     = Config.Bind("Chat Settings", "Chat Output Tab",     0,          new ConfigDescription("Tab index (0-based) within the selected chat window.", new AcceptableValueRange<int>(0, 5)));
