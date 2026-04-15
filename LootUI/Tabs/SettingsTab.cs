@@ -59,6 +59,8 @@ namespace LootManager
             ImGui.Spacing();
             DrawLootMethodSection(scale);
             ImGui.Spacing();
+            DrawFishingSection(scale);
+            ImGui.Spacing();
             DrawBankLootSection(scale);
             ImGui.Spacing();
             DrawChatOutputSection(scale);
@@ -209,6 +211,19 @@ namespace LootManager
         }
 
         // ── Bank loot ─────────────────────────────────────────────────────────
+
+        private void DrawFishingSection(float s)
+        {
+            LootManagerWindow.SectionHeader("Fishing & Mining");
+
+            bool fishOn = Plugin.FishingFilterEnabled.Value;
+            if (ImGui.Checkbox("Apply Loot Filters to Fishing##fish_en", ref fishOn))
+                Plugin.FishingFilterEnabled.Value = fishOn;
+
+            bool mineOn = Plugin.MiningFilterEnabled.Value;
+            if (ImGui.Checkbox("Apply Loot Filters to Mining##mine_en", ref mineOn))
+                Plugin.MiningFilterEnabled.Value = mineOn;
+        }
 
         private void DrawBankLootSection(float s)
         {

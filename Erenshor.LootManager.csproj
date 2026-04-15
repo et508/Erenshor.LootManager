@@ -145,6 +145,8 @@
         <Compile Include="Patches\ChatFilterInjector.cs" />
         <Compile Include="Patches\LootWindowPatch.cs" />
         <Compile Include="Patches\PointerOverUIPatch.cs" />
+        <Compile Include="Patches\FishingPatch.cs" />
+        <Compile Include="Patches\MiningPatch.cs" />
         <Compile Include="Patches\VendorWindowPatch.cs" />
 
         <!-- Rendering -->

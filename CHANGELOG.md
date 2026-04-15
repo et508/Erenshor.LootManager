@@ -1,3 +1,10 @@
+## [3.2.0] - TBD
+### Added
+- Added a new option to apply loot filters to fishing. 
+   - This option can be found in the settings panel and is disabled by default.
+- Added a new option to apply loot filters to mining. 
+  - This option can be found in the settings panel and is disabled by default.
+
 ## [3.1.0] - 4/12/2026
 
 ### Loot UI
