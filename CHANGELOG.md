@@ -1,8 +1,16 @@
-## [3.2.1] - TBD
+## [3.2.1] - TDB
+### Added
+- Added a toggle for Auction Loot. When enabled, items that are set to be listed on the Auction House will be looted and listed as normal.
+
 ### Fixed
 - The Auction House listing system was broken by the new update, but it should be working properly now.
 - Fixed the incorrect names for blue and purple items. Rare -> Blessed, Godly -> Ascended.
 
+### Blacklist
+- Reworked the Always Loot Rare Items setting. We changed it to Loot Equipment.
+    - When enabled, equipable items will be looted regardless of their blacklist status.
+      - A tier drop down has been added to allow for filtering of equipable items by tier. All, Normal Only, Improved Only, Blessed Only, Ascended Only, Improved and Up, Blessed and Up.
+    - When disabled, the blacklist will function as normal and all blacklisted items will not be looted, including equipable items.
 
 ## [3.2.0] - 4/15/2026
 ### Added

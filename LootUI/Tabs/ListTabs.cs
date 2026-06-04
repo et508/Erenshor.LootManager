@@ -14,11 +14,36 @@ namespace LootManager
         protected override HashSet<string> GetList()  => Plugin.Blacklist;
         protected override void            SaveList()  => LootBlacklist.SaveBlacklist();
 
+        private static readonly string[] TierOptions =
+            { "All", "Normal Only", "Improved Only", "Blessed Only", "Ascended Only", "Improved and Up", "Blessed and Up" };
+
+        private int _tierIdx;
+
+        public new void OnShow()
+        {
+            base.OnShow();
+            _tierIdx = (int)Plugin.LootEquipmentTier.Value;
+        }
+
         protected override void DrawExtraControls(float scale)
         {
-            bool lootRare = Plugin.LootBlessed.Value;
-            if (ImGui.Checkbox("Always Loot Blessed##bl_blessed", ref lootRare))
-                Plugin.LootBlessed.Value = lootRare;
+            bool lootEquip = Plugin.LootEquipment.Value;
+            if (ImGui.Checkbox("Loot Equipment##bl_equip", ref lootEquip))
+                Plugin.LootEquipment.Value = lootEquip;
+
+            ImGui.SameLine(200f * scale);
+
+            if (!lootEquip) ImGui.BeginDisabled();
+
+            ImGui.PushStyleColor(ImGuiCol.Text, LootManagerWindow.V4TextMuted);
+            ImGui.TextUnformatted("Tier:");
+            ImGui.PopStyleColor();
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(160f * scale);
+            if (ImGui.Combo("##bl_tier", ref _tierIdx, TierOptions, TierOptions.Length))
+                Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)_tierIdx;
+
+            if (!lootEquip) ImGui.EndDisabled();
 
             ImGui.Spacing();
         }
@@ -35,7 +60,7 @@ namespace LootManager
         protected override void            SaveList()  => LootWhitelist.SaveWhitelist();
 
         private static readonly string[] TierOptions =
-            { "All", "Normal Only", "Blessed Only", "Ascended Only", "Blessed and Up" };
+            { "All", "Normal Only", "Improved Only", "Blessed Only", "Ascended Only", "Improved and Up", "Blessed and Up" };
 
         private int _tierIdx;
 

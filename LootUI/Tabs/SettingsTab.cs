@@ -33,7 +33,7 @@ namespace LootManager
         private static readonly string[] LootMethodOptions  = { "Blacklist", "Whitelist", "Standard" };
         private static readonly string[] BankMethodOptions  = { "All", "Filtered" };
         private static readonly string[] BankPageOptions    = { "First Empty", "Page Range" };
-        private static readonly string[] EquipTierOptions   = { "All", "Normal Only", "Blessed Only", "Ascended Only", "Blessed and Up" };
+        private static readonly string[] EquipTierOptions   = { "All", "Normal Only", "Blessed Only", "Ascended Only", "Blessed and Up", "Improved Only", "Improved and Up" };
 
         private System.Action _onVisibilityChanged;
 
@@ -62,6 +62,8 @@ namespace LootManager
             DrawFishingSection(scale);
             ImGui.Spacing();
             DrawBankLootSection(scale);
+            ImGui.Spacing();
+            DrawAuctionLootSection(scale);
             ImGui.Spacing();
             DrawChatOutputSection(scale);
 
@@ -290,6 +292,20 @@ namespace LootManager
             }
 
             if (!bankOn) ImGui.EndDisabled();
+        }
+
+        // ── Auction loot ──────────────────────────────────────────────────────
+
+        private void DrawAuctionLootSection(float s)
+        {
+            LootManagerWindow.SectionHeader("Auction Loot");
+
+            bool auctionOn = Plugin.AuctionLootEnabled.Value;
+            if (ImGui.Checkbox("Enable Auction Loot##auction_en", ref auctionOn))
+            {
+                Plugin.AuctionLootEnabled.Value = auctionOn;
+                _onVisibilityChanged?.Invoke();
+            }
         }
 
         // ── Chat output ───────────────────────────────────────────────────────

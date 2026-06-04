@@ -58,7 +58,7 @@ namespace LootManager
             string lootMethod = Plugin.LootMethod.Value;
 
             // ── Auctionlist ───────────────────────────────────────────────────
-            if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+            if (Plugin.AuctionLootEnabled.Value && Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
             {
                 bool listed = AuctionLoot.TryListItem(item, 1);
                 if (listed)
@@ -66,8 +66,7 @@ namespace LootManager
                     // Item was listed — block inventory add
                     return false;
                 }
-                // Listing failed (blessed/no value/etc.) — fall through,
-                // keep item in inventory.
+                // Listing failed — fall through, keep item in inventory.
             }
 
             // ── Banklist ──────────────────────────────────────────────────────

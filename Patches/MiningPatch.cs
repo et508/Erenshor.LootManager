@@ -25,7 +25,7 @@ namespace LootManager
             string lootMethod = Plugin.LootMethod.Value;
 
             // ── Auctionlist ───────────────────────────────────────────────────
-            if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+            if (Plugin.AuctionLootEnabled.Value && Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
             {
                 bool listed = AuctionLoot.TryListItem(item, 1);
                 if (listed) return false;

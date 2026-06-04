@@ -9,16 +9,6 @@ namespace LootManager
             if (item == null || item == GameData.PlayerInv.Empty)
                 return false;
 
-            // Blessed (qty=2) and ascended (qty=3) equipment cannot be listed on the AH,
-            // matching the game's own restriction in AuctionHouseUI.
-            if (item.RequiredSlot != Item.SlotType.General && quantity > 1)
-            {
-                string tier = quantity == 2 ? "Blessed" : "Ascended";
-                ChatFilterInjector.SendLootMessage(
-                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH ({tier} items not supported).", "red");
-                return false;
-            }
-
             // Match the game's own AH eligibility rules
             if (item.SimPlayersCantGet)
             {
@@ -76,8 +66,9 @@ namespace LootManager
 
             int listPrice = (item.ItemValue * 6) - 1;
 
-            // AHItemSaveData(itemID, itemQual, itemPrice)
-            // itemQual stores quantity for stackables, quality tier for equipment
+            // quantity encodes both tier (1=Normal, 2=Blessed, 3=Ascended)
+            // and improvement level (11-15 = Normal+1 through Normal+5)
+            // Pass it through directly as itemQual so the AH stores and displays correctly.
             playerData.ItemsForSale.Add(new AHItemSaveData(item.Id, quantity, listPrice));
 
             AuctionHouse.SavePlayerAHData(playerData);
