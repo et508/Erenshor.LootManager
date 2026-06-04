@@ -33,7 +33,7 @@ namespace LootManager
         private static readonly string[] LootMethodOptions  = { "Blacklist", "Whitelist", "Standard" };
         private static readonly string[] BankMethodOptions  = { "All", "Filtered" };
         private static readonly string[] BankPageOptions    = { "First Empty", "Page Range" };
-        private static readonly string[] EquipTierOptions   = { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and Up" };
+        private static readonly string[] EquipTierOptions   = { "All", "Normal Only", "Blessed Only", "Ascended Only", "Blessed and Up" };
 
         private System.Action _onVisibilityChanged;
 

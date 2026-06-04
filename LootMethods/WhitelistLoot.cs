@@ -20,7 +20,7 @@ namespace LootManager
                         return quantity == 1;
                     case EquipmentTierSetting.BlessedOnly:
                         return quantity == 2;
-                    case EquipmentTierSetting.GodlyOnly:
+                    case EquipmentTierSetting.AscendedOnly:
                         return quantity == 3;
                     case EquipmentTierSetting.BlessedAndUp:
                         return quantity >= 2;

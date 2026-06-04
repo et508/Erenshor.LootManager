@@ -48,7 +48,7 @@ namespace LootManager
         public static ConfigEntry<int>    BankPageFirst;
         public static ConfigEntry<int>    BankPageLast;
         public static ConfigEntry<bool>   BankslotAddToList;
-        public static ConfigEntry<bool>   LootRare;
+        public static ConfigEntry<bool>   LootBlessed;
         public static ConfigEntry<bool>   LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
         public static ConfigEntry<bool>   FishingFilterEnabled;
@@ -86,9 +86,9 @@ namespace LootManager
             BankPageLast         = Config.Bind("Bankloot Settings", "Bank Page Last",  20, new ConfigDescription("Last bank page to use when in Page Range mode.",  new AcceptableValueRange<int>(1, 98)));
             BankslotAddToList    = Config.Bind("Bankloot Settings", "Bankslot Add",    false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
-            LootRare             = Config.Bind("Filter Settings", "Loot Rare Equipment", false,                    "If true, always loot rare equipment in blacklist loot method.");
+            LootBlessed             = Config.Bind("Filter Settings", "Loot Blessed Equipment", false,                    "If true, always loot Blessed equipment in blacklist loot method.");
             LootEquipment        = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
-            LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Godly Only, Blessed and Up.");
+            LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Ascended Only, Blessed and Up.");
             FishingFilterEnabled = Config.Bind("Filter Settings", "Apply Filters to Fishing", false, "If true, loot filters (blacklist/whitelist/banklist/auctionlist) are applied to fishing catches.");
             MiningFilterEnabled  = Config.Bind("Filter Settings", "Apply Filters to Mining",  false, "If true, loot filters are applied to mining yields.");
 

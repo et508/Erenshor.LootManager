@@ -5,7 +5,7 @@ namespace LootManager
         All,
         NormalOnly,
         BlessedOnly,
-        GodlyOnly,
+        AscendedOnly,
         BlessedAndUp
     }
 }

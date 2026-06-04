@@ -16,9 +16,9 @@ namespace LootManager
 
         protected override void DrawExtraControls(float scale)
         {
-            bool lootRare = Plugin.LootRare.Value;
-            if (ImGui.Checkbox("Always Loot Rare##bl_rare", ref lootRare))
-                Plugin.LootRare.Value = lootRare;
+            bool lootRare = Plugin.LootBlessed.Value;
+            if (ImGui.Checkbox("Always Loot Blessed##bl_blessed", ref lootRare))
+                Plugin.LootBlessed.Value = lootRare;
 
             ImGui.Spacing();
         }
@@ -35,7 +35,7 @@ namespace LootManager
         protected override void            SaveList()  => LootWhitelist.SaveWhitelist();
 
         private static readonly string[] TierOptions =
-            { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and Up" };
+            { "All", "Normal Only", "Blessed Only", "Ascended Only", "Blessed and Up" };
 
         private int _tierIdx;
 

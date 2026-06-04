@@ -1,5 +1,3 @@
-
-
 using HarmonyLib;
 
 namespace LootManager
@@ -9,7 +7,6 @@ namespace LootManager
     {
         public static bool Prefix(AuctionHouseUI __instance)
         {
-
             foreach (var slot in __instance.Slots)
             {
                 slot.MyItem = GameData.PlayerInv.Empty;
@@ -18,33 +15,33 @@ namespace LootManager
                 slot.GetComponent<PriceOverride>().DispPrice.text = "";
             }
 
-            if (__instance.CurrentSellerData == null &&
+            // Bail if no seller data, or if it belongs to someone else
+            if (__instance.CurrentSellerData == null ||
                 __instance.CurrentSellerData.SellerName != GameData.PlayerStats.MyName)
                 return false;
 
             int maxSlots = __instance.Slots.Count;
             int num = 0;
 
-            foreach (string id in __instance.CurrentSellerData.SellerItems)
+            foreach (AHItemSaveData entry in __instance.CurrentSellerData.ItemsForSale)
             {
-
                 if (num >= maxSlots) break;
+                if (entry == null) continue;
 
-                __instance.Slots[num].MyItem = GameData.ItemDB.GetItemByID(id);
+                __instance.Slots[num].MyItem = GameData.ItemDB.GetItemByID(entry.itemID);
                 __instance.Slots[num].UpdateSlotImage();
-                __instance.Slots[num].GetComponent<PriceOverride>().Price =
-                    __instance.CurrentSellerData.PlayerPrices[num];
+                __instance.Slots[num].Quantity = entry.itemQual;
+                __instance.Slots[num].GetComponent<PriceOverride>().Price = entry.itemPrice;
 
                 if (__instance.Slots[num].MyItem != null &&
                     __instance.Slots[num].MyItem != GameData.PlayerInv.Empty)
                 {
                     __instance.Slots[num].GetComponent<PriceOverride>().DispPrice.text =
-                        __instance.CurrentSellerData.PlayerPrices[num].ToString() + "g";
+                        entry.itemPrice.ToString() + "g";
                 }
                 else
                 {
-                    __instance.Slots[num].GetComponent<PriceOverride>().DispPrice.text =
-                        __instance.CurrentSellerData.PlayerPrices[num].ToString() ?? "";
+                    __instance.Slots[num].GetComponent<PriceOverride>().DispPrice.text = "";
                 }
 
                 num++;

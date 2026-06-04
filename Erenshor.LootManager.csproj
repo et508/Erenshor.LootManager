@@ -201,7 +201,7 @@
     </Target>
 
     <Target Name="PostBuild_Debug" AfterTargets="ILRepack" Condition="'$(Configuration)' == 'Debug'">
-        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\steamapps\common\Erenshor\BepInEx\plugins\loot-manager"' />
+        <Exec Command='xcopy /Y /Q "$(TargetDir)$(TargetName).dll" "C:\Program Files (x86)\Steam\steamapps\common\Erenshor Playtest\BepInEx\plugins\loot-manager"' />
     </Target>
 
     <Target Name="PostBuild_Release" AfterTargets="ILRepack" Condition="'$(Configuration)' == 'Release'">

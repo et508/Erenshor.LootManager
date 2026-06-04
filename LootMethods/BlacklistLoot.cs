@@ -10,7 +10,7 @@ namespace LootManager
             if (item.NoTradeNoDestroy)
                 return false;
             
-            if (Plugin.LootRare.Value && item.RequiredSlot != Item.SlotType.General)
+            if (Plugin.LootBlessed.Value && item.RequiredSlot != Item.SlotType.General)
             {
                 if (quantity >= 2)
                     return false;

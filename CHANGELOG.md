@@ -1,3 +1,9 @@
+## [3.2.1] - TBD
+### Fixed
+- The Auction House listing system was broken by the new update, but it should be working properly now.
+- Fixed the incorrect names for blue and purple items. Rare -> Blessed, Godly -> Ascended.
+
+
 ## [3.2.0] - 4/15/2026
 ### Added
 - Added a new option to apply loot filters to fishing. 
