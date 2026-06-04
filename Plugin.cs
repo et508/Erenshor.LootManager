@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace LootManager
 {
-    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.2.0")]
+    [BepInPlugin("et508.erenshor.lootmanager", "Loot Manager", "3.2.1")]
     [BepInProcess("Erenshor.exe")]
     public class Plugin : BaseUnityPlugin
     {
@@ -42,13 +42,14 @@ namespace LootManager
         public static ConfigEntry<bool>   AutoLootDelayEnabled;
         public static ConfigEntry<float>  AutoLootDelay;
         public static ConfigEntry<string> LootMethod;
+        public static ConfigEntry<bool>   AuctionLootEnabled;
         public static ConfigEntry<bool>   BankLootEnabled;
         public static ConfigEntry<string> BankLootMethod;
         public static ConfigEntry<string> BankLootPageMode;
         public static ConfigEntry<int>    BankPageFirst;
         public static ConfigEntry<int>    BankPageLast;
         public static ConfigEntry<bool>   BankslotAddToList;
-        public static ConfigEntry<bool>   LootBlessed;
+        public static ConfigEntry<bool>   LootRare;
         public static ConfigEntry<bool>   LootEquipment;
         public static ConfigEntry<EquipmentTierSetting> LootEquipmentTier;
         public static ConfigEntry<bool>   FishingFilterEnabled;
@@ -79,6 +80,8 @@ namespace LootManager
 
             LootMethod           = Config.Bind("Loot Method Settings", "Loot Method", "Blacklist", "Loot method to use: Blacklist, Whitelist, or Standard.");
 
+            AuctionLootEnabled   = Config.Bind("Auction Settings",  "Auction Loot Enabled", true, "If enabled, items on the auctionlist will be automatically sent to the AH when looted.");
+
             BankLootEnabled      = Config.Bind("Bankloot Settings", "Bankloot Enabled",   false,         "If enabled, looted items will be deposited to bank instead of inventory.");
             BankLootMethod       = Config.Bind("Bankloot Settings", "Bankloot Method",    "All",         "Method for bank looting: All or Filtered");
             BankLootPageMode     = Config.Bind("Bankloot Settings", "Bankloot Page Mode", "First Empty", "Mode for depositing items to bank: First Empty or Page Range");
@@ -86,9 +89,9 @@ namespace LootManager
             BankPageLast         = Config.Bind("Bankloot Settings", "Bank Page Last",  20, new ConfigDescription("Last bank page to use when in Page Range mode.",  new AcceptableValueRange<int>(1, 98)));
             BankslotAddToList    = Config.Bind("Bankloot Settings", "Bankslot Add",    false, "If true, items sent to the bank with the inventory Bankslot will be added to the Banklist.");
 
-            LootBlessed             = Config.Bind("Filter Settings", "Loot Blessed Equipment", false,                    "If true, always loot Blessed equipment in blacklist loot method.");
-            LootEquipment        = Config.Bind("Filter Settings", "Loot Equipment",      true,                    "If true, loot all equipment.");
-            LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Ascended Only, Blessed and Up.");
+            LootRare             = Config.Bind("Filter Settings", "Loot Rare Equipment", false, "If true, always loot rare equipment in blacklist loot method.");
+            LootEquipment        = Config.Bind("Filter Settings", "Loot Equipment",      false, "If true, loot all equipment.");
+            LootEquipmentTier    = Config.Bind("Filter Settings", "Loot Equipment Tier", EquipmentTierSetting.All, "Which tiers of equipment to loot: All, Normal Only, Blessed Only, Ascended Only, Blessed and Up, Improved Only, Improved and Up.");
             FishingFilterEnabled = Config.Bind("Filter Settings", "Apply Filters to Fishing", false, "If true, loot filters (blacklist/whitelist/banklist/auctionlist) are applied to fishing catches.");
             MiningFilterEnabled  = Config.Bind("Filter Settings", "Apply Filters to Mining",  false, "If true, loot filters are applied to mining yields.");
 
