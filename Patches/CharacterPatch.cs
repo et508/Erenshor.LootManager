@@ -28,10 +28,10 @@ namespace LootManager
 
             var npcComp = __instance.GetComponent<NPC>();
             if (__instance.DestroyOnDeath && npcComp != null)
-            {
-                ChatFilterInjector.SendLootMessage("[Loot Manager] Skipping autoloot (DestroyOnDeath).", "yellow");
                 return;
-            }
+
+            if (__instance.MyNPC.SummonedByPlayer)
+                return;
             
             var playerChar = GameData.PlayerControl.Myself;
             if (playerChar == null || !playerChar.Alive)

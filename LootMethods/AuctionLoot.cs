@@ -9,25 +9,10 @@ namespace LootManager
             if (item == null || item == GameData.PlayerInv.Empty)
                 return false;
 
-            // Match the game's own AH eligibility rules
-            if (item.SimPlayersCantGet)
-            {
-                ChatFilterInjector.SendLootMessage(
-                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (not eligible for AH).", "red");
-                return false;
-            }
-
             if (item.FurnitureSet)
             {
                 ChatFilterInjector.SendLootMessage(
                     $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (furniture items not allowed).", "red");
-                return false;
-            }
-
-            if (item.ItemLevel <= 0 || item.ItemLevel > 39)
-            {
-                ChatFilterInjector.SendLootMessage(
-                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (item level out of range).", "red");
                 return false;
             }
 
@@ -54,13 +39,6 @@ namespace LootManager
             if (playerData == null)
             {
                 Plugin.Log.LogError("[Loot Manager] AuctionLoot: Failed to get player AH data.");
-                return false;
-            }
-
-            if (playerData.ItemsForSale.Count >= 18)
-            {
-                ChatFilterInjector.SendLootMessage(
-                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (no empty seller slots).", "red");
                 return false;
             }
 
