@@ -1,4 +1,9 @@
-## [3.2.1] - TDB
+## [3.2.2] - 6/5/2026
+### Fixed
+- Fixed AutoLoot looting summoned pets that have died.
+- Fixed AuctionLoot guards not listing item that within a ItemLevel range and flagged as SimPlayersCantGet.
+
+## [3.2.1] - 6/4/2026
 ### Added
 - Added a toggle for Auction Loot. When enabled, items that are set to be listed on the Auction House will be looted and listed as normal.
 
