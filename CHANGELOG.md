@@ -1,3 +1,7 @@
+## [4.0.0] - 6/10/2026
+### Lunaris
+- The mod has been updated to be compatible with the Lunaris Mod Loader, which is now the primary mod loader for the game. This update includes changes to the mod's structure and loading process to ensure compatibility with Lunaris.
+
 ## [3.2.2] - 6/5/2026
 ### Fixed
 - Fixed AutoLoot looting summoned pets that have died.

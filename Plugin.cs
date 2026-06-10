@@ -8,11 +8,11 @@ using Lunaris;
 using Lunaris.Config;
 using UnityEngine;
 
-[assembly: System.Reflection.AssemblyMetadata("LunarisPluginId", "et508.lootmanager")]
+[assembly: System.Reflection.AssemblyMetadata("LunarisPluginId", "loot-manager")]
 
 namespace LootManager
 {
-    [LunarisPlugin("LootManager", "3.2.2", "et508", "Automated loot management for Erenshor")]
+    [LunarisPlugin("Loot Manager", "4.0.0", "et508", "Automated loot management for Erenshor")]
     [LunarisPermission(LunarisPermission.Harmony)]
     public class Plugin : LunarisPlugin
     {
