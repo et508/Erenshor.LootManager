@@ -10,28 +10,28 @@ namespace LootManager
             if (item.NoTradeNoDestroy)
                 return false;
 
-            if (Plugin.LootEquipment.Value && item.RequiredSlot != Item.SlotType.General)
+            if (Plugin.GetLootEquipment() && item.RequiredSlot != Item.SlotType.General)
             {
-                switch (Plugin.LootEquipmentTier.Value)
+                switch (Plugin.GetLootEquipmentTier())
                 {
-                    case EquipmentTierSetting.All:
+                    case "All":
                         break;
-                    case EquipmentTierSetting.NormalOnly:
+                    case "Normal Only":
                         if (quantity != 1) return false;
                         break;
-                    case EquipmentTierSetting.ImprovedOnly:
+                    case "Improved Only":
                         if (quantity <= 10) return false;
                         break;
-                    case EquipmentTierSetting.BlessedOnly:
+                    case "Blessed Only":
                         if (quantity != 2) return false;
                         break;
-                    case EquipmentTierSetting.AscendedOnly:
+                    case "Ascended Only":
                         if (quantity != 3) return false;
                         break;
-                    case EquipmentTierSetting.ImprovedAndUp:
+                    case "Improved and Up":
                         if (quantity < 2) return false;
                         break;
-                    case EquipmentTierSetting.BlessedAndUp:
+                    case "Blessed and Up":
                         if (quantity < 2 || quantity > 3) return false;
                         break;
                 }

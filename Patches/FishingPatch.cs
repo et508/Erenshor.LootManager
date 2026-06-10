@@ -52,13 +52,13 @@ namespace LootManager
         /// </summary>
         private static bool ShouldAddToInventory(Item item)
         {
-            if (!Plugin.FishingFilterEnabled.Value) return true;
+            if (!Plugin.GetFishingFilterEnabled()) return true;
 
             string name       = item.ItemName;
-            string lootMethod = Plugin.LootMethod.Value;
+            string lootMethod = Plugin.GetLootMethod();
 
             // ── Auctionlist ───────────────────────────────────────────────────
-            if (Plugin.AuctionLootEnabled.Value && Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+            if (Plugin.GetAuctionLootEnabled() && Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
             {
                 bool listed = AuctionLoot.TryListItem(item, 1);
                 if (listed)
@@ -70,7 +70,7 @@ namespace LootManager
             }
 
             // ── Banklist ──────────────────────────────────────────────────────
-            if (Plugin.BankLootEnabled.Value &&
+            if (Plugin.GetBankLootEnabled() &&
                 Plugin.Banklist != null && Plugin.Banklist.Contains(name))
             {
                 var entries = new BankLoot.LootEntry[]
@@ -130,7 +130,7 @@ namespace LootManager
                 catch (System.Exception ex)
                 {
                     if (Plugin.Log != null)
-                        Plugin.Log.LogError("[Loot Manager] FishingPatch.AddItemToInv error: " + ex);
+                        Plugin.Log?.LogError("[Loot Manager] FishingPatch.AddItemToInv error: " + ex);
                 }
                 return true;
             }
@@ -163,7 +163,7 @@ namespace LootManager
                 catch (System.Exception ex)
                 {
                     if (Plugin.Log != null)
-                        Plugin.Log.LogError("[Loot Manager] FishingPatch.ForceItemToInv error: " + ex);
+                        Plugin.Log?.LogError("[Loot Manager] FishingPatch.ForceItemToInv error: " + ex);
                 }
                 return true;
             }

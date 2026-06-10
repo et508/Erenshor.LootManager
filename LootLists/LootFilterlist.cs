@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
 using Newtonsoft.Json;
 
 namespace LootManager
@@ -30,7 +29,7 @@ namespace LootManager
 
         public static void Load()
         {
-            string dir = Path.Combine(Paths.ConfigPath, ConfigSub);
+            string dir = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
             string path = Path.Combine(dir, FileName);
 
             try
@@ -46,7 +45,7 @@ namespace LootManager
                     File.WriteAllText(path, json);
 
                     ApplyToPluginState(defaults);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default LootFilterlist.json");
+                    Plugin.Log?.Log($"[Loot Manager] Created default LootFilterlist.json");
                     return;
                 }
 
@@ -55,11 +54,11 @@ namespace LootManager
                              ?? new Dictionary<string, LootFilterCategory>(StringComparer.OrdinalIgnoreCase);
 
                 ApplyToPluginState(loaded);
-                Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.FilterList.Count} filter groups.");
+                Plugin.Log?.Log($"[Loot Manager] Loaded {Plugin.FilterList.Count} filter groups.");
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError("[Loot Manager] Failed to load LootFilterlist.json: " + ex);
+                Plugin.Log?.LogError("[Loot Manager] Failed to load LootFilterlist.json: " + ex);
                 Plugin.FilterList = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                 Plugin.EnabledFilterCategories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
@@ -69,7 +68,7 @@ namespace LootManager
         {
             try
             {
-                string dir = Path.Combine(Paths.ConfigPath, ConfigSub);
+                string dir = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
                 string path = Path.Combine(dir, FileName);
                 Directory.CreateDirectory(dir);
 
@@ -97,7 +96,7 @@ namespace LootManager
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError("[Loot Manager] Failed to save LootFilterlist.json: " + ex);
+                Plugin.Log?.LogError("[Loot Manager] Failed to save LootFilterlist.json: " + ex);
             }
         }
 

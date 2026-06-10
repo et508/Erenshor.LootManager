@@ -22,14 +22,14 @@ namespace LootManager
         public new void OnShow()
         {
             base.OnShow();
-            _tierIdx = (int)Plugin.LootEquipmentTier.Value;
+            _tierIdx = System.Array.IndexOf(TierOptions, Plugin.GetLootEquipmentTier());
         }
 
         protected override void DrawExtraControls(float scale)
         {
-            bool lootEquip = Plugin.LootEquipment.Value;
+            bool lootEquip = Plugin.GetLootEquipment();
             if (ImGui.Checkbox("Loot Equipment##bl_equip", ref lootEquip))
-                Plugin.LootEquipment.Value = lootEquip;
+                Plugin.SetLootEquipment(lootEquip);
 
             ImGui.SameLine(200f * scale);
 
@@ -41,7 +41,7 @@ namespace LootManager
             ImGui.SameLine();
             ImGui.SetNextItemWidth(160f * scale);
             if (ImGui.Combo("##bl_tier", ref _tierIdx, TierOptions, TierOptions.Length))
-                Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)_tierIdx;
+                Plugin.SetLootEquipmentTier(_tierIdx >= 0 && _tierIdx < TierOptions.Length ? TierOptions[_tierIdx] : "All");
 
             if (!lootEquip) ImGui.EndDisabled();
 
@@ -67,17 +67,17 @@ namespace LootManager
         public new void OnShow()
         {
             base.OnShow();
-            _tierIdx = (int)Plugin.LootEquipmentTier.Value;
+            _tierIdx = System.Array.IndexOf(TierOptions, Plugin.GetLootEquipmentTier());
         }
 
         protected override void DrawExtraControls(float scale)
         {
             float labelW = 130f * scale;
 
-            bool lootEquip = Plugin.LootEquipment.Value;
+            bool lootEquip = Plugin.GetLootEquipment();
             if (ImGui.Checkbox("Loot Equipment##wl_equip", ref lootEquip))
             {
-                Plugin.LootEquipment.Value = lootEquip;
+                Plugin.SetLootEquipment(lootEquip);
             }
 
             ImGui.SameLine(200f * scale);
@@ -90,7 +90,7 @@ namespace LootManager
             ImGui.SameLine();
             ImGui.SetNextItemWidth(160f * scale);
             if (ImGui.Combo("##wl_tier", ref _tierIdx, TierOptions, TierOptions.Length))
-                Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)_tierIdx;
+                Plugin.SetLootEquipmentTier(_tierIdx >= 0 && _tierIdx < TierOptions.Length ? TierOptions[_tierIdx] : "All");
 
             if (!lootEquip) ImGui.EndDisabled();
 

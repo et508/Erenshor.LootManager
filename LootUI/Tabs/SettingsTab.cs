@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using BepInEx.Configuration;
 using ImGuiNET;
 using UnityEngine;
 using Vector2 = System.Numerics.Vector2;
@@ -87,7 +86,7 @@ namespace LootManager
             ImGui.TextUnformatted("Toggle UI Hotkey:");
             ImGui.PopStyleColor();
             ImGui.SameLine(labelW);
-            DrawHotkeyButton("##hk_ui", Plugin.ToggleLootUIHotkey, ref _bindingUIHotkey, btnW);
+            DrawHotkeyButton("##hk_ui", Plugin.GetToggleLootUIHotkey, Plugin.SetToggleLootUIHotkey, ref _bindingUIHotkey, btnW);
 
             ImGui.Spacing();
 
@@ -96,19 +95,18 @@ namespace LootManager
             ImGui.TextUnformatted("Autoloot Hotkey:");
             ImGui.PopStyleColor();
             ImGui.SameLine(labelW);
-            DrawHotkeyButton("##hk_auto", Plugin.ToggleAutoLootHotkey, ref _bindingAutoHotkey, btnW);
+            DrawHotkeyButton("##hk_auto", Plugin.GetToggleAutoLootHotkey, Plugin.SetToggleAutoLootHotkey, ref _bindingAutoHotkey, btnW);
         }
 
-        private void DrawHotkeyButton(string id, ConfigEntry<KeyboardShortcut> entry,
-            ref bool binding, float width)
+        private void DrawHotkeyButton(string id, System.Func<KeyCode> getter,
+            System.Action<KeyCode> setter, ref bool binding, float width)
         {
             if (binding)
             {
-                // Listening for input
                 ImGui.PushStyleColor(ImGuiCol.Button,        LootManagerWindow.V4AccentBlue);
                 ImGui.PushStyleColor(ImGuiCol.ButtonHovered, LootManagerWindow.V4AccentBlue);
                 if (ImGui.Button("Press a key..." + id, new Vector2(width, 0f)))
-                    binding = false; // click again to cancel
+                    binding = false;
                 ImGui.PopStyleColor(2);
 
                 if (Input.GetKeyDown(KeyCode.Escape))
@@ -123,8 +121,7 @@ namespace LootManager
                             kc == KeyCode.Mouse1  || kc == KeyCode.Mouse2) continue;
                         if (Input.GetKeyDown(kc))
                         {
-                            entry.Value = new KeyboardShortcut(kc);
-                            entry.ConfigFile.Save();
+                            setter(kc);
                             binding = false;
                             break;
                         }
@@ -133,8 +130,8 @@ namespace LootManager
             }
             else
             {
-                string label = entry.Value.MainKey == KeyCode.None
-                    ? "(none)" : entry.Value.MainKey.ToString();
+                KeyCode cur = getter();
+                string label = cur == KeyCode.None ? "(none)" : cur.ToString();
                 if (ImGui.Button(label + id, new Vector2(width, 0f)))
                     binding = true;
             }
@@ -149,10 +146,10 @@ namespace LootManager
             float labelW = 160f * s;
 
             // Enable toggle
-            bool autoEnabled = Plugin.AutoLootEnabled.Value;
+            bool autoEnabled = Plugin.GetAutoLootEnabled();
             if (ImGui.Checkbox("Enable Autoloot##auto_en", ref autoEnabled))
             {
-                Plugin.AutoLootEnabled.Value = autoEnabled;
+                Plugin.SetAutoLootEnabled(autoEnabled);
             }
 
             ImGui.Spacing();
@@ -164,17 +161,17 @@ namespace LootManager
             ImGui.SameLine(labelW);
             ImGui.SetNextItemWidth(-60f * s);
             if (ImGui.SliderFloat("##auto_dist", ref _autoDistance, 0f, 200f, "%.0f"))
-                Plugin.AutoLootDistance.Value = _autoDistance;
+                Plugin.SetAutoLootDistance(_autoDistance);
             ImGui.SameLine();
             ImGui.TextUnformatted(((int)_autoDistance).ToString());
 
             ImGui.Spacing();
 
             // Delay toggle
-            bool delayEnabled = Plugin.AutoLootDelayEnabled.Value;
+            bool delayEnabled = Plugin.GetAutoLootDelayEnabled();
             if (ImGui.Checkbox("Out-of-Combat Delay##delay_en", ref delayEnabled))
             {
-                Plugin.AutoLootDelayEnabled.Value = delayEnabled;
+                Plugin.SetAutoLootDelayEnabled(delayEnabled);
             }
 
             // Delay slider — only shown when delay is enabled
@@ -186,7 +183,7 @@ namespace LootManager
                 ImGui.SameLine(labelW);
                 ImGui.SetNextItemWidth(-60f * s);
                 if (ImGui.SliderFloat("##auto_delay", ref _autoDelay, 0.5f, 10f, "%.1f"))
-                    Plugin.AutoLootDelay.Value = _autoDelay;
+                    Plugin.SetAutoLootDelay(_autoDelay);
                 ImGui.SameLine();
                 ImGui.TextUnformatted(_autoDelay.ToString("F1"));
             }
@@ -207,7 +204,7 @@ namespace LootManager
             ImGui.SetNextItemWidth(160f * s);
             if (ImGui.Combo("##loot_method", ref _lootMethodIdx, LootMethodOptions, LootMethodOptions.Length))
             {
-                Plugin.LootMethod.Value = LootMethodOptions[_lootMethodIdx];
+                Plugin.SetLootMethod(LootMethodOptions[_lootMethodIdx]);
                 _onVisibilityChanged?.Invoke();
             }
         }
@@ -218,13 +215,13 @@ namespace LootManager
         {
             LootManagerWindow.SectionHeader("Fishing & Mining");
 
-            bool fishOn = Plugin.FishingFilterEnabled.Value;
+            bool fishOn = Plugin.GetFishingFilterEnabled();
             if (ImGui.Checkbox("Apply Loot Filters to Fishing##fish_en", ref fishOn))
-                Plugin.FishingFilterEnabled.Value = fishOn;
+                Plugin.SetFishingFilterEnabled(fishOn);
 
-            bool mineOn = Plugin.MiningFilterEnabled.Value;
+            bool mineOn = Plugin.GetMiningFilterEnabled();
             if (ImGui.Checkbox("Apply Loot Filters to Mining##mine_en", ref mineOn))
-                Plugin.MiningFilterEnabled.Value = mineOn;
+                Plugin.SetMiningFilterEnabled(mineOn);
         }
 
         private void DrawBankLootSection(float s)
@@ -232,11 +229,11 @@ namespace LootManager
             LootManagerWindow.SectionHeader("Bank Loot");
 
             float labelW  = 120f * s;
-            bool bankOn   = Plugin.BankLootEnabled.Value;
+            bool bankOn   = Plugin.GetBankLootEnabled();
 
             if (ImGui.Checkbox("Enable Bank Loot##bank_en", ref bankOn))
             {
-                Plugin.BankLootEnabled.Value = bankOn;
+                Plugin.SetBankLootEnabled(bankOn);
                 _onVisibilityChanged?.Invoke();
             }
 
@@ -251,7 +248,7 @@ namespace LootManager
             ImGui.SameLine(labelW);
             ImGui.SetNextItemWidth(160f * s);
             if (ImGui.Combo("##bank_method", ref _bankMethodIdx, BankMethodOptions, BankMethodOptions.Length))
-                Plugin.BankLootMethod.Value = BankMethodOptions[_bankMethodIdx];
+                Plugin.SetBankLootMethod(BankMethodOptions[_bankMethodIdx]);
 
             ImGui.Spacing();
 
@@ -261,9 +258,9 @@ namespace LootManager
             ImGui.SameLine(labelW);
             ImGui.SetNextItemWidth(160f * s);
             if (ImGui.Combo("##bank_pagemode", ref _bankPageModeIdx, BankPageOptions, BankPageOptions.Length))
-                Plugin.BankLootPageMode.Value = BankPageOptions[_bankPageModeIdx];
+                Plugin.SetBankLootPageMode(BankPageOptions[_bankPageModeIdx]);
 
-            bool pageRange = Plugin.BankLootPageMode.Value == "Page Range";
+            bool pageRange = Plugin.GetBankLootPageMode() == "Page Range";
             if (pageRange)
             {
                 ImGui.Spacing();
@@ -274,7 +271,7 @@ namespace LootManager
                 ImGui.SameLine(labelW);
                 ImGui.SetNextItemWidth(-60f * s);
                 if (ImGui.SliderFloat("##bank_pfirst", ref _bankPageFirst, 1f, 98f, "%.0f"))
-                    Plugin.BankPageFirst.Value = (int)_bankPageFirst;
+                    Plugin.SetBankPageFirst((int)_bankPageFirst);
                 ImGui.SameLine();
                 ImGui.TextUnformatted(((int)_bankPageFirst).ToString());
 
@@ -286,7 +283,7 @@ namespace LootManager
                 ImGui.SameLine(labelW);
                 ImGui.SetNextItemWidth(-60f * s);
                 if (ImGui.SliderFloat("##bank_plast", ref _bankPageLast, 1f, 98f, "%.0f"))
-                    Plugin.BankPageLast.Value = (int)_bankPageLast;
+                    Plugin.SetBankPageLast((int)_bankPageLast);
                 ImGui.SameLine();
                 ImGui.TextUnformatted(((int)_bankPageLast).ToString());
             }
@@ -300,10 +297,10 @@ namespace LootManager
         {
             LootManagerWindow.SectionHeader("Auction Loot");
 
-            bool auctionOn = Plugin.AuctionLootEnabled.Value;
+            bool auctionOn = Plugin.GetAuctionLootEnabled();
             if (ImGui.Checkbox("Enable Auction Loot##auction_en", ref auctionOn))
             {
-                Plugin.AuctionLootEnabled.Value = auctionOn;
+                Plugin.SetAuctionLootEnabled(auctionOn);
                 _onVisibilityChanged?.Invoke();
             }
         }
@@ -316,11 +313,10 @@ namespace LootManager
 
             float labelW = 80f * s;
 
-            bool chatOn = Plugin.ChatOutputEnabled.Value;
+            bool chatOn = Plugin.GetChatOutputEnabled();
             if (ImGui.Checkbox("Enable Chat Output##chat_en", ref chatOn))
             {
-                Plugin.ChatOutputEnabled.Value = chatOn;
-                Plugin.ChatOutputEnabled.ConfigFile.Save();
+                Plugin.SetChatOutputEnabled(chatOn);
             }
 
             if (!chatOn) ImGui.BeginDisabled();
@@ -338,10 +334,10 @@ namespace LootManager
                 {
                     if (_chatWindowIdx < _chatWindows.Count)
                     {
-                        Plugin.ChatOutputWindow.Value = _chatWindows[_chatWindowIdx].WindowName;
+                        Plugin.SetChatOutputWindow(_chatWindows[_chatWindowIdx].WindowName);
                         RefreshChatTabs(_chatWindows[_chatWindowIdx]);
                         ChatFilterInjector.ApplyChatMask();
-                        Plugin.ChatOutputWindow.ConfigFile.Save();
+                        
                     }
                 }
             }
@@ -361,9 +357,9 @@ namespace LootManager
             {
                 if (ImGui.Combo("##chat_tab", ref _chatTabIdx, _chatTabNames.ToArray(), _chatTabNames.Count))
                 {
-                    Plugin.ChatOutputTab.Value = _chatTabIdx;
+                    Plugin.SetChatOutputTab(_chatTabIdx);
                     ChatFilterInjector.ApplyChatMask();
-                    Plugin.ChatOutputTab.ConfigFile.Save();
+                    
                 }
             }
             else
@@ -378,14 +374,14 @@ namespace LootManager
 
         private void SyncFromPlugin()
         {
-            _autoDistance   = Plugin.AutoLootDistance.Value;
-            _autoDelay      = UnityEngine.Mathf.Clamp(Plugin.AutoLootDelay.Value, 0.5f, 10f);
-            _bankPageFirst  = Plugin.BankPageFirst.Value;
-            _bankPageLast   = Plugin.BankPageLast.Value;
+            _autoDistance   = Plugin.GetAutoLootDistance();
+            _autoDelay      = UnityEngine.Mathf.Clamp(Plugin.GetAutoLootDelay(), 0.5f, 10f);
+            _bankPageFirst  = Plugin.GetBankPageFirst();
+            _bankPageLast   = Plugin.GetBankPageLast();
 
-            _lootMethodIdx  = IndexOf(LootMethodOptions, Plugin.LootMethod.Value);
-            _bankMethodIdx  = IndexOf(BankMethodOptions,  Plugin.BankLootMethod.Value);
-            _bankPageModeIdx = IndexOf(BankPageOptions,   Plugin.BankLootPageMode.Value);
+            _lootMethodIdx  = IndexOf(LootMethodOptions, Plugin.GetLootMethod());
+            _bankMethodIdx  = IndexOf(BankMethodOptions,  Plugin.GetBankLootMethod());
+            _bankPageModeIdx = IndexOf(BankPageOptions,   Plugin.GetBankLootPageMode());
         }
 
         private void RefreshChatWindows()
@@ -402,7 +398,7 @@ namespace LootManager
             _chatWindowIdx = 0;
             for (int i = 0; i < _chatWindows.Count; i++)
             {
-                if (_chatWindows[i].WindowName == Plugin.ChatOutputWindow.Value)
+                if (_chatWindows[i].WindowName == Plugin.GetChatOutputWindow())
                 {
                     _chatWindowIdx = i;
                     break;
@@ -425,7 +421,7 @@ namespace LootManager
                 _chatTabNames.Add(string.IsNullOrEmpty(name) ? $"Tab {i + 1}" : name);
             }
 
-            _chatTabIdx = UnityEngine.Mathf.Clamp(Plugin.ChatOutputTab.Value, 0, _chatTabNames.Count - 1);
+            _chatTabIdx = UnityEngine.Mathf.Clamp(Plugin.GetChatOutputTab(), 0, _chatTabNames.Count - 1);
         }
 
         private static int IndexOf(string[] arr, string value)

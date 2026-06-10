@@ -20,7 +20,7 @@ namespace LootManager
 
         private static void Postfix(Character __instance)
         {
-            if (!Plugin.AutoLootEnabled.Value)
+            if (!Plugin.GetAutoLootEnabled())
                 return;
             
             if (__instance == null || !__instance.isNPC || __instance.MyNPC == null)
@@ -37,7 +37,7 @@ namespace LootManager
             if (playerChar == null || !playerChar.Alive)
                 return;
 
-            float autoLootRange = Plugin.AutoLootDistance.Value;
+            float autoLootRange = Plugin.GetAutoLootDistance();
             float dist = Vector3.Distance(
                 playerChar.transform.position,
                 __instance.MyNPC.transform.position
@@ -48,7 +48,7 @@ namespace LootManager
             LootTable lootTable = __instance.MyNPC.GetComponent<LootTable>();
             if (lootTable == null) return;
 
-            if (Plugin.AutoLootDelayEnabled.Value)
+            if (Plugin.GetAutoLootDelayEnabled())
             {
 
                 _pending.Add(new PendingLoot { Npc = __instance.MyNPC, Table = lootTable });
@@ -78,7 +78,7 @@ namespace LootManager
             while (!IsOutOfCombat())
                 yield return new WaitForSeconds(0.25f);
 
-            float grace = Mathf.Clamp(Plugin.AutoLootDelay.Value, 0f, 10f);
+            float grace = Mathf.Clamp(Plugin.GetAutoLootDelay(), 0f, 10f);
             if (grace > 0f)
                 yield return new WaitForSeconds(grace);
 
@@ -86,7 +86,7 @@ namespace LootManager
             _pending.Clear();
             _pollRunning = false;
 
-            if (!Plugin.AutoLootEnabled.Value) yield break;
+            if (!Plugin.GetAutoLootEnabled()) yield break;
 
             var player = GameData.PlayerControl?.Myself;
             if (player == null || !player.Alive) yield break;
@@ -99,7 +99,7 @@ namespace LootManager
                     player.transform.position,
                     entry.Npc.transform.position
                 );
-                if (dist >= Plugin.AutoLootDistance.Value) continue;
+                if (dist >= Plugin.GetAutoLootDistance()) continue;
 
                 ChatFilterInjector.SendLootMessage(
                     "[Loot Manager] Looting NPC: " + entry.Npc.name, "yellow");
