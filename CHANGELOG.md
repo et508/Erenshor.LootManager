@@ -1,3 +1,26 @@
+## [4.0.0] - 6/10/2026
+### Lunaris
+- The mod has been updated to be compatible with the Lunaris Mod Loader, which is now the primary mod loader for the game. This update includes changes to the mod's structure and loading process to ensure compatibility with Lunaris.
+
+## [3.2.2] - 6/5/2026
+### Fixed
+- Fixed AutoLoot looting summoned pets that have died.
+- Fixed AuctionLoot guards not listing item that within a ItemLevel range and flagged as SimPlayersCantGet.
+
+## [3.2.1] - 6/4/2026
+### Added
+- Added a toggle for Auction Loot. When enabled, items that are set to be listed on the Auction House will be looted and listed as normal.
+
+### Fixed
+- The Auction House listing system was broken by the new update, but it should be working properly now.
+- Fixed the incorrect names for blue and purple items. Rare -> Blessed, Godly -> Ascended.
+
+### Blacklist
+- Reworked the Always Loot Rare Items setting. We changed it to Loot Equipment.
+    - When enabled, equipable items will be looted regardless of their blacklist status.
+      - A tier drop down has been added to allow for filtering of equipable items by tier. All, Normal Only, Improved Only, Blessed Only, Ascended Only, Improved and Up, Blessed and Up.
+    - When disabled, the blacklist will function as normal and all blacklisted items will not be looted, including equipable items.
+
 ## [3.2.0] - 4/15/2026
 ### Added
 - Added a new option to apply loot filters to fishing. 

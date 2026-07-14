@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
 using Newtonsoft.Json;
 
 namespace LootManager
@@ -26,9 +25,9 @@ namespace LootManager
         
         public static void Load()
         {
-            string dir        = Path.Combine(Paths.ConfigPath, ConfigSub);
+            string dir        = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
             string newPath    = Path.Combine(dir, FileName);
-            string legacyPath = Path.Combine(Paths.ConfigPath, FileName);
+            string legacyPath = Path.Combine(LootManagerPaths.ConfigDir, FileName);
 
             try
             {
@@ -46,7 +45,7 @@ namespace LootManager
                     File.WriteAllText(newPath, json);
 
                     Plugin.Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName}");
+                    Plugin.Log?.Log($"[Loot Manager] Created default {FileName}");
                     return;
                 }
                 
@@ -58,11 +57,11 @@ namespace LootManager
                     .Select(s => s.Trim());
 
                 Plugin.Whitelist = new HashSet<string>(items, StringComparer.OrdinalIgnoreCase);
-                Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.Whitelist.Count} whitelisted items.");
+                Plugin.Log?.Log($"[Loot Manager] Loaded {Plugin.Whitelist.Count} whitelisted items.");
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"[Loot Manager] Failed to load {FileName}: {ex}");
+                Plugin.Log?.LogError($"[Loot Manager] Failed to load {FileName}: {ex}");
                 Plugin.Whitelist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -71,7 +70,7 @@ namespace LootManager
         {
             try
             {
-                string dir     = Path.Combine(Paths.ConfigPath, ConfigSub);
+                string dir     = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
                 string newPath = Path.Combine(dir, FileName);
                 Directory.CreateDirectory(dir);
 
@@ -87,7 +86,7 @@ namespace LootManager
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"[Loot Manager] Failed to save {FileName}: {ex}");
+                Plugin.Log?.LogError($"[Loot Manager] Failed to save {FileName}: {ex}");
             }
         }
         
@@ -117,17 +116,17 @@ namespace LootManager
                     string backup = legacyPath + ".bak";
                     File.Copy(legacyPath, backup, overwrite: true);
                     File.Delete(legacyPath);
-                    Plugin.Log.LogWarning($"[Loot Manager] Found both legacy and new {FileName}. " +
+                    Plugin.Log?.LogWarning($"[Loot Manager] Found both legacy and new {FileName}. " +
                                           $"Kept new; backed up legacy to {backup} and removed original legacy file.");
                     return;
                 }
                 
                 File.Move(legacyPath, newPath);
-                Plugin.Log.LogInfo($"[Loot Manager] Migrated legacy {FileName} to {newPath}");
+                Plugin.Log?.Log($"[Loot Manager] Migrated legacy {FileName} to {newPath}");
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"[Loot Manager] Failed to migrate legacy {FileName}: {ex}");
+                Plugin.Log?.LogError($"[Loot Manager] Failed to migrate legacy {FileName}: {ex}");
             }
         }
     }

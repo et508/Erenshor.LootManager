@@ -93,13 +93,11 @@ namespace LootManager
 
         private IEnumerator WaitForInventoryAndInit()
         {
+            // Wait for PlayerInv (needed for the sidebar drop zone)
             while (GameObject.Find(LegacyInvName) == null)
                 yield return null;
 
-            yield return null;
-
-            ChatFilterInjector.ApplyChatMask();
-
+            // Spawn the inventory sidebar
             var mover = GameObject.Find("PlayerInvUIAdjustment");
             if (mover == null)
             {
@@ -107,6 +105,18 @@ namespace LootManager
                 mover.transform.SetParent(transform, false);
                 mover.AddComponent<PlayerInvUI>();
             }
+
+            // Wait until IDLog windows have registered with UpdateSocialLog.
+            // IDLog.Start() calls RegisterWindow — give it a few frames after
+            // PlayerInv appears.
+            int chatWaitFrames = 0;
+            while (UpdateSocialLog.ChatWindows.Count == 0 && chatWaitFrames < 120)
+            {
+                yield return null;
+                chatWaitFrames++;
+            }
+
+            ChatFilterInjector.ApplyChatMask();
         }
 
         private class Bootstrap : MonoBehaviour

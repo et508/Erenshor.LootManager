@@ -4,8 +4,10 @@ namespace LootManager
     {
         All,
         NormalOnly,
+        ImprovedOnly,
         BlessedOnly,
-        GodlyOnly,
+        AscendedOnly,
+        ImprovedAndUp,
         BlessedAndUp
     }
 }

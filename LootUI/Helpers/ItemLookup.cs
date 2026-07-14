@@ -40,17 +40,16 @@ namespace LootManager
 
             // Register every unique texture with the ImGui renderer so
             // ImGui.Image() calls can draw them correctly.
-            var renderer = Plugin.Instance?._imgui;
-            if (renderer != null)
             {
                 var seenTextures = new HashSet<IntPtr>();
+                var renderer = Plugin.Instance?._imgui;
                 foreach (var kv in _iconByName)
                 {
                     var sprite = kv.Value;
                     if (sprite == null || sprite.texture == null) continue;
                     var ptr = sprite.texture.GetNativeTexturePtr();
                     if (ptr != IntPtr.Zero && seenTextures.Add(ptr))
-                        renderer.RegisterTexture(ptr, sprite.texture);
+                        renderer?.RegisterTexture(ptr, sprite.texture);
                 }
             }
 

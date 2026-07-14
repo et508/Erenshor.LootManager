@@ -176,9 +176,9 @@ namespace LootManager
             if (ImGui.BeginTabBar("##lm_tabs", ImGuiTabBarFlags.None))
             {
                 DrawTab("Settings",    TAB_SETTINGS,    true);
-                DrawTab("Blacklist",   TAB_BLACKLIST,   Plugin.LootMethod.Value == "Blacklist");
-                DrawTab("Whitelist",   TAB_WHITELIST,   Plugin.LootMethod.Value == "Whitelist");
-                DrawTab("Banklist",    TAB_BANKLIST,    Plugin.BankLootEnabled.Value);
+                DrawTab("Blacklist",   TAB_BLACKLIST,   Plugin.GetLootMethod() == "Blacklist");
+                DrawTab("Whitelist",   TAB_WHITELIST,   Plugin.GetLootMethod() == "Whitelist");
+                DrawTab("Banklist",    TAB_BANKLIST,    Plugin.GetBankLootEnabled());
                 DrawTab("Junklist",    TAB_JUNKLIST,    true);
                 DrawTab("Auctionlist", TAB_AUCTIONLIST, true);
                 DrawTab("Filterlists", TAB_FILTERLIST,  true);
@@ -241,9 +241,9 @@ namespace LootManager
                     {
                         // When loot method or bank toggle changes, snap back to Settings
                         // tab if the current tab just became hidden
-                        if (_activeTab == TAB_BLACKLIST   && Plugin.LootMethod.Value != "Blacklist") _activeTab = TAB_SETTINGS;
-                        if (_activeTab == TAB_WHITELIST   && Plugin.LootMethod.Value != "Whitelist") _activeTab = TAB_SETTINGS;
-                        if (_activeTab == TAB_BANKLIST    && !Plugin.BankLootEnabled.Value)          _activeTab = TAB_SETTINGS;
+                        if (_activeTab == TAB_BLACKLIST   && Plugin.GetLootMethod() != "Blacklist") _activeTab = TAB_SETTINGS;
+                        if (_activeTab == TAB_WHITELIST   && Plugin.GetLootMethod() != "Whitelist") _activeTab = TAB_SETTINGS;
+                        if (_activeTab == TAB_BANKLIST    && !Plugin.GetBankLootEnabled())          _activeTab = TAB_SETTINGS;
                     });
                     break;
                 case TAB_BLACKLIST:

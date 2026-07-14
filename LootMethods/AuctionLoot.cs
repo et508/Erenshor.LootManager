@@ -9,13 +9,10 @@ namespace LootManager
             if (item == null || item == GameData.PlayerInv.Empty)
                 return false;
 
-            // Blessed (qty=2) and godly (qty=3) equipment cannot be listed on the AH,
-            // matching the game's own restriction in AuctionHouseUI.
-            if (item.RequiredSlot != Item.SlotType.General && quantity > 1)
+            if (item.FurnitureSet)
             {
-                string tier = quantity == 2 ? "Blessed" : "Godly";
                 ChatFilterInjector.SendLootMessage(
-                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH ({tier} items not supported).", "red");
+                    $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (furniture items not allowed).", "red");
                 return false;
             }
 
@@ -32,7 +29,7 @@ namespace LootManager
                     $"[Loot Manager] Cannot list \"{item.ItemName}\" on AH (no-trade item).", "red");
                 return false;
             }
-            
+
             AuctionHouseSave playerData = AuctionHouse.ReadCharData(GameData.PlayerStats.MyName);
             if (playerData == null)
             {
@@ -44,11 +41,13 @@ namespace LootManager
                 Plugin.Log.LogError("[Loot Manager] AuctionLoot: Failed to get player AH data.");
                 return false;
             }
-            
+
             int listPrice = (item.ItemValue * 6) - 1;
 
-            playerData.SellerItems.Add(item.Id);
-            playerData.PlayerPrices.Add(listPrice);
+            // quantity encodes both tier (1=Normal, 2=Blessed, 3=Ascended)
+            // and improvement level (11-15 = Normal+1 through Normal+5)
+            // Pass it through directly as itemQual so the AH stores and displays correctly.
+            playerData.ItemsForSale.Add(new AHItemSaveData(item.Id, quantity, listPrice));
 
             AuctionHouse.SavePlayerAHData(playerData);
 

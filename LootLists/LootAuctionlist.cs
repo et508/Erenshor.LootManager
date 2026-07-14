@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using BepInEx;
 using Newtonsoft.Json;
 
 namespace LootManager
@@ -20,7 +19,7 @@ namespace LootManager
 
         public static void Load()
         {
-            string dir  = Path.Combine(Paths.ConfigPath, ConfigSub);
+            string dir  = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
             string path = Path.Combine(dir, FileName);
 
             try
@@ -34,7 +33,7 @@ namespace LootManager
                     File.WriteAllText(path, json);
 
                     Plugin.Auctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                    Plugin.Log.LogInfo($"[Loot Manager] Created default {FileName}");
+                    Plugin.Log?.Log($"[Loot Manager] Created default {FileName}");
                     return;
                 }
 
@@ -46,11 +45,11 @@ namespace LootManager
                     .Select(s => s.Trim());
 
                 Plugin.Auctionlist = new HashSet<string>(items, StringComparer.OrdinalIgnoreCase);
-                Plugin.Log.LogInfo($"[Loot Manager] Loaded {Plugin.Auctionlist.Count} auctionlisted items.");
+                Plugin.Log?.Log($"[Loot Manager] Loaded {Plugin.Auctionlist.Count} auctionlisted items.");
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"[Loot Manager] Failed to load {FileName}: {ex}");
+                Plugin.Log?.LogError($"[Loot Manager] Failed to load {FileName}: {ex}");
                 Plugin.Auctionlist = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             }
         }
@@ -59,7 +58,7 @@ namespace LootManager
         {
             try
             {
-                string dir  = Path.Combine(Paths.ConfigPath, ConfigSub);
+                string dir  = Path.Combine(LootManagerPaths.ConfigDir, ConfigSub);
                 string path = Path.Combine(dir, FileName);
                 Directory.CreateDirectory(dir);
 
@@ -75,7 +74,7 @@ namespace LootManager
             }
             catch (Exception ex)
             {
-                Plugin.Log.LogError($"[Loot Manager] Failed to save {FileName}: {ex}");
+                Plugin.Log?.LogError($"[Loot Manager] Failed to save {FileName}: {ex}");
             }
         }
 

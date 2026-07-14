@@ -163,9 +163,9 @@ namespace LootManager
             int slotsPerPage = 32;
             int maxPage      = Mathf.CeilToInt(totalSlots / (float)slotsPerPage);
 
-            string method    = Plugin.BankLootPageMode.Value;
-            int startPage    = Mathf.Clamp(Plugin.BankPageFirst.Value, 1, maxPage);
-            int endPage      = Mathf.Clamp(Plugin.BankPageLast.Value,  1, maxPage);
+            string method    = Plugin.GetBankLootPageMode();
+            int startPage    = Mathf.Clamp(Plugin.GetBankPageFirst(), 1, maxPage);
+            int endPage      = Mathf.Clamp(Plugin.GetBankPageLast(),  1, maxPage);
             int startIdx     = (startPage - 1) * slotsPerPage;
             int endIdx       = endPage * slotsPerPage;
 

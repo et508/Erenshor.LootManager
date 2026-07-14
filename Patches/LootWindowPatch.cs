@@ -10,9 +10,9 @@ namespace LootManager
     {
         public static bool Prefix(LootWindow __instance)
         {
-            string lootMethod     = Plugin.LootMethod.Value;
-            bool bankLootEnabled  = Plugin.BankLootEnabled.Value;
-            string bankLootMethod = Plugin.BankLootMethod.Value;
+            string lootMethod     = Plugin.GetLootMethod();
+            bool bankLootEnabled  = Plugin.GetBankLootEnabled();
+            string bankLootMethod = Plugin.GetBankLootMethod();
 
             var lootedForBank = new List<BankLoot.LootEntry>();
 
@@ -45,7 +45,7 @@ namespace LootManager
                 }
                 
 
-                if (Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
+                if (Plugin.GetAuctionLootEnabled() && Plugin.Auctionlist != null && Plugin.Auctionlist.Contains(name))
                 {
                     if (AuctionLoot.TryListItem(item, qty))
                     {

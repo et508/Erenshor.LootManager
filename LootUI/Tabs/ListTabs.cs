@@ -14,11 +14,36 @@ namespace LootManager
         protected override HashSet<string> GetList()  => Plugin.Blacklist;
         protected override void            SaveList()  => LootBlacklist.SaveBlacklist();
 
+        private static readonly string[] TierOptions =
+            { "All", "Normal Only", "Improved Only", "Blessed Only", "Ascended Only", "Improved and Up", "Blessed and Up" };
+
+        private int _tierIdx;
+
+        public new void OnShow()
+        {
+            base.OnShow();
+            _tierIdx = System.Array.IndexOf(TierOptions, Plugin.GetLootEquipmentTier());
+        }
+
         protected override void DrawExtraControls(float scale)
         {
-            bool lootRare = Plugin.LootRare.Value;
-            if (ImGui.Checkbox("Always Loot Rare##bl_rare", ref lootRare))
-                Plugin.LootRare.Value = lootRare;
+            bool lootEquip = Plugin.GetLootEquipment();
+            if (ImGui.Checkbox("Loot Equipment##bl_equip", ref lootEquip))
+                Plugin.SetLootEquipment(lootEquip);
+
+            ImGui.SameLine(200f * scale);
+
+            if (!lootEquip) ImGui.BeginDisabled();
+
+            ImGui.PushStyleColor(ImGuiCol.Text, LootManagerWindow.V4TextMuted);
+            ImGui.TextUnformatted("Tier:");
+            ImGui.PopStyleColor();
+            ImGui.SameLine();
+            ImGui.SetNextItemWidth(160f * scale);
+            if (ImGui.Combo("##bl_tier", ref _tierIdx, TierOptions, TierOptions.Length))
+                Plugin.SetLootEquipmentTier(_tierIdx >= 0 && _tierIdx < TierOptions.Length ? TierOptions[_tierIdx] : "All");
+
+            if (!lootEquip) ImGui.EndDisabled();
 
             ImGui.Spacing();
         }
@@ -35,24 +60,24 @@ namespace LootManager
         protected override void            SaveList()  => LootWhitelist.SaveWhitelist();
 
         private static readonly string[] TierOptions =
-            { "All", "Normal Only", "Blessed Only", "Godly Only", "Blessed and Up" };
+            { "All", "Normal Only", "Improved Only", "Blessed Only", "Ascended Only", "Improved and Up", "Blessed and Up" };
 
         private int _tierIdx;
 
         public new void OnShow()
         {
             base.OnShow();
-            _tierIdx = (int)Plugin.LootEquipmentTier.Value;
+            _tierIdx = System.Array.IndexOf(TierOptions, Plugin.GetLootEquipmentTier());
         }
 
         protected override void DrawExtraControls(float scale)
         {
             float labelW = 130f * scale;
 
-            bool lootEquip = Plugin.LootEquipment.Value;
+            bool lootEquip = Plugin.GetLootEquipment();
             if (ImGui.Checkbox("Loot Equipment##wl_equip", ref lootEquip))
             {
-                Plugin.LootEquipment.Value = lootEquip;
+                Plugin.SetLootEquipment(lootEquip);
             }
 
             ImGui.SameLine(200f * scale);
@@ -65,7 +90,7 @@ namespace LootManager
             ImGui.SameLine();
             ImGui.SetNextItemWidth(160f * scale);
             if (ImGui.Combo("##wl_tier", ref _tierIdx, TierOptions, TierOptions.Length))
-                Plugin.LootEquipmentTier.Value = (EquipmentTierSetting)_tierIdx;
+                Plugin.SetLootEquipmentTier(_tierIdx >= 0 && _tierIdx < TierOptions.Length ? TierOptions[_tierIdx] : "All");
 
             if (!lootEquip) ImGui.EndDisabled();
 

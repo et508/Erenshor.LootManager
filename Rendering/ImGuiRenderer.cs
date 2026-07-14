@@ -1,26 +1,23 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text;
-using BepInEx;
-using BepInEx.Logging;
 using ImGuiNET;
+using Lunaris;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace LootManager
 {
+    /// <summary>
+    /// Self-contained ImGui renderer with its own isolated context.
+    /// Lunaris already loaded cimgui.dll — no LoadLibrary needed.
+    /// Called from Plugin.OnImGuiDraw() which runs inside Lunaris's Bridge.OnGUI.
+    /// Context switch (SetCurrentContext) isolates us from Lunaris's own context.
+    /// </summary>
     public sealed class ImGuiRenderer : IDisposable
     {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string lpFileName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool FreeLibrary(IntPtr hModule);
-
         public Action OnLayout         { get; set; }
         public ImFontPtr BoldFont      { get; private set; }
         public bool WantCaptureMouse   { get; private set; }
@@ -34,15 +31,18 @@ namespace LootManager
         public float CurrentScale => _uiScale;
 
         public void SetScale(float scale) { _pendingScale = scale; }
-        public void ClearWindowState()    { ImGui.LoadIniSettingsFromMemory(""); }
 
-        /// <summary>
-        /// Register a Unity texture so ImGui.Image() calls using its native pointer
-        /// will render correctly. Call once per texture (e.g. during item DB build).
-        /// </summary>
-        public void RegisterTexture(System.IntPtr ptr, UnityEngine.Texture texture)
+        public void ClearWindowState()
         {
-            if (ptr != System.IntPtr.Zero && texture != null)
+            var prev = ImGui.GetCurrentContext();
+            ImGui.SetCurrentContext(_context);
+            ImGui.LoadIniSettingsFromMemory("");
+            ImGui.SetCurrentContext(prev);
+        }
+
+        public void RegisterTexture(IntPtr ptr, UnityEngine.Texture texture)
+        {
+            if (ptr != IntPtr.Zero && texture != null)
                 _textures[ptr] = texture;
         }
 
@@ -52,7 +52,9 @@ namespace LootManager
             WantTextInput    = false;
         }
 
-        public ImGuiRenderer(ManualLogSource log)
+        private readonly ILog _log;
+
+        public ImGuiRenderer(ILog log)
         {
             _log = log;
         }
@@ -66,28 +68,12 @@ namespace LootManager
             }
             try
             {
-                string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-                                     ?? Paths.PluginPath;
-                string nativePath  = Path.Combine(assemblyDir, "cimgui.dll");
-
-                if (!File.Exists(nativePath))
-                {
-                    _log.LogError("[LootManager] cimgui.dll not found at: " + nativePath);
-                    return false;
-                }
-
-                _nativeLib = LoadLibrary(nativePath);
-                if (_nativeLib == IntPtr.Zero)
-                {
-                    _log.LogError(string.Format(
-                        "[LootManager] LoadLibrary failed for {0} (Win32 error {1})",
-                        nativePath, Marshal.GetLastWin32Error()));
-                    return false;
-                }
-
+                // Lunaris already loaded cimgui.dll — CreateContext binds to it automatically
                 _context = ImGui.CreateContext();
-                ImGuiIOPtr io = ImGui.GetIO();
+                var prev = ImGui.GetCurrentContext();
+                ImGui.SetCurrentContext(_context);
 
+                ImGuiIOPtr io = ImGui.GetIO();
                 io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
                 io.NativePtr->IniFilename = (byte*)0;
 
@@ -99,7 +85,8 @@ namespace LootManager
 
                 _commandBuffer = new CommandBuffer { name = "LootManager_ImGui" };
 
-                _log.LogInfo("[LootManager] ImGui initialised successfully.");
+                ImGui.SetCurrentContext(prev);
+                _log.Log("[LootManager] ImGui initialised (isolated context).");
                 return true;
             }
             catch (Exception ex)
@@ -109,18 +96,24 @@ namespace LootManager
             }
         }
 
+        /// <summary>
+        /// Called from Plugin.OnImGuiDraw() which runs inside Lunaris's Bridge.OnGUI
+        /// on EventType.Repaint. We switch to our own context for the duration.
+        /// </summary>
         public unsafe void OnGUI()
         {
-            Event current = Event.current;
-            if (current == null) return;
             if (_context == IntPtr.Zero) return;
 
-            ImGuiIOPtr io = ImGui.GetIO();
+            Event current = Event.current;
+            if (current == null || current.type != EventType.Repaint) return;
 
-            if (current.type != EventType.Repaint) return;
+            var lunarisCtx = ImGui.GetCurrentContext();
+            ImGui.SetCurrentContext(_context);
 
             try
             {
+                ImGuiIOPtr io = ImGui.GetIO();
+
                 if (_pendingScale >= 0f)
                 {
                     ApplyScale(_pendingScale);
@@ -146,26 +139,54 @@ namespace LootManager
             {
                 _log.LogError("[LootManager] ImGui render error: " + ex);
             }
+            finally
+            {
+                ImGui.SetCurrentContext(lunarisCtx);
+            }
         }
 
         public void Dispose()
         {
+            // Destroy our isolated ImGui context and restore Lunaris's context.
+            // Skip during app quit — the graphics context may already be gone
+            // and calling cimgui functions would crash.
             if (_context != IntPtr.Zero)
             {
-                ImGui.DestroyContext(_context);
+                if (!_quitting)
+                {
+                    try
+                    {
+                        var prev = ImGui.GetCurrentContext();
+                        ImGui.SetCurrentContext(_context);
+                        try { ImGui.EndFrame(); } catch { }
+                        ImGui.DestroyContext(_context);
+                        if (prev != _context && prev != IntPtr.Zero)
+                            ImGui.SetCurrentContext(prev);
+                    }
+                    catch { }
+                }
                 _context = IntPtr.Zero;
             }
+
+            // Destroy all Unity-managed objects — required to prevent memory leaks
+            // on mod unload (Lunaris can unload mods at runtime)
             foreach (var mesh in _meshPool)
-                UnityEngine.Object.Destroy(mesh);
+                if (mesh != null) UnityEngine.Object.Destroy(mesh);
             _meshPool.Clear();
-            if (_fontTexture != null) { UnityEngine.Object.Destroy(_fontTexture); _fontTexture = null; }
-            if (_material    != null) { UnityEngine.Object.Destroy(_material);    _material    = null; }
-            _commandBuffer?.Dispose();
-            if (_nativeLib != IntPtr.Zero)
+
+            if (_fontTexture != null)
             {
-                FreeLibrary(_nativeLib);
-                _nativeLib = IntPtr.Zero;
+                UnityEngine.Object.Destroy(_fontTexture);
+                _fontTexture = null;
             }
+            if (_material != null)
+            {
+                UnityEngine.Object.Destroy(_material);
+                _material = null;
+            }
+
+            _commandBuffer?.Dispose();
+            _commandBuffer = null;
         }
 
         private unsafe void BuildFontAtlas()
@@ -199,16 +220,13 @@ namespace LootManager
                 }
                 else
                 {
-                    _log.LogWarning("[LootManager] Roboto font not found in resources, using default.");
-                    unsafe
-                    {
-                        ImFontConfig* cfg = ImGuiNative.ImFontConfig_ImFontConfig();
-                        cfg->SizePixels  = 16f * _uiScale;
-                        cfg->OversampleH = 1;
-                        cfg->OversampleV = 1;
-                        cfg->PixelSnapH  = 1;
-                        io.Fonts.AddFontDefault(cfg);
-                    }
+                    _log.LogWarning("[LootManager] Roboto font not found — using default.");
+                    ImFontConfig* cfg = ImGuiNative.ImFontConfig_ImFontConfig();
+                    cfg->SizePixels  = 16f * _uiScale;
+                    cfg->OversampleH = 1;
+                    cfg->OversampleV = 1;
+                    cfg->PixelSnapH  = 1;
+                    io.Fonts.AddFontDefault(cfg);
                 }
             }
 
@@ -251,7 +269,7 @@ namespace LootManager
             RestoreStyleBackup();
             ImGui.GetStyle().ScaleAllSizes(_uiScale);
             if (_material != null) _material.mainTexture = _fontTexture;
-            _log.LogInfo(string.Format("[LootManager] UI scale -> {0:F2}", _uiScale));
+            _log.Log(string.Format("[LootManager] UI scale -> {0:F2}", _uiScale));
         }
 
         private void CreateMaterial()
@@ -390,7 +408,7 @@ namespace LootManager
                     _commandBuffer.EnableScissorRect(new Rect(cx, sh - cy - ch, cw, ch));
 
                     _mpb.Clear();
-                    Texture tex;
+                    UnityEngine.Texture tex;
                     if (_textures.TryGetValue(dc.TextureId, out tex))
                     {
                         _mpb.SetTexture("_MainTex",   tex);
@@ -410,17 +428,18 @@ namespace LootManager
             Graphics.ExecuteCommandBuffer(_commandBuffer);
         }
 
-        private readonly ManualLogSource             _log;
-        private IntPtr                               _nativeLib;
-        private IntPtr                               _context;
-        private Texture2D                            _fontTexture;
-        private Material                             _material;
-        private CommandBuffer                        _commandBuffer;
-        private byte[]                               _unscaledStyleBackup;
-        private float                                _uiScale      = 1f;
-        private float                                _pendingScale = -1f;
+        private IntPtr                                    _context;
+        private bool                                      _quitting;
 
-        private readonly Dictionary<IntPtr, Texture> _textures  = new Dictionary<IntPtr, Texture>();
+        internal void OnApplicationQuit() { _quitting = true; }
+        private Texture2D                                 _fontTexture;
+        private Material                                  _material;
+        private CommandBuffer                             _commandBuffer;
+        private byte[]                                    _unscaledStyleBackup;
+        private float                                     _uiScale      = 1f;
+        private float                                     _pendingScale = -1f;
+
+        private readonly Dictionary<IntPtr, UnityEngine.Texture> _textures  = new Dictionary<IntPtr, UnityEngine.Texture>();
         private readonly List<Mesh>                  _meshPool  = new List<Mesh>();
         private readonly List<UnityEngine.Vector3>   _verts     = new List<UnityEngine.Vector3>();
         private readonly List<UnityEngine.Vector2>   _uvs       = new List<UnityEngine.Vector2>();

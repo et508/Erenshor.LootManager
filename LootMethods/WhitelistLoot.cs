@@ -6,32 +6,36 @@ namespace LootManager
         {
             if (item == null || string.IsNullOrWhiteSpace(item.ItemName))
                 return false;
-            
+
             if (item.NoTradeNoDestroy)
                 return true;
-            
-            if (Plugin.LootEquipment.Value && item.RequiredSlot != Item.SlotType.General)
+
+            if (Plugin.GetLootEquipment() && item.RequiredSlot != Item.SlotType.General)
             {
-                switch (Plugin.LootEquipmentTier.Value)
+                switch (Plugin.GetLootEquipmentTier())
                 {
-                    case EquipmentTierSetting.All:
+                    case "All":
                         return true;
-                    case EquipmentTierSetting.NormalOnly:
+                    case "Normal Only":
                         return quantity == 1;
-                    case EquipmentTierSetting.BlessedOnly:
+                    case "Improved Only":
+                        return quantity > 10;
+                    case "Blessed Only":
                         return quantity == 2;
-                    case EquipmentTierSetting.GodlyOnly:
+                    case "Ascended Only":
                         return quantity == 3;
-                    case EquipmentTierSetting.BlessedAndUp:
+                    case "Improved and Up":
                         return quantity >= 2;
+                    case "Blessed and Up":
+                        return quantity >= 2 && quantity <= 3;
                 }
             }
 
             string itemName = item.ItemName;
-            
+
             if (Plugin.Whitelist.Contains(itemName))
                 return true;
-            
+
             foreach (var kvp in Plugin.FilterList)
             {
                 if (!Plugin.EnabledFilterCategories.Contains(kvp.Key))  continue;
