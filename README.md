@@ -5,8 +5,8 @@
 Loot using Blacklist or Whitelist filtering. Send all your loot directly to your bank, or setup a bank filter and only send the loot you want to the bank. Manage your Junklist for quick selling, and autolist items on the Auction House.
 
 ## Installation
-- Install [BepInEx](https://github.com/et508/Erenshor.BepInEx/releases/tag/e1)
-- [Download the latest release](https://github.com/et508/Erenshor.LootManager/releases/latest)
+- Install [Lunaris](https://github.com/MizukiBelhi/Lunaris)
+- [Download the latest release](https://erenshorvault.app/mod/loot-manager)
 - Extract the folder from Erenshor.LootManager.zip into `Erenshor\BepInEx\plugins\` folder.
 
 ### It is highly recommended to use BepInEx 5.4.23.x
