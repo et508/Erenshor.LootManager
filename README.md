@@ -7,9 +7,7 @@ Loot using Blacklist or Whitelist filtering. Send all your loot directly to your
 ## Installation
 - Install [Lunaris](https://github.com/MizukiBelhi/Lunaris)
 - [Download the latest release](https://erenshorvault.app/mod/loot-manager)
-- Extract the folder from Erenshor.LootManager.zip into `Erenshor\BepInEx\plugins\` folder.
-
-### It is highly recommended to use BepInEx 5.4.23.x
+- Extract the file from Erenshor.LootManager.zip into `Erenshor\plugins\` folder.
 
 ## How It Works
 - Open the Loot Manager window by pressing `F6`.
